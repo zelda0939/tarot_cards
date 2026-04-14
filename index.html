@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聖境塔羅 | Celestial Tarot - 探索靈魂的指引</title>
+    <meta name="description" content="聖境塔羅提供美觀、直觀的塔羅牌抽取體驗，幫助您在星辰與靈魂的交織中尋找答案。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="stars-container"></div>
+    
+    <header>
+        <h1 class="glow-text">聖境塔羅</h1>
+        <p class="subtitle">讓星辰指引您的道路</p>
+    </header>
+
+    <main>
+        <section id="tarot-board" class="board-container">
+            <!-- 塔羅牌將由 JavaScript 加入 -->
+            <div class="loader">
+                <div class="spinner"></div>
+                <p>正在洗牌...</p>
+            </div>
+        </section>
+
+        <section id="control-panel">
+            <button id="shuffle-btn" class="premium-btn">重新洗牌</button>
+            <button id="draw-btn" class="premium-btn active">單張抽牌</button>
+        </section>
+
+        <section id="reading-modal" class="modal hidden">
+            <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <div id="card-display"></div>
+                <div id="card-meaning">
+                    <h2 id="card-title"></h2>
+                    <p id="card-desc"></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 聖境塔羅 Celestial Tarot. All rights reserved.</p>
+    </footer>
+
+    <script src="app.js" type="module"></script>
+</body>
+</html>
