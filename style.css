@@ -1,12 +1,13 @@
 :root {
-    --bg-dark: #0a0b1e;
-    --navy-blue: #161b33;
-    --gold: #d4af37;
-    --gold-glow: rgba(212, 175, 55, 0.4);
-    --text-white: #f0f0f0;
-    --text-muted: #a0a0b0;
-    --glass-bg: rgba(255, 255, 255, 0.05);
-    --glass-border: rgba(255, 255, 255, 0.1);
+    --bg-dark: #07080a;           /* 極致深黑 */
+    --navy-blue: #111424;         /* 暗夜藍 */
+    --gold: #d4af37;              /* 經典塔羅金 */
+    --gold-glow: rgba(212, 175, 55, 0.25);
+    --gold-light: #f9e596;        /* 亮金 / 香檳金 */
+    --text-white: #f5f5f5;
+    --text-muted: #8b8e98;
+    --glass-bg: rgba(17, 20, 36, 0.7);
+    --glass-border: rgba(212, 175, 55, 0.2);
 }
 
 * {
@@ -138,9 +139,351 @@ h1.glow-text {
     100% { transform: rotate(360deg); }
 }
 
+/* 工具類別 */
+.hidden {
+    display: none !important;
+}
+
+/* 手勢指示文字 */
+.instruction-text {
+    width: 100%;
+    text-align: center;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid var(--gold-glow);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    color: var(--gold);
+    font-weight: 600;
+    letter-spacing: 0.1rem;
+}
+
+/* 3D 中間抽牌環形場景 */
+.carousel-scene {
+    width: 220px;
+    height: 350px;
+    perspective: 1200px;
+    margin: 20px auto 40px auto;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.carousel {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    transform-style: preserve-3d;
+    /* transition 用於手動 snap to position 時 */
+}
+
+.tarot-card {
+    position: absolute;
+    width: 140px;
+    height: 220px;
+    left: 40px; /* 寬 220, 卡 140, 左右留 40 居中 */
+    top: 65px;
+    transform-style: preserve-3d;
+    transition: box-shadow 0.3s ease, opacity 0.5s ease;
+}
+
+.tarot-card.active .card-inner {
+    border-color: var(--gold);
+    box-shadow: 0 0 25px var(--gold);
+}
+
+/* 選中卡牌 */
+#selected-cards-container {
+    width: 100%;
+    max-width: 800px;
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.selected-cards {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 1.5rem;
+}
+
+.slot {
+    width: 120px;
+    height: 180px;
+    border: 2px dashed var(--gold-glow);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-muted);
+    transition: all 0.5s ease;
+}
+
+.slot.filled {
+    border: 1px solid var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+    color: var(--gold);
+    box-shadow: 0 0 15px var(--gold-glow);
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    text-align: center;
+    padding: 0.5rem;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.slot-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+/* 卡牌內部結構與翻面 */
+.card-inner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+    border: 1.5px solid rgba(212, 175, 55, 0.35);
+}
+
+.tarot-card.flipped .card-inner {
+    transform: rotateY(180deg);
+    box-shadow: 0 0 50px var(--gold), 0 0 80px rgba(212, 175, 55, 0.3);
+    z-index: 10;
+}
+
+.card-front, .card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* ═══════════════════════════════
+   牌背 (Card Back) - 使用圖片
+   ═══════════════════════════════ */
+.card-back {
+    background-image: url('./images/card_back.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 1.5px solid rgba(212, 175, 55, 0.5);
+}
+
+/* ═══════════════════════════════
+   牌面 (Card Front) - 金框 + 圖片分層
+   ═══════════════════════════════ */
+.card-front {
+    background-color: #0a0a0f;
+    transform: rotateY(180deg);
+    border: 1.5px solid rgba(212, 175, 55, 0.5);
+    padding: 18px 8px; /* 加大上下邊距，強制縮短內部白卡高度以匹配背面的原生視覺比例 */
+}
+
+/* 塔羅圖片 - 放在金框的拱形內容區域中 */
+.card-art {
+    width: 100%;
+    height: 80%;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #ffffff;
+    border-radius: 8px 8px 0 0; /* 實體卡牌上方圓角 */
+}
+
+/* 移除框架樣式 */
+.card-frame {
+    display: none;
+}
+
+/* 底部名牌區域 - 顯示卡牌名稱 */
+.card-name-plate {
+    width: 100%;
+    height: 20%;
+    background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2px;
+    border-radius: 0 0 8px 8px; /* 實體卡牌下方圓角 */
+}
+
+/* 卡牌中文名 */
+.card-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #111424;
+    letter-spacing: 0.1rem;
+    text-align: center;
+}
+
+/* 卡牌英文名 */
+.card-en {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.55rem;
+    font-weight: 300;
+    color: var(--text-muted);
+    letter-spacing: 0.1rem;
+    margin-top: 2px;
+}
+
+/* Modal 彈出視窗 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(8px);
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #1a1b3a, #0d0e24);
+    border: 1px solid var(--gold-glow);
+    border-radius: 16px;
+    padding: 2.5rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
+}
+
+.close-modal {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    font-size: 2rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.3s;
+    line-height: 1;
+}
+
+.close-modal:hover {
+    color: var(--gold);
+}
+
+#card-title {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    font-size: 1.5rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 0 10px var(--gold-glow);
+}
+
+/* 解牌分析卡片 */
+.analysis-card {
+    border-left: 3px solid var(--gold);
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0 8px 8px 0;
+}
+
+.analysis-position {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.15rem;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+}
+
+.analysis-symbol {
+    font-size: 2rem;
+    color: var(--gold-light);
+    text-shadow: 0 0 10px var(--gold);
+    margin: 0.3rem 0;
+}
+
+.analysis-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    color: var(--gold);
+    margin-bottom: 0.2rem;
+}
+
+.analysis-en {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+    font-style: italic;
+}
+
+.analysis-desc {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    border-left: 2px solid rgba(212, 175, 55, 0.2);
+    padding-left: 0.8rem;
+    font-style: italic;
+}
+
+.analysis-meaning {
+    font-size: 0.95rem;
+    color: var(--text-white);
+    line-height: 1.6;
+    margin-bottom: 0.3rem;
+}
+
+.analysis-meaning-rev {
+    font-size: 0.9rem;
+    color: rgba(200, 160, 160, 0.9);
+    line-height: 1.6;
+}
+
 /* 響應式 */
 @media (max-width: 768px) {
     h1.glow-text {
         font-size: 2.5rem;
+    }
+
+    .board-container {
+        min-height: 300px;
+    }
+
+    .carousel-scene {
+        width: 180px;
+        height: 280px;
+    }
+
+    .selected-cards {
+        gap: 1rem;
+    }
+
+    .slot {
+        width: 90px;
+        height: 140px;
+    }
+
+    .modal-content {
+        padding: 1.5rem;
+    }
+
+    .instruction-text {
+        font-size: 0.85rem;
+        padding: 0.8rem;
     }
 }

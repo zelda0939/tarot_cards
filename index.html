@@ -8,6 +8,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- MediaPipe Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -19,17 +22,40 @@
     </header>
 
     <main>
+        <!-- 隱藏的攝影機 -->
+        <video id="videoElement" autoplay playsinline style="display: none;"></video>
+
+        <!-- 手勢狀態提示 -->
+        <div id="gesture-instruction" class="instruction-text hidden">
+            <p>【張開手掌】旋轉卡牌｜【握拳】停留｜【食指往上滑】確認選牌</p>
+        </div>
+
         <section id="tarot-board" class="board-container">
-            <!-- 塔羅牌將由 JavaScript 加入 -->
-            <div class="loader">
-                <div class="spinner"></div>
-                <p>正在洗牌...</p>
+            <!-- 3D 環形場景 -->
+            <div id="carousel-scene" class="carousel-scene hidden">
+                <div class="loader" id="loader">
+                    <div class="spinner"></div>
+                    <p>正在洗牌...</p>
+                </div>
+                <div id="carousel" class="carousel">
+                    <!-- 塔羅牌將由 JS 動態生成於此 -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 已選取的 3 張卡牌 -->
+        <section id="selected-cards-container" class="hidden">
+            <h3 class="subtitle">您的星辰指引</h3>
+            <div id="selected-cards" class="selected-cards">
+                <div class="slot" id="slot-1">1</div>
+                <div class="slot" id="slot-2">2</div>
+                <div class="slot" id="slot-3">3</div>
             </div>
         </section>
 
         <section id="control-panel">
-            <button id="shuffle-btn" class="premium-btn">重新洗牌</button>
-            <button id="draw-btn" class="premium-btn active">單張抽牌</button>
+            <button id="start-gesture-btn" class="premium-btn active">開啟手勢抽牌</button>
+            <button id="draw-btn" class="premium-btn hidden">單張抽牌</button>
         </section>
 
         <section id="reading-modal" class="modal hidden">
@@ -48,6 +74,7 @@
         <p>&copy; 2026 聖境塔羅 Celestial Tarot. All rights reserved.</p>
     </footer>
 
-    <script src="app.js" type="module"></script>
+    <script src="tarot_dict.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
