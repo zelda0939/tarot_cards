@@ -20,6 +20,12 @@
 - [2026-04-15] 審查 drawRandomCard() 隨機性：目前使用 Math.random()（PRNG），統計上公平但非密碼學安全。建議若需更高安全等級可改用 crypto.getRandomValues() + 拒絕取樣消除模取偏差。結論：娛樂用途已足夠，付費場景建議升級。
 - [2026-04-15] 修正抽牌範圍問題：原本使用者只能從環上 12 張牌中選取（66 張牌無機會），改為確認選牌時才從全部 78 張牌庫中真隨機抽取（drawTrueRandomCard），環上展示僅為視覺效果。新增 updateCardFrontDOM() 在翻牌前替換卡牌正面。
 - [2026-04-15] 新增 AI 模型切換功能：設定面板加入下拉選單，支援 Gemini 3 Flash 與 Gemma 4 31B 兩個模型，透過 AI_MODELS 對照表與 localStorage('gemini_model') 動態切換 API endpoint。解牌 modal 標頭顯示目前使用的模型名稱。
+- [2026-04-15] PWA 化：新增 manifest.json（應用名稱、圖示、主題色）、sw.js（Cache-First Service Worker）、icons 目錄（SVG 格式 192/512 圖示）。index.html 加入 PWA meta 標籤與 SW 註冊。支援離線訪問與桌面安裝。
+- [2026-04-15] 預設模型改為 gemma-4-31b-it：所有 fallback 值從 gemini-3-flash-preview 改為 gemma-4-31b-it，select 預設選項調整為 Gemma 4 31B。
+- [2026-04-15] API Key 取得教學：設定 Modal 中 API Key 輸入框下方新增 Google AI Studio 連結與三步驟教學說明。
+- [2026-04-15] 精美等待畫面：選完 3 張牌後進入全螢幕「星辰編織」等待畫面（三層旋轉星環 + 發光核心 + 卡牌縮圖浮動 + 呼吸燈文字），AI 分析完成後淡出切換到解牌 Modal。fetchGeminiAnalysis 重構為純資料層 Promise。
+- [2026-04-15] 螢幕恆亮：透過 Screen Wake Lock API 防止手勢操作時螢幕自動休眠，頁面重新可見時自動恢復。
+- [2026-04-15] 解牌簡化：星辰指引 Modal 中只顯示抽到的正位或逆位意義，不再同時列出兩者。
 
 ## 慣例與規則
 - 使用繁體中文進行所有說明與註解。

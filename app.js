@@ -133,10 +133,58 @@ let wakeLockSentinel = null;
    ============================ */
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[聖境塔羅] 頁面載入完成');
+    detectInAppBrowser(); // 偵測 LINE 等 in-app 瀏覽器
     initStars();
     initApp();
     requestWakeLock(); // 啟動螢幕恆亮
 });
+
+/* ============================
+   偵測 LINE / Facebook 等 In-App 瀏覽器
+   手勢辨識需要完整的攝影機 API，LINE 內建瀏覽器不支援
+   ============================ */
+function detectInAppBrowser() {
+    const ua = navigator.userAgent || '';
+    // LINE 內建瀏覽器的 UA 包含 "Line/"
+    // Facebook 內建瀏覽器包含 "FBAN" 或 "FBAV"
+    const isLine = /Line\//i.test(ua);
+    const isFB = /FBAN|FBAV/i.test(ua);
+
+    if (isLine || isFB) {
+        const appName = isLine ? 'LINE' : 'Facebook';
+        const banner = document.createElement('div');
+        banner.id = 'inapp-browser-warning';
+        banner.innerHTML = `
+            <div style="
+                position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;
+                background: linear-gradient(135deg, #1a0a00, #2a1500);
+                border-bottom: 2px solid var(--gold);
+                padding: 1rem 1.2rem;
+                text-align: center;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+                animation: slideDown 0.5s ease;
+            ">
+                <p style="color: var(--gold-light); font-size: 0.85rem; margin-bottom: 0.5rem; line-height: 1.5;">
+                    ⚠️ 偵測到您正在使用 <strong>${appName}</strong> 內建瀏覽器
+                </p>
+                <p style="color: var(--text-white); font-size: 0.8rem; margin-bottom: 0.8rem; line-height: 1.5;">
+                    手勢抽牌功能需要攝影機權限，<strong>${appName}</strong> 瀏覽器可能無法正常使用。<br>
+                    請點擊下方按鈕用 <strong>Chrome</strong> 開啟以獲得最佳體驗 ✨
+                </p>
+                <a href="${window.location.href}" target="_blank" rel="noopener"
+                   style="display: inline-block; background: var(--gold); color: #111; padding: 0.5rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
+                    用外部瀏覽器開啟
+                </a>
+                <button onclick="this.closest('#inapp-browser-warning').remove()"
+                    style="display: block; margin: 0.6rem auto 0; background: transparent; border: none; color: var(--text-muted); font-size: 0.7rem; cursor: pointer;">
+                    略過此提示
+                </button>
+            </div>
+        `;
+        document.body.prepend(banner);
+        console.warn(`[聖境塔羅] ⚠️ 偵測到 ${appName} 內建瀏覽器，已顯示提示`);
+    }
+}
 
 /* ============================
    背景星光效果
