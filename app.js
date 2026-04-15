@@ -100,6 +100,7 @@ let mpHands = null;
 let mpCamera = null;
 let gameState = 'idle';        // idle | rotating | stopped | finished
 let selectedCards = [];
+let userQuestion = '';
 
 // 已使用的卡牌 ID 集合（防止重複抽到同一張）
 let usedCardIds = new Set();
@@ -215,10 +216,16 @@ function initApp() {
     const startBtn = document.getElementById('start-gesture-btn');
     const restartBtn = document.getElementById('restart-btn');
     const controlPanel = document.getElementById('control-panel');
+    const questionPanel = document.getElementById('question-panel');
+    const questionInput = document.getElementById('user-question-input');
+    const questionToggleBtn = document.getElementById('question-toggle-btn');
 
     // 初始進入時將按鈕置中
     if (controlPanel) {
         controlPanel.classList.add('centered-mode');
+    }
+    if (questionPanel) {
+        questionPanel.classList.add('centered-mode');
     }
 
     // 綁定設定按鈕 (API Key + 模型選擇)
@@ -254,15 +261,44 @@ function initApp() {
         });
     }
 
+    if (questionInput) {
+        questionInput.addEventListener('input', () => {
+            if (questionPanel && questionPanel.classList.contains('compact')) {
+                syncQuestionPreview();
+            }
+        });
+    }
+
+    if (questionToggleBtn) {
+        questionToggleBtn.addEventListener('click', () => {
+            const shouldCompact = !questionPanel || !questionPanel.classList.contains('compact');
+            setQuestionPanelCompact(shouldCompact);
+        });
+    }
+
     if (!startBtn) return;
 
     // 開始按鈕
     startBtn.addEventListener('click', async () => {
+        const activeQuestion = getActiveQuestionText();
+        if (!activeQuestion) {
+            const instruction = document.getElementById('gesture-instruction');
+            if (instruction) instruction.classList.remove('hidden');
+            updateInstruction('請先輸入想提問的問題，再開始選牌。');
+            if (questionInput) questionInput.focus();
+            return;
+        }
+        userQuestion = activeQuestion;
+
         console.log('[聖境塔羅] 使用者點擊「開啟手勢抽牌」');
         startBtn.classList.add('hidden');
         if (controlPanel) {
             controlPanel.classList.remove('centered-mode');
         }
+        if (questionPanel) {
+            questionPanel.classList.remove('centered-mode');
+        }
+        setQuestionPanelCompact(true);
 
         // 顯示 loader，呈現載入狀態
         const loader = document.getElementById('loader');
@@ -700,6 +736,18 @@ function triggerGesture(gesture) {
 function confirmSelection() {
     if (selectedCards.length >= 3) return;
 
+    const activeQuestion = getActiveQuestionText();
+    if (!activeQuestion) {
+        setQuestionPanelCompact(false);
+        const instruction = document.getElementById('gesture-instruction');
+        if (instruction) instruction.classList.remove('hidden');
+        updateInstruction('請先輸入想提問的問題，再進行選牌。');
+        const questionInput = document.getElementById('user-question-input');
+        if (questionInput) questionInput.focus();
+        return;
+    }
+    userQuestion = activeQuestion;
+
     const activeEl = cardElements[activeCardIndex];
     if (!activeEl || activeEl.classList.contains('flipped')) return;
 
@@ -798,13 +846,6 @@ function confirmSelection() {
                 cardFront.style.backfaceVisibility = 'visible';
             }
 
-            // 加入位置標籤（過去/現在/未來）
-            const positionLabels = ['過去', '現在', '未來'];
-            const badge = document.createElement('div');
-            badge.className = 'slot-position-badge';
-            badge.textContent = positionLabels[slotIndex - 1];
-            flyClone.appendChild(badge);
-
             // 清空 slot 並嵌入 clone
             slot.innerHTML = '';
             slot.appendChild(flyClone);
@@ -862,7 +903,7 @@ function resetGame() {
     for (let i = 1; i <= 3; i++) {
         const slot = document.getElementById(`slot-${i}`);
         if (slot) {
-            slot.innerHTML = String(i);
+            slot.innerHTML = '';
             slot.classList.remove('filled');
         }
     }
@@ -892,6 +933,48 @@ function updateInstruction(text) {
     if (el) {
         el.textContent = text;
     }
+}
+
+function getActiveQuestionText() {
+    const questionInput = document.getElementById('user-question-input');
+    const typedQuestion = questionInput ? questionInput.value.trim() : '';
+    return typedQuestion || userQuestion;
+}
+
+function syncQuestionPreview() {
+    const previewEl = document.getElementById('question-preview');
+    if (!previewEl) return;
+    const activeQuestion = getActiveQuestionText();
+    previewEl.textContent = activeQuestion
+        ? `目前提問：${activeQuestion}`
+        : '尚未填寫提問，點「修改問題」輸入。';
+}
+
+function setQuestionPanelCompact(shouldCompact) {
+    const questionPanel = document.getElementById('question-panel');
+    const questionToggleBtn = document.getElementById('question-toggle-btn');
+    const questionPreview = document.getElementById('question-preview');
+    const questionInput = document.getElementById('user-question-input');
+    if (!questionPanel) return;
+
+    if (shouldCompact) {
+        questionPanel.classList.add('compact');
+        syncQuestionPreview();
+        if (questionPreview) questionPreview.classList.remove('hidden');
+        if (questionToggleBtn) {
+            questionToggleBtn.classList.remove('hidden');
+            questionToggleBtn.textContent = '修改問題';
+        }
+        return;
+    }
+
+    questionPanel.classList.remove('compact');
+    if (questionPreview) questionPreview.classList.add('hidden');
+    if (questionToggleBtn) {
+        questionToggleBtn.classList.remove('hidden');
+        questionToggleBtn.textContent = '收合';
+    }
+    if (questionInput) questionInput.focus();
 }
 
 /* ============================
@@ -939,6 +1022,7 @@ function showAnalysis() {
     const container = document.getElementById('cards-analysis-container');
     const geminiLoading = document.getElementById('gemini-loading');
     const geminiText = document.getElementById('gemini-text');
+    const questionText = getActiveQuestionText();
 
     if (!modal || !container) return;
 
@@ -947,7 +1031,7 @@ function showAnalysis() {
 
     // 準備解牌 Modal 的 HTML（在背景組裝），但先不顯示
     container.innerHTML = '';
-    const positions = ['過去 / 原因', '現在 / 狀況', '未來 / 結果'];
+    const positions = ['第1張', '第2張', '第3張'];
     let html = '';
     let cardNamesForPrompt = [];
 
@@ -979,7 +1063,7 @@ function showAnalysis() {
         </div>`;
 
         // 傳給 AI 的 prompt 包含正逆位與實際意義
-        cardNamesForPrompt.push(`${positions[idx].split(' / ')[0]}是「${card.name}」的【${posture}】（代表意義：${activeMeaning}）`);
+        cardNamesForPrompt.push(`${positions[idx]}是「${card.name}」的【${posture}】（代表意義：${activeMeaning}）`);
     });
 
     container.innerHTML = html;
@@ -1001,7 +1085,7 @@ function showAnalysis() {
     }
 
     // === 第二階段：在背景呼叫 AI API ===
-    fetchGeminiAnalysis(cardNamesForPrompt).then((result) => {
+    fetchGeminiAnalysis(cardNamesForPrompt, questionText).then((result) => {
         // === 第三階段：AI 完成，關閉等待畫面，顯示解牌 Modal ===
         hideLoadingOverlay(() => {
             // 設定綜合神諭內容
@@ -1085,7 +1169,7 @@ function hideLoadingOverlay(callback) {
 /* ============================
    呼叫 AI API 產生綜合解讀（純資料層，回傳 Promise）
    ============================ */
-async function fetchGeminiAnalysis(cardsLog) {
+async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
     const apiKey = localStorage.getItem('gemini_api_key');
     if (!apiKey) {
         return {
@@ -1098,23 +1182,41 @@ async function fetchGeminiAnalysis(cardsLog) {
     const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
     const modelInfo = AI_MODELS[modelId] || AI_MODELS['gemma-4-31b-it'];
     console.log(`[聖境塔羅] 使用模型: ${modelInfo.name} (${modelInfo.id})`);
+    const normalizedQuestion = (userQuestionText || '').trim() || '未提供明確提問';
 
     // 系統角色設定（使用 systemInstruction 與 user prompt 分離，避免 Gemma 4 等模型將角色設定當成對話重複輸出）
     const systemPrompt = `你是一位充滿智慧、語氣溫柔且帶有神祕感的高階塔羅占卜師。
-你的任務是綜合三張塔羅牌的意涵，給予使用者一段整體運勢解析與未來指引。
+你的任務是先根據使用者提問，定義本次占卜中 三張牌 的角色，再綜合三張塔羅牌給出整體運勢解析與未來指引。
+
+客觀的對應邏輯如下：
+時間發展型問題（如：這件事接下來的走向？）：AI 會預設為 「過去 / 現在 / 未來」。
+決策行動型問題（如：遇到這個瓶頸我該怎麼做？）：AI 會預設為 「現況 / 建議 / 結果」 或 「內部因素 / 外部阻礙 / 解決方案」。
+人際關係型問題（如：我跟他的合作關係？）：AI 會預設為 「自己 / 對方 / 雙方互動」。
 
 【嚴格規則】
-- 直接輸出解析內容，不要打招呼、不要自我介紹
-- 不要列出每張牌的個別解讀，只需要給出綜合結論
-- 使用白話文，約 300~500 字
+- 先輸出「三張牌定義」，再輸出「綜合運勢解析」
+- 三張牌的定義必須緊扣使用者提問，不能套用固定的過去/現在/未來
+- 不要逐張牌分開解讀，請強調三張牌彼此的關聯與整體訊息
+- 直接輸出內容，不要打招呼、不要自我介紹
+- 使用白話文，約 320~520 字
 - 語氣保持溫柔、神祕、有智慧感`;
 
-    const userPrompt = `使用者抽出了以下三張牌：
+    const userPrompt = `使用者提問：
+${normalizedQuestion}
+
+使用者抽出了以下三張牌（順序為第1張到第3張）：
 1. ${cardsLog[0]}
 2. ${cardsLog[1]}
 3. ${cardsLog[2]}
 
-請直接給出綜合運勢解析。`;
+請依照以下格式輸出：
+【三張牌的定義】
+第1張：...
+第2張：...
+第3張：...
+
+【綜合運勢解析】
+...`;
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelInfo.id}:generateContent?key=${apiKey}`, {

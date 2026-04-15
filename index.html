@@ -65,6 +65,16 @@
             <button id="restart-btn" class="premium-btn hidden">✦ 重新抽牌</button>
         </section>
 
+        <section id="question-panel" class="question-panel">
+            <div class="question-panel-head">
+                <label for="user-question-input">開始選牌前，先寫下你想提問的問題</label>
+                <button id="question-toggle-btn" class="question-toggle-btn hidden" type="button">修改問題</button>
+            </div>
+            <textarea id="user-question-input" rows="2" maxlength="120" placeholder="例如：我接下來三個月的工作與財務重心是什麼？"></textarea>
+            <p id="question-preview" class="question-preview hidden"></p>
+            <p class="question-panel-hint">此問題會一併帶入 AI 解牌，並動態定義三個 slot。</p>
+        </section>
+
         <!-- 手勢狀態提示 -->
         <div id="gesture-instruction" class="instruction-text hidden">
             <p>【張開手掌】旋轉卡牌｜【握拳】停留｜【食指往上滑】確認選牌</p>
@@ -87,9 +97,9 @@
         <section id="selected-cards-container" class="hidden">
             <h3 class="subtitle">您的星辰指引</h3>
             <div id="selected-cards" class="selected-cards">
-                <div class="slot" id="slot-1">1</div>
-                <div class="slot" id="slot-2">2</div>
-                <div class="slot" id="slot-3">3</div>
+                <div class="slot" id="slot-1"></div>
+                <div class="slot" id="slot-2"></div>
+                <div class="slot" id="slot-3"></div>
             </div>
         </section>
 

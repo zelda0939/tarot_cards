@@ -118,6 +118,121 @@ main {
     z-index: 100;
 }
 
+.question-panel {
+    width: 100%;
+    max-width: 900px;
+    padding: 0.55rem 0.8rem;
+    margin-bottom: 0.45rem;
+    background: rgba(212, 175, 55, 0.08);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 10px;
+    flex-shrink: 0;
+}
+
+.question-panel.centered-mode {
+    position: absolute;
+    top: calc(50% - 86px);
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(92vw, 720px);
+    z-index: 101;
+}
+
+.question-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    margin-bottom: 0.35rem;
+}
+
+.question-panel-head label {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.question-panel label {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--gold-light);
+    font-size: 0.78rem;
+    letter-spacing: 0.08rem;
+}
+
+.question-toggle-btn {
+    border: 1px solid rgba(212, 175, 55, 0.45);
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--gold-light);
+    border-radius: 999px;
+    font-size: 0.68rem;
+    padding: 0.2rem 0.6rem;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.question-toggle-btn:hover {
+    background: rgba(212, 175, 55, 0.15);
+}
+
+#user-question-input {
+    width: 100%;
+    min-height: 50px;
+    max-height: 120px;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.45);
+    color: var(--text-white);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.45;
+    resize: none;
+}
+
+.question-preview {
+    margin-top: 0.25rem;
+    padding: 0.35rem 0.55rem;
+    border-radius: 8px;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--gold-light);
+    font-size: 0.72rem;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#user-question-input::placeholder {
+    color: var(--text-muted);
+}
+
+#user-question-input:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.15);
+}
+
+.question-panel-hint {
+    margin-top: 0.35rem;
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.04rem;
+}
+
+.question-panel.compact {
+    padding: 0.35rem 0.55rem;
+}
+
+.question-panel.compact #user-question-input,
+.question-panel.compact .question-panel-hint {
+    display: none;
+}
+
+.question-panel.compact .question-panel-head {
+    margin-bottom: 0.2rem;
+}
+
 .premium-btn {
     background: transparent;
     border: 1px solid var(--gold);
@@ -652,6 +767,43 @@ footer {
         padding: 0.3rem 0;
     }
 
+    .question-panel {
+        width: calc(100% - 1rem);
+        padding: 0.45rem 0.65rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .question-panel.centered-mode {
+        top: calc(50% - 82px);
+        width: calc(100% - 1rem);
+    }
+
+    .question-panel label {
+        font-size: 0.7rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .question-toggle-btn {
+        font-size: 0.62rem;
+        padding: 0.18rem 0.5rem;
+    }
+
+    #user-question-input {
+        min-height: 44px;
+        padding: 0.45rem 0.55rem;
+        font-size: 0.75rem;
+    }
+
+    .question-preview {
+        font-size: 0.64rem;
+        padding: 0.3rem 0.45rem;
+    }
+
+    .question-panel-hint {
+        font-size: 0.62rem;
+        margin-top: 0.25rem;
+    }
+
     .premium-btn {
         padding: 0.5rem 1.2rem;
         font-size: 0.75rem;
@@ -746,6 +898,35 @@ footer {
         padding: 0.2rem 0;
     }
 
+    .question-panel {
+        padding: 0.35rem 0.55rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .question-panel.centered-mode {
+        top: calc(50% - 78px);
+    }
+
+    .question-panel label {
+        font-size: 0.64rem;
+        margin-bottom: 0.2rem;
+    }
+
+    #user-question-input {
+        min-height: 38px;
+        padding: 0.35rem 0.45rem;
+        font-size: 0.7rem;
+    }
+
+    .question-panel-hint {
+        display: none;
+    }
+
+    .question-preview {
+        font-size: 0.58rem;
+        padding: 0.25rem 0.4rem;
+    }
+
     .premium-btn {
         padding: 0.4rem 1rem;
         font-size: 0.7rem;
@@ -791,6 +972,15 @@ footer {
     h1.glow-text {
         font-size: 1.2rem;
         letter-spacing: 0.15rem;
+    }
+
+    #user-question-input {
+        min-height: 34px;
+        max-height: 66px;
+    }
+
+    .question-panel.centered-mode {
+        top: calc(50% - 70px);
     }
 
     .carousel-scene {
@@ -1082,4 +1272,3 @@ footer {
         height: 77px;
     }
 }
-
