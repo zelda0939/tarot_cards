@@ -259,6 +259,14 @@ main {
     box-shadow: 0 0 10px var(--gold-glow);
 }
 
+.premium-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    border-color: rgba(212, 175, 55, 0.45);
+    color: rgba(249, 229, 150, 0.75);
+    box-shadow: none;
+}
+
 /* 載入中 */
 .loader {
     text-align: center;
@@ -608,6 +616,49 @@ main {
 /* ═══════════════════════════════
    Gemini 綜合神諭區塊
    ═══════════════════════════════ */
+.reading-modal-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    padding-top: 1.5rem;
+}
+
+.save-reading-btn,
+.modal-restart-btn {
+    min-width: 220px;
+    padding: 0.8rem 1.6rem;
+    font-size: 0.92rem;
+}
+
+.save-reading-btn {
+    letter-spacing: 0.03rem;
+}
+
+.modal-restart-btn {
+    box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.save-image-status {
+    text-align: center;
+    margin-top: 0.7rem;
+    min-height: 1.4rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    letter-spacing: 0.03rem;
+}
+
+.save-image-status.success {
+    color: #9ee6b1;
+}
+
+.save-image-status.error {
+    color: #ff9b9b;
+}
+
 #gemini-analysis-section {
     margin-bottom: 2rem;
     padding: 1.5rem;
@@ -807,6 +858,21 @@ footer {
     .premium-btn {
         padding: 0.5rem 1.2rem;
         font-size: 0.75rem;
+    }
+
+    .reading-modal-actions {
+        gap: 0.6rem;
+    }
+
+    .save-reading-btn,
+    .modal-restart-btn {
+        min-width: 170px;
+        padding: 0.65rem 1.1rem;
+    }
+
+    .save-reading-btn {
+        font-size: 0.75rem;
+        letter-spacing: 0.02rem;
     }
 
     .instruction-text {

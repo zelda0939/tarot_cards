@@ -101,6 +101,8 @@ let mpCamera = null;
 let gameState = 'idle';        // idle | rotating | stopped | finished
 let selectedCards = [];
 let userQuestion = '';
+let latestGuidanceText = '';
+let saveImageBusy = false;
 
 // 已使用的卡牌 ID 集合（防止重複抽到同一張）
 let usedCardIds = new Set();
@@ -343,6 +345,18 @@ function initApp() {
             resetGame();
         });
     }
+
+    const saveReadingImageBtn = document.getElementById('save-reading-image-btn');
+    if (saveReadingImageBtn) {
+        saveReadingImageBtn.addEventListener('click', saveReadingAsImage);
+        saveReadingImageBtn.disabled = true;
+    }
+
+    const saveImageStatus = document.getElementById('save-image-status');
+    if (saveImageStatus) {
+        saveImageStatus.classList.add('hidden');
+        saveImageStatus.textContent = '';
+    }
 }
 
 /* ============================
@@ -405,6 +419,10 @@ function generateCardRing() {
     carouselEl = document.getElementById('carousel');
     carouselEl.innerHTML = '';
     cardElements = [];
+    latestGuidanceText = '';
+    saveImageBusy = false;
+    setSaveImageStatus('');
+    setSaveImageButtonState(true, '儲存提問＋星辰指引圖');
     ringCardData = [];
 
     // 根據螢幕寬度動態調整扇形展開半徑與旋轉速度
@@ -977,6 +995,322 @@ function setQuestionPanelCompact(shouldCompact) {
     if (questionInput) questionInput.focus();
 }
 
+function setSaveImageStatus(message, statusType = '') {
+    const statusEl = document.getElementById('save-image-status');
+    if (!statusEl) return;
+
+    statusEl.classList.remove('success', 'error');
+
+    if (!message) {
+        statusEl.textContent = '';
+        statusEl.classList.add('hidden');
+        return;
+    }
+
+    statusEl.textContent = message;
+    statusEl.classList.remove('hidden');
+    if (statusType === 'success' || statusType === 'error') {
+        statusEl.classList.add(statusType);
+    }
+}
+
+function setSaveImageButtonState(disabled, buttonText) {
+    const btn = document.getElementById('save-reading-image-btn');
+    if (!btn) return;
+    btn.disabled = !!disabled;
+    btn.textContent = buttonText || '儲存提問＋星辰指引圖';
+}
+
+function normalizeGuidanceText(rawText) {
+    if (!rawText) return '';
+    return String(rawText)
+        .replace(/<br\s*\/?>/gi, '\n')
+        .replace(/<\/?[^>]+>/g, '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\u00a0/g, ' ')
+        .trim();
+}
+
+function wrapCanvasText(ctx, text, maxWidth) {
+    const lines = [];
+    const paragraphs = String(text || '').split('\n');
+
+    paragraphs.forEach((paragraph, paragraphIndex) => {
+        if (!paragraph.trim()) {
+            lines.push('');
+            return;
+        }
+
+        let currentLine = '';
+        for (const char of paragraph) {
+            if (!currentLine && /\s/.test(char)) {
+                continue;
+            }
+
+            const nextLine = currentLine + char;
+            if (ctx.measureText(nextLine).width > maxWidth && currentLine) {
+                lines.push(currentLine.trimEnd());
+                currentLine = /\s/.test(char) ? '' : char;
+            } else {
+                currentLine = nextLine;
+            }
+        }
+
+        if (currentLine) lines.push(currentLine.trimEnd());
+        if (paragraphIndex !== paragraphs.length - 1) lines.push('');
+    });
+
+    while (lines.length > 0 && lines[lines.length - 1] === '') {
+        lines.pop();
+    }
+
+    return lines;
+}
+
+function drawRoundedRect(ctx, x, y, width, height, radius) {
+    const r = Math.max(0, Math.min(radius, width / 2, height / 2));
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + width - r, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+    ctx.lineTo(x + width, y + height - r);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    ctx.lineTo(x + r, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function drawStarField(ctx, width, height, starCount) {
+    for (let i = 0; i < starCount; i++) {
+        const x = Math.random() * width;
+        const y = Math.random() * height;
+        const size = Math.random() * 1.8 + 0.4;
+        const opacity = Math.random() * 0.65 + 0.2;
+        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.beginPath();
+        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function buildGuidanceImageCanvas(questionText, guidanceText) {
+    const width = 1080;
+    const padding = 82;
+    const contentWidth = width - padding * 2;
+
+    const safeQuestion = (questionText || '未提供提問').trim();
+    const safeGuidance = (guidanceText || '尚未取得星辰指引').trim();
+
+    const measureCanvas = document.createElement('canvas');
+    const measureCtx = measureCanvas.getContext('2d');
+    measureCtx.font = "500 43px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+    const questionLines = wrapCanvasText(measureCtx, safeQuestion, contentWidth - 96);
+    measureCtx.font = "400 37px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+    const rawGuidanceLines = wrapCanvasText(measureCtx, safeGuidance, contentWidth - 96);
+    const maxGuidanceLines = 40;
+    const guidanceLines = rawGuidanceLines.slice(0, maxGuidanceLines);
+    if (rawGuidanceLines.length > maxGuidanceLines && guidanceLines.length > 0) {
+        guidanceLines[guidanceLines.length - 1] += '…';
+    }
+
+    const questionLineHeight = 62;
+    const guidanceLineHeight = 55;
+    const questionTextHeight = Math.max(1, questionLines.length) * questionLineHeight;
+    const guidanceTextHeight = Math.max(1, guidanceLines.length) * guidanceLineHeight;
+    const questionBoxHeight = Math.max(220, 70 + questionTextHeight + 58);
+    const guidanceBoxHeight = Math.max(420, 70 + guidanceTextHeight + 64);
+
+    const headerHeight = 230;
+    const betweenSections = 48;
+    const footerHeight = 118;
+    const totalHeight = headerHeight + questionBoxHeight + guidanceBoxHeight + betweenSections + footerHeight + padding;
+    const height = Math.min(3000, Math.max(1500, Math.ceil(totalHeight)));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    const bgGradient = ctx.createLinearGradient(0, 0, width, height);
+    bgGradient.addColorStop(0, '#050713');
+    bgGradient.addColorStop(0.58, '#0f1733');
+    bgGradient.addColorStop(1, '#151c44');
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(0, 0, width, height);
+
+    const nebulaColors = [
+        'rgba(61, 87, 190, 0.22)',
+        'rgba(112, 72, 185, 0.16)',
+        'rgba(18, 128, 120, 0.14)'
+    ];
+    nebulaColors.forEach((color, idx) => {
+        const r = 240 + idx * 90;
+        const x = idx === 1 ? width * 0.72 : width * (0.24 + idx * 0.2);
+        const y = idx === 2 ? height * 0.66 : height * (0.22 + idx * 0.16);
+        const glow = ctx.createRadialGradient(x, y, 0, x, y, r);
+        glow.addColorStop(0, color);
+        glow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+    });
+
+    drawStarField(ctx, width, height, 320);
+
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
+    ctx.lineWidth = 2;
+    drawRoundedRect(ctx, 36, 36, width - 72, height - 72, 30);
+    ctx.stroke();
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#f8e8a8';
+    ctx.font = "700 60px 'Cinzel', serif";
+    ctx.fillText('Celestial Tarot', width / 2, 122);
+
+    ctx.fillStyle = 'rgba(249, 229, 150, 0.95)';
+    ctx.font = "500 34px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+    ctx.fillText('提問與星辰指引', width / 2, 178);
+
+    const questionBoxY = 236;
+    const questionBoxX = padding;
+    drawRoundedRect(ctx, questionBoxX, questionBoxY, contentWidth, questionBoxHeight, 28);
+    ctx.fillStyle = 'rgba(6, 11, 28, 0.72)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.36)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#f6d77a';
+    ctx.font = "600 31px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+    ctx.fillText('你的提問', questionBoxX + 46, questionBoxY + 62);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = "500 43px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+    let questionY = questionBoxY + 124;
+    questionLines.forEach((line) => {
+        ctx.fillText(line || ' ', questionBoxX + 46, questionY);
+        questionY += questionLineHeight;
+    });
+
+    const guidanceBoxY = questionBoxY + questionBoxHeight + betweenSections;
+    drawRoundedRect(ctx, questionBoxX, guidanceBoxY, contentWidth, guidanceBoxHeight, 28);
+    ctx.fillStyle = 'rgba(5, 9, 24, 0.76)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(212, 175, 55, 0.36)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.fillStyle = '#f6d77a';
+    ctx.font = "600 31px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+    ctx.fillText('星辰指引', questionBoxX + 46, guidanceBoxY + 62);
+
+    ctx.fillStyle = '#eaf1ff';
+    ctx.font = "400 37px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+    let guidanceY = guidanceBoxY + 124;
+    guidanceLines.forEach((line) => {
+        ctx.fillText(line || ' ', questionBoxX + 46, guidanceY);
+        guidanceY += guidanceLineHeight;
+    });
+
+    const generatedAt = new Date().toLocaleString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    });
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(249, 229, 150, 0.82)';
+    ctx.font = "400 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+    ctx.fillText(`生成時間 ${generatedAt}`, width / 2, height - 64);
+
+    return canvas;
+}
+
+function canvasToPngBlob(canvas) {
+    return new Promise((resolve, reject) => {
+        if (!canvas) {
+            reject(new Error('Canvas is unavailable'));
+            return;
+        }
+
+        if (canvas.toBlob) {
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    resolve(blob);
+                } else {
+                    reject(new Error('Failed to export image blob'));
+                }
+            }, 'image/png');
+            return;
+        }
+
+        try {
+            const dataUrl = canvas.toDataURL('image/png');
+            const base64 = dataUrl.split(',')[1] || '';
+            const binary = atob(base64);
+            const len = binary.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            resolve(new Blob([bytes], { type: 'image/png' }));
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+function downloadImageBlob(blob, fileName) {
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = objectUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
+}
+
+async function saveReadingAsImage() {
+    if (saveImageBusy) return;
+
+    const questionText = getActiveQuestionText();
+    const guidanceText = normalizeGuidanceText(
+        latestGuidanceText || document.getElementById('gemini-text')?.innerHTML || ''
+    );
+
+    if (!guidanceText) {
+        setSaveImageStatus('目前還沒有可儲存的星辰指引，請先完成解牌。', 'error');
+        return;
+    }
+
+    saveImageBusy = true;
+    setSaveImageStatus('');
+    setSaveImageButtonState(true, '產生圖片中...');
+
+    try {
+        const canvas = buildGuidanceImageCanvas(questionText, guidanceText);
+        const blob = await canvasToPngBlob(canvas);
+        const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '-');
+        const fileName = `celestial-tarot-guidance-${stamp}.png`;
+        downloadImageBlob(blob, fileName);
+        setSaveImageStatus('圖片已下載，已包含提問與星辰指引。', 'success');
+    } catch (err) {
+        console.error('[星辰塔羅] 儲存圖片失敗:', err);
+        setSaveImageStatus('儲存圖片失敗，請稍後再試。', 'error');
+    } finally {
+        saveImageBusy = false;
+        setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
+    }
+}
+
 /* ============================
    螢幕恆亮 (Screen Wake Lock API)
    防止使用手勢操作時螢幕自動關閉
@@ -1025,6 +1359,10 @@ function showAnalysis() {
     const questionText = getActiveQuestionText();
 
     if (!modal || !container) return;
+    latestGuidanceText = '';
+    saveImageBusy = false;
+    setSaveImageStatus('');
+    setSaveImageButtonState(true, '等待星辰指引...');
 
     // === 第一階段：顯示等待畫面 ===
     showLoadingOverlay();
@@ -1097,6 +1435,9 @@ function showAnalysis() {
                     const formattedReply = result.text.replace(/\n/g, '<br>');
                     geminiText.innerHTML = '';
                     let i = 0;
+                    if (!formattedReply.length) {
+                        setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
+                    }
                     const typeWriter = setInterval(() => {
                         if (formattedReply.substring(i, i + 4) === '<br>') {
                             geminiText.innerHTML += '<br>';
@@ -1105,12 +1446,26 @@ function showAnalysis() {
                             geminiText.innerHTML += formattedReply.charAt(i);
                             i++;
                         }
-                        if (i >= formattedReply.length) clearInterval(typeWriter);
+                        if (i >= formattedReply.length) {
+                            clearInterval(typeWriter);
+                            setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
+                        }
                     }, 15);
                 } else {
                     geminiText.innerHTML = result.text;
+                    setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
                 }
             }
+            modal.classList.remove('hidden');
+        });
+    }).catch(() => {
+        hideLoadingOverlay(() => {
+            if (geminiLoading) geminiLoading.classList.add('hidden');
+            if (geminiText) {
+                geminiText.classList.remove('hidden');
+                geminiText.innerHTML = '<em>星辰短暫失聯，請稍後再試一次。</em>';
+            }
+            setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
             modal.classList.remove('hidden');
         });
     });

@@ -112,6 +112,7 @@
                 <div id="carousel" class="carousel">
                     <!-- 塔羅牌將由 JS 動態生成於此 -->
                 </div>
+                <p id="save-image-status" class="save-image-status hidden" role="status" aria-live="polite"></p>
             </div>
         </section>
 
@@ -172,11 +173,12 @@
                 <!-- 單張牌解析區 (改為三欄 flex) -->
                 <div id="cards-analysis-container" class="cards-analysis-container"></div>
 
-                <div
+                <div class="reading-modal-actions"
                     style="text-align: center; margin-top: 2rem; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 1.5rem;">
-                    <button id="modal-restart-btn" class="premium-btn"
-                        style="padding: 0.8rem 2.5rem; font-size: 1rem; box-shadow: 0 0 15px var(--gold-glow);">✦
-                        重新洗牌</button>
+                    <button id="save-reading-image-btn" class="premium-btn save-reading-btn" type="button">
+                        儲存提問＋星辰指引圖
+                    </button>
+                    <button id="modal-restart-btn" class="premium-btn modal-restart-btn" type="button">✦ 重新洗牌</button>
                 </div>
             </div>
         </section>
