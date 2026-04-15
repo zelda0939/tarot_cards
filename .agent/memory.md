@@ -14,6 +14,11 @@
 - [2026-04-14] 升級至 Deckaura 風格視覺：多層漸層牌背、雙層幾何裝飾框、四角星芒、正面專屬符號圖騰(Unicode)與羅馬數字排版。
 - [2026-04-14] 串接 tarotapi.dev REST API (ekelen/tarot-api)，取得完整 78 張 Rider-Waite-Smith 牌組資料，含正位/逆位意義與描述。同時建立包含 78 張卡牌口語化繁體中文字典檔 `tarot_dict.js` 來覆寫英文資料。
 - [2026-04-14] 將 3D 卡牌的正面改為直接顯示 `sacred-texts.com` 的原始萊德偉特塔羅牌圖片，並保留底部半透明漸層 Overlay 來顯示中文名稱，確保「原味圖案與在地化文字」兼具的華麗體驗。
+- [2026-04-14] 重構 3D 圓環：從整體容器 `rotateY` 改為逐卡片計算的扇形景深佈局（`updateCardPositions()`），實現焦點卡放大+兩側遞減的立體感。新增卡牌飛入 slot 的過場動畫（fixed 定位 + CSS transition）。旋轉時全部顯示卡背，選取後才翻面。
+- [2026-04-14] 五項功能修正：(1) 新增重新抽牌按鈕與 `resetGame()`；(2) 將開啟按鈕移到頁面上方；(3) 改為從 78 張牌隨機抽取，翻牌後補上新牌（`drawRandomCard()`+`refillCardSlot()`）；(4) 飛入動畫改用 clone 元素掛 body，解決 3D perspective 干擾路徑問題；(5) slot 顯示卡牌正面圖片。
+- [2026-04-14] 版面改為一屏式（body 100vh + overflow:hidden），縮小 header/carousel/slot 尺寸，新增 max-height media query。
+- [2026-04-15] 審查 drawRandomCard() 隨機性：目前使用 Math.random()（PRNG），統計上公平但非密碼學安全。建議若需更高安全等級可改用 crypto.getRandomValues() + 拒絕取樣消除模取偏差。結論：娛樂用途已足夠，付費場景建議升級。
+- [2026-04-15] 修正抽牌範圍問題：原本使用者只能從環上 12 張牌中選取（66 張牌無機會），改為確認選牌時才從全部 78 張牌庫中真隨機抽取（drawTrueRandomCard），環上展示僅為視覺效果。新增 updateCardFrontDOM() 在翻牌前替換卡牌正面。
 
 ## 慣例與規則
 - 使用繁體中文進行所有說明與註解。

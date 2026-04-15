@@ -15,8 +15,24 @@
 </head>
 <body>
     <div id="stars-container"></div>
-    
+    <!-- 設定用 Modal -->
+    <section id="settings-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 450px;">
+            <span class="close-modal" id="close-settings-modal">&times;</span>
+            <h2 id="settings-title" style="font-family: 'Cinzel', serif; color: var(--gold); text-align: center; margin-bottom: 1.5rem;">⚙️ 系統設定</h2>
+            <div>
+                <label for="gemini-api-key" style="color: var(--gold); display: block; margin-bottom: 0.5rem; font-size: 0.9rem;">Gemini API Key</label>
+                <input type="password" id="gemini-api-key" placeholder="貼上您的 API Key..." style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--gold-glow); background: rgba(0,0,0,0.5); color: white; margin-bottom: 1rem;">
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.4;">此金鑰僅保存在您瀏覽器的本地端 (localStorage)，確保最高安全性。若無設定，將無法使用星辰綜合解析功能。</p>
+                <button id="save-settings-btn" class="premium-btn" style="width: 100%;">儲存設定</button>
+            </div>
+        </div>
+    </section>
+
     <header>
+        <div style="position: absolute; top: 1rem; right: 1.5rem;">
+            <button id="settings-btn" style="background: transparent; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.3s;" title="設定 API Key">⚙️</button>
+        </div>
         <h1 class="glow-text">聖境塔羅</h1>
         <p class="subtitle">讓星辰指引您的道路</p>
     </header>
@@ -24,6 +40,12 @@
     <main>
         <!-- 隱藏的攝影機 -->
         <video id="videoElement" autoplay playsinline style="display: none;"></video>
+
+        <!-- 控制按鈕 — 放在最上方，開啟手勢抽牌 / 重新抽牌 -->
+        <section id="control-panel">
+            <button id="start-gesture-btn" class="premium-btn active">開啟手勢抽牌</button>
+            <button id="restart-btn" class="premium-btn hidden">✦ 重新抽牌</button>
+        </section>
 
         <!-- 手勢狀態提示 -->
         <div id="gesture-instruction" class="instruction-text hidden">
@@ -53,21 +75,33 @@
             </div>
         </section>
 
-        <section id="control-panel">
-            <button id="start-gesture-btn" class="premium-btn active">開啟手勢抽牌</button>
-            <button id="draw-btn" class="premium-btn hidden">單張抽牌</button>
-        </section>
-
-        <section id="reading-modal" class="modal hidden">
-            <div class="modal-content">
-                <span class="close-modal">&times;</span>
-                <div id="card-display"></div>
-                <div id="card-meaning">
-                    <h2 id="card-title"></h2>
-                    <p id="card-desc"></p>
+    <section id="reading-modal" class="modal hidden">
+        <div class="modal-content reading-modal-content" style="padding-top: 3.5rem;">
+            <div class="close-modal" id="close-reading-modal" style="font-size: 1.5rem; background: rgba(255,100,100,0.1); color: #ff6b6b; border: 1px solid #ff6b6b; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; top: 1rem; right: 1rem; position: absolute;" title="關閉視窗">&times;</div>
+            <h2 id="card-title">✦ 星辰的指引 ✦</h2>
+            
+            <!-- Gemini 綜合分析區 -->
+            <div id="gemini-analysis-section">
+                <div class="gemini-header">
+                    <span class="gold-star">❉</span> 綜合神諭 (Gemini Insight) <span class="gold-star">❉</span>
+                </div>
+                <div id="gemini-content-box">
+                    <div class="gemini-loading" id="gemini-loading">
+                        <div class="spinner gemini-spinner"></div>
+                        <p style="text-align: center; font-size: 0.85rem; color: var(--gold-light);">編織星辰軌跡中，請稍候...</p>
+                    </div>
+                    <div id="gemini-text" class="hidden"></div>
                 </div>
             </div>
-        </section>
+
+            <!-- 單張牌解析區 (改為三欄 flex) -->
+            <div id="cards-analysis-container" class="cards-analysis-container"></div>
+            
+            <div style="text-align: center; margin-top: 2rem; border-top: 1px solid rgba(212, 175, 55, 0.2); padding-top: 1.5rem;">
+                <button id="modal-restart-btn" class="premium-btn" style="padding: 0.8rem 2.5rem; font-size: 1rem; box-shadow: 0 0 15px var(--gold-glow);">✦ 重新洗牌</button>
+            </div>
+        </div>
+    </section>
     </main>
 
     <footer>
