@@ -17,7 +17,7 @@
     <!-- MediaPipe Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.4.0">
 </head>
 <body>
     <div id="stars-container"></div>
@@ -148,14 +148,19 @@
         <p>&copy; 2026 聖境塔羅 Celestial Tarot. All rights reserved.</p>
     </footer>
 
-    <script src="tarot_dict.js"></script>
-    <script src="app.js"></script>
+    <script src="version.js?v=1.4.0"></script>
+    <script src="tarot_dict.js?v=1.4.0"></script>
+    <script src="app.js?v=1.4.0"></script>
     <script>
-        // 註冊 Service Worker（PWA）
+        // 註冊 Service Worker（PWA）— 加版本號確保更新時重新註冊
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(reg => console.log('[PWA] Service Worker 註冊成功:', reg.scope))
+                navigator.serviceWorker.register('./sw.js?v=' + APP_VERSION)
+                    .then(reg => {
+                        console.log('[PWA] Service Worker 註冊成功:', reg.scope);
+                        // 顯示版本號
+                        console.log('[聖境塔羅] 版本:', APP_VERSION);
+                    })
                     .catch(err => console.warn('[PWA] Service Worker 註冊失敗:', err));
             });
         }

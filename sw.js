@@ -1,14 +1,21 @@
 /**
  * 聖境塔羅 Service Worker
  * 採用 Cache-First 策略快取核心靜態資源，支援離線訪問
+ * 
+ * ⚠️ 更新版本號步驟：
+ * 1. 修改 version.js 中的 APP_VERSION
+ * 2. 同步修改下方 CACHE_VERSION
+ * 3. 同步修改 index.html 中所有 ?v= 參數
  */
 
-const CACHE_NAME = 'celestial-tarot-v1';
+const CACHE_VERSION = '1.4.0';
+const CACHE_NAME = `celestial-tarot-v${CACHE_VERSION}`;
 
 // 需要預先快取的核心檔案
 const CORE_ASSETS = [
     './',
     './index.html',
+    './version.js',
     './style.css',
     './app.js',
     './tarot_dict.js',
