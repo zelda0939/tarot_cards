@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 聖境塔羅 (Celestial Tarot)
  * 核心應用程式邏輯與手勢辨識整合 (3D 環形架構)
  */
@@ -125,6 +125,9 @@ let lastFrameTime = 0;          // delta-time 用，紀錄上一幀時間戳
 // MediaPipe 是否已初始化
 let mediaPipeInitialized = false;
 
+// 螢幕恆亮 (Wake Lock)
+let wakeLockSentinel = null;
+
 /* ============================
    DOMContentLoaded 入口
    ============================ */
@@ -132,6 +135,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('[聖境塔羅] 頁面載入完成');
     initStars();
     initApp();
+    requestWakeLock(); // 啟動螢幕恆亮
 });
 
 /* ============================
@@ -843,6 +847,33 @@ function updateInstruction(text) {
 }
 
 /* ============================
+   螢幕恆亮 (Screen Wake Lock API)
+   防止使用手勢操作時螢幕自動關閉
+   ============================ */
+async function requestWakeLock() {
+    if (!('wakeLock' in navigator)) {
+        console.warn('[聖境塔羅] 此瀏覽器不支援 Screen Wake Lock API');
+        return;
+    }
+    try {
+        wakeLockSentinel = await navigator.wakeLock.request('screen');
+        console.log('[聖境塔羅] ✅ 螢幕恆亮已啟用');
+        wakeLockSentinel.addEventListener('release', () => {
+            console.log('[聖境塔羅] 螢幕恆亮已釋放');
+        });
+    } catch (err) {
+        console.warn('[聖境塔羅] 螢幕恆亮請求失敗:', err.message);
+    }
+}
+
+// 頁面重新可見時自動重新請求 (切回分頁時恢復)
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        requestWakeLock();
+    }
+});
+
+/* ============================
    AI 模型設定對照表
    ============================ */
 const AI_MODELS = {
@@ -878,11 +909,11 @@ function showAnalysis() {
         const imgUrl = `images/${card.name_short}.jpg`;
         const imgRotateAttr = card.isReversed ? 'transform: rotate(180deg);' : '';
 
-        // 分別處理正逆位的顯示樣式（將當前的位向高亮顯示）
-        const upStyle = card.isReversed ? 'opacity: 0.4;' : 'opacity: 1;';
-        const revStyle = card.isReversed ? 'opacity: 1;' : 'opacity: 0.4;';
-
         const cardDesc = card.desc ? `<div class="analysis-desc">${card.desc.substring(0, 150)}...</div>` : '';
+
+        // 只顯示抽到的正位或逆位意義
+        const meaningLabel = card.isReversed ? '▽ 逆位' : '▲ 正位';
+        const meaningClass = card.isReversed ? 'analysis-meaning-rev' : 'analysis-meaning';
 
         html += `
         <div class="analysis-card">
@@ -896,8 +927,7 @@ function showAnalysis() {
                 <div class="analysis-en">${card.en}</div>
             </div>
             ${cardDesc}
-            <div class="analysis-meaning" style="${upStyle}"><strong>▲ 正位：</strong><br>${card.meaning_up || ''}</div>
-            <div class="analysis-meaning-rev" style="${revStyle}"><strong>▽ 逆位：</strong><br>${card.meaning_rev || ''}</div>
+            <div class="${meaningClass}"><strong>${meaningLabel}：</strong><br>${activeMeaning}</div>
         </div>`;
 
         // 傳給 AI 的 prompt 包含正逆位與實際意義
