@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 聖境塔羅 (Celestial Tarot)
  * 核心應用程式邏輯與手勢辨識整合 (3D 環形架構)
  */
@@ -169,17 +169,21 @@ function initApp() {
         controlPanel.classList.add('centered-mode');
     }
 
-    // 綁定設定按鈕 (Gemini API Key)
+    // 綁定設定按鈕 (API Key + 模型選擇)
     const settingsBtn = document.getElementById('settings-btn');
     const settingsModal = document.getElementById('settings-modal');
     const closeSettingsModal = document.getElementById('close-settings-modal');
     const saveSettingsBtn = document.getElementById('save-settings-btn');
     const apiKeyInput = document.getElementById('gemini-api-key');
+    const modelSelect = document.getElementById('model-select');
 
     if (settingsBtn && settingsModal) {
         settingsBtn.addEventListener('click', () => {
+            // 回填已存的設定
             const savedKey = localStorage.getItem('gemini_api_key');
             if (savedKey) apiKeyInput.value = savedKey;
+            const savedModel = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+            if (modelSelect) modelSelect.value = savedModel;
             settingsModal.classList.remove('hidden');
         });
         closeSettingsModal.addEventListener('click', () => settingsModal.classList.add('hidden'));
@@ -190,8 +194,11 @@ function initApp() {
             } else {
                 localStorage.removeItem('gemini_api_key');
             }
+            // 儲存模型選擇
+            if (modelSelect) {
+                localStorage.setItem('gemini_model', modelSelect.value);
+            }
             settingsModal.classList.add('hidden');
-            // 可以加入一個短暫的 Toast 或者直接覆蓋設定
         });
     }
 
@@ -836,9 +843,19 @@ function updateInstruction(text) {
 }
 
 /* ============================
-   顯示解牌結果 & 呼叫 Gemini
+   AI 模型設定對照表
+   ============================ */
+const AI_MODELS = {
+    'gemini-3-flash-preview': { name: 'Gemini 3 Flash', id: 'gemini-3-flash-preview' },
+    'gemma-4-31b-it': { name: 'Gemma 4 31B', id: 'gemma-4-31b-it' }
+};
+
+/* ============================
+   顯示等待畫面 + 在背景呼叫 AI
+   AI 回應完成後才切換到解牌 Modal
    ============================ */
 function showAnalysis() {
+    const loadingOverlay = document.getElementById('loading-overlay');
     const modal = document.getElementById('reading-modal');
     const container = document.getElementById('cards-analysis-container');
     const geminiLoading = document.getElementById('gemini-loading');
@@ -846,7 +863,10 @@ function showAnalysis() {
 
     if (!modal || !container) return;
 
-    // 清空並組合單張牌卡 HTML
+    // === 第一階段：顯示等待畫面 ===
+    showLoadingOverlay();
+
+    // 準備解牌 Modal 的 HTML（在背景組裝），但先不顯示
     container.innerHTML = '';
     const positions = ['過去 / 原因', '現在 / 狀況', '未來 / 結果'];
     let html = '';
@@ -880,13 +900,21 @@ function showAnalysis() {
             <div class="analysis-meaning-rev" style="${revStyle}"><strong>▽ 逆位：</strong><br>${card.meaning_rev || ''}</div>
         </div>`;
 
-        // 傳給 Gemini 的 prompt 包含正逆位與實際意義
+        // 傳給 AI 的 prompt 包含正逆位與實際意義
         cardNamesForPrompt.push(`${positions[idx].split(' / ')[0]}是「${card.name}」的【${posture}】（代表意義：${activeMeaning}）`);
     });
 
     container.innerHTML = html;
-    modal.classList.remove('hidden');
 
+    // 設定模型名稱標頭
+    const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+    const modelInfo = AI_MODELS[modelId] || AI_MODELS['gemma-4-31b-it'];
+    const geminiHeader = document.querySelector('.gemini-header');
+    if (geminiHeader) {
+        geminiHeader.innerHTML = `<span class="gold-star">❉</span> 綜合神諭 <span style="font-size: 0.7em; opacity: 0.7;">powered by ${modelInfo.name}</span> <span class="gold-star">❉</span>`;
+    }
+
+    // 關閉按鈕
     const closeBtn = document.getElementById('close-reading-modal');
     if (closeBtn) {
         closeBtn.onclick = () => {
@@ -894,42 +922,129 @@ function showAnalysis() {
         };
     }
 
-    // 觸發 Gemini 分析
-    if (geminiLoading && geminiText) {
-        geminiLoading.classList.remove('hidden');
-        geminiText.classList.add('hidden');
-        geminiText.innerHTML = '';
-        fetchGeminiAnalysis(cardNamesForPrompt, geminiLoading, geminiText);
-    }
+    // === 第二階段：在背景呼叫 AI API ===
+    fetchGeminiAnalysis(cardNamesForPrompt).then((result) => {
+        // === 第三階段：AI 完成，關閉等待畫面，顯示解牌 Modal ===
+        hideLoadingOverlay(() => {
+            // 設定綜合神諭內容
+            if (geminiLoading) geminiLoading.classList.add('hidden');
+            if (geminiText) {
+                geminiText.classList.remove('hidden');
+                if (result.success) {
+                    // 打字機效果
+                    const formattedReply = result.text.replace(/\n/g, '<br>');
+                    geminiText.innerHTML = '';
+                    let i = 0;
+                    const typeWriter = setInterval(() => {
+                        if (formattedReply.substring(i, i + 4) === '<br>') {
+                            geminiText.innerHTML += '<br>';
+                            i += 4;
+                        } else {
+                            geminiText.innerHTML += formattedReply.charAt(i);
+                            i++;
+                        }
+                        if (i >= formattedReply.length) clearInterval(typeWriter);
+                    }, 15);
+                } else {
+                    geminiText.innerHTML = result.text;
+                }
+            }
+            modal.classList.remove('hidden');
+        });
+    });
 }
 
 /* ============================
-   呼叫 Gemini API 產生綜合解讀
+   顯示等待畫面 (Loading Overlay)
    ============================ */
-async function fetchGeminiAnalysis(cardsLog, loadingEl, textEl) {
-    const apiKey = localStorage.getItem('gemini_api_key');
-    if (!apiKey) {
-        loadingEl.classList.add('hidden');
-        textEl.classList.remove('hidden');
-        textEl.innerHTML = '<em>您尚未設定 Gemini API Key，請點擊右上角 ⚙️ 設定金鑰以啟用星辰綜合解析。目前僅能提供單張牌意參考。</em>';
+function showLoadingOverlay() {
+    const overlay = document.getElementById('loading-overlay');
+    const cardsRow = document.getElementById('loading-selected-cards');
+    if (!overlay) return;
+
+    // 填入已選卡牌縮圖
+    if (cardsRow) {
+        cardsRow.innerHTML = '';
+        selectedCards.forEach(card => {
+            const imgRotate = card.isReversed ? 'transform: rotate(180deg);' : '';
+            const thumb = document.createElement('div');
+            thumb.className = 'loading-card-thumb';
+            thumb.innerHTML = `<img src="images/${card.name_short}.jpg" alt="${card.name}" style="${imgRotate}">`;
+            cardsRow.appendChild(thumb);
+        });
+    }
+
+    overlay.classList.remove('hidden', 'fade-out');
+}
+
+/* ============================
+   隱藏等待畫面 (帶淡出動畫)
+   ============================ */
+function hideLoadingOverlay(callback) {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) {
+        if (callback) callback();
         return;
     }
 
-    const promptText = `你是一位充滿智慧、語氣溫柔且帶有神祕感的高階塔羅占卜師。
-使用者抽出了以下三張牌：
+    overlay.classList.add('fade-out');
+    // 動畫結束後隱藏並執行回呼
+    const onEnd = () => {
+        overlay.removeEventListener('animationend', onEnd);
+        overlay.classList.add('hidden');
+        overlay.classList.remove('fade-out');
+        if (callback) callback();
+    };
+    overlay.addEventListener('animationend', onEnd, { once: true });
+    // 安全網
+    setTimeout(() => {
+        if (!overlay.classList.contains('hidden')) {
+            onEnd();
+        }
+    }, 1000);
+}
+
+/* ============================
+   呼叫 AI API 產生綜合解讀（純資料層，回傳 Promise）
+   ============================ */
+async function fetchGeminiAnalysis(cardsLog) {
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (!apiKey) {
+        return {
+            success: false,
+            text: '<em>您尚未設定 API Key，請點擊右上角 ⚙️ 設定金鑰以啟用星辰綜合解析。目前僅能提供單張牌意參考。</em>'
+        };
+    }
+
+    // 讀取使用者選擇的模型
+    const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+    const modelInfo = AI_MODELS[modelId] || AI_MODELS['gemma-4-31b-it'];
+    console.log(`[聖境塔羅] 使用模型: ${modelInfo.name} (${modelInfo.id})`);
+
+    // 系統角色設定（使用 systemInstruction 與 user prompt 分離，避免 Gemma 4 等模型將角色設定當成對話重複輸出）
+    const systemPrompt = `你是一位充滿智慧、語氣溫柔且帶有神祕感的高階塔羅占卜師。
+你的任務是綜合三張塔羅牌的意涵，給予使用者一段整體運勢解析與未來指引。
+
+【嚴格規則】
+- 直接輸出解析內容，不要打招呼、不要自我介紹
+- 不要列出每張牌的個別解讀，只需要給出綜合結論
+- 使用白話文，約 300~500 字
+- 語氣保持溫柔、神祕、有智慧感`;
+
+    const userPrompt = `使用者抽出了以下三張牌：
 1. ${cardsLog[0]}
 2. ${cardsLog[1]}
 3. ${cardsLog[2]}
 
-請綜合這三張牌的意涵，用你過往的資訊而非單純卡牌上的意思，用白話文給予使用者一段約 150-200 字整體的運勢解析與未來指引。
-請直接輸出解析內容，不須打招呼。`;
+請直接給出綜合運勢解析。`;
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelInfo.id}:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: promptText }] }]
+                system_instruction: { parts: [{ text: systemPrompt }] },
+                contents: [{ role: 'user', parts: [{ text: userPrompt }] }]
             })
         });
 
@@ -938,33 +1053,19 @@ async function fetchGeminiAnalysis(cardsLog, loadingEl, textEl) {
         }
 
         const data = await response.json();
-        const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        // 過濾掉 Gemma 4 的 thinking parts（thought: true），只取實際回答
+        const parts = data.candidates?.[0]?.content?.parts || [];
+        const replyParts = parts.filter(p => !p.thought);
+        const reply = replyParts.map(p => p.text).join('') || '';
 
-        loadingEl.classList.add('hidden');
-        textEl.classList.remove('hidden');
-
-        // 替換換行符號為 <br>
-        let formattedReply = reply.replace(/\n/g, '<br>');
-
-        // 簡單的打字機特效
-        textEl.innerHTML = '';
-        let i = 0;
-        const typeWriter = setInterval(() => {
-            // 如果遇到 HTML 標籤（例如 <br>），整塊一次寫入
-            if (formattedReply.substring(i, i + 4) === '<br>') {
-                textEl.innerHTML += '<br>';
-                i += 4;
-            } else {
-                textEl.innerHTML += formattedReply.charAt(i);
-                i++;
-            }
-            if (i >= formattedReply.length) clearInterval(typeWriter);
-        }, 15);
+        return { success: true, text: reply };
 
     } catch (err) {
-        console.error('[聖境塔羅] Gemini API 呼叫失敗:', err);
-        loadingEl.classList.add('hidden');
-        textEl.classList.remove('hidden');
-        textEl.innerHTML = `<span style="color: #ff6b6b;">無法取得神諭指引。請確認您的 API Key 是否正確或網路是否通暢。(錯誤: ${err.message})</span>`;
+        console.error('[聖境塔羅] AI API 呼叫失敗:', err);
+        return {
+            success: false,
+            text: `<span style="color: #ff6b6b;">無法取得神諭指引。請確認您的 API Key 是否正確或網路是否通暢。(錯誤: ${err.message})</span>`
+        };
     }
 }
+

@@ -19,6 +19,7 @@
 - [2026-04-14] 版面改為一屏式（body 100vh + overflow:hidden），縮小 header/carousel/slot 尺寸，新增 max-height media query。
 - [2026-04-15] 審查 drawRandomCard() 隨機性：目前使用 Math.random()（PRNG），統計上公平但非密碼學安全。建議若需更高安全等級可改用 crypto.getRandomValues() + 拒絕取樣消除模取偏差。結論：娛樂用途已足夠，付費場景建議升級。
 - [2026-04-15] 修正抽牌範圍問題：原本使用者只能從環上 12 張牌中選取（66 張牌無機會），改為確認選牌時才從全部 78 張牌庫中真隨機抽取（drawTrueRandomCard），環上展示僅為視覺效果。新增 updateCardFrontDOM() 在翻牌前替換卡牌正面。
+- [2026-04-15] 新增 AI 模型切換功能：設定面板加入下拉選單，支援 Gemini 3 Flash 與 Gemma 4 31B 兩個模型，透過 AI_MODELS 對照表與 localStorage('gemini_model') 動態切換 API endpoint。解牌 modal 標頭顯示目前使用的模型名稱。
 
 ## 慣例與規則
 - 使用繁體中文進行所有說明與註解。

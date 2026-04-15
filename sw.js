@@ -1,0 +1,83 @@
+/**
+ * 聖境塔羅 Service Worker
+ * 採用 Cache-First 策略快取核心靜態資源，支援離線訪問
+ */
+
+const CACHE_NAME = 'celestial-tarot-v1';
+
+// 需要預先快取的核心檔案
+const CORE_ASSETS = [
+    './',
+    './index.html',
+    './style.css',
+    './app.js',
+    './tarot_dict.js',
+    './manifest.json',
+    './icons/icon-192.svg',
+    './icons/icon-512.svg',
+    './images/card_back.png'
+];
+
+// 安裝：預先快取核心資源
+self.addEventListener('install', (event) => {
+    console.log('[SW] 安裝中，預快取核心資源...');
+    event.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(CORE_ASSETS);
+        }).then(() => {
+            // 立即啟用，不等舊的 SW 結束
+            return self.skipWaiting();
+        })
+    );
+});
+
+// 啟用：清除舊版快取
+self.addEventListener('activate', (event) => {
+    console.log('[SW] 啟用中，清除舊快取...');
+    event.waitUntil(
+        caches.keys().then((cacheNames) => {
+            return Promise.all(
+                cacheNames
+                    .filter((name) => name !== CACHE_NAME)
+                    .map((name) => caches.delete(name))
+            );
+        }).then(() => {
+            // 立即接管所有頁面
+            return self.clients.claim();
+        })
+    );
+});
+
+// 攔截請求：Cache-First + 網路 Fallback
+self.addEventListener('fetch', (event) => {
+    const { request } = event;
+
+    // 只處理 GET 請求；API 呼叫不走快取
+    if (request.method !== 'GET') return;
+    if (request.url.includes('generativelanguage.googleapis.com')) return;
+    if (request.url.includes('tarotapi.dev')) return;
+
+    event.respondWith(
+        caches.match(request).then((cachedResponse) => {
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+            // 快取未命中 → 從網路取得，並將回應放入快取
+            return fetch(request).then((networkResponse) => {
+                // 只快取成功的同源/CORS 回應
+                if (networkResponse && networkResponse.status === 200) {
+                    const responseClone = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(request, responseClone);
+                    });
+                }
+                return networkResponse;
+            }).catch(() => {
+                // 離線且快取無此資源 — 返回 fallback（可選）
+                if (request.destination === 'document') {
+                    return caches.match('./index.html');
+                }
+            });
+        })
+    );
+});

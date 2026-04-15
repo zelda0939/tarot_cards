@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#07080a"/>
+  <circle cx="256" cy="256" r="190" fill="none" stroke="#d4af37" stroke-width="2" opacity="0.4"/>
+  <circle cx="256" cy="256" r="150" fill="none" stroke="#d4af37" stroke-width="1.5" opacity="0.25"/>
+  <circle cx="256" cy="256" r="210" fill="none" stroke="#d4af37" stroke-width="0.8" opacity="0.15"/>
+  <!-- 中央八芒星 -->
+  <polygon points="256,80 270,213 373,150 288,235 432,256 288,277 373,362 270,299 256,432 242,299 139,362 224,277 80,256 224,235 139,150 242,213" fill="#d4af37" opacity="0.9"/>
+  <circle cx="256" cy="256" r="48" fill="#07080a"/>
+  <circle cx="256" cy="256" r="38" fill="none" stroke="#f9e596" stroke-width="2.5"/>
+  <!-- 中央小星 -->
+  <polygon points="256,224 263,248 285,248 268,260 274,284 256,270 238,284 244,260 227,248 249,248" fill="#f9e596"/>
+  <!-- 外環小星裝飾 -->
+  <circle cx="256" cy="46" r="3" fill="#f9e596" opacity="0.7"/>
+  <circle cx="256" cy="466" r="3" fill="#f9e596" opacity="0.7"/>
+  <circle cx="46" cy="256" r="3" fill="#f9e596" opacity="0.7"/>
+  <circle cx="466" cy="256" r="3" fill="#f9e596" opacity="0.7"/>
+  <circle cx="110" cy="110" r="2.5" fill="#d4af37" opacity="0.5"/>
+  <circle cx="402" cy="110" r="2.5" fill="#d4af37" opacity="0.5"/>
+  <circle cx="110" cy="402" r="2.5" fill="#d4af37" opacity="0.5"/>
+  <circle cx="402" cy="402" r="2.5" fill="#d4af37" opacity="0.5"/>
+  <!-- 十二宮位點 -->
+  <circle cx="256" cy="66" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="351" cy="95" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="417" cy="161" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="446" cy="256" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="417" cy="351" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="351" cy="417" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="256" cy="446" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="161" cy="417" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="95" cy="351" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="66" cy="256" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="95" cy="161" r="2" fill="#d4af37" opacity="0.35"/>
+  <circle cx="161" cy="95" r="2" fill="#d4af37" opacity="0.35"/>
+</svg>
