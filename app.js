@@ -1095,7 +1095,15 @@ function drawStarField(ctx, width, height, starCount) {
     }
 }
 
-function buildGuidanceImageCanvas(questionText, guidanceText) {
+const waitImageLoad = (src) => new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+});
+
+async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     const width = 1080;
     const padding = 82;
     const contentWidth = width - padding * 2;
@@ -1115,6 +1123,33 @@ function buildGuidanceImageCanvas(questionText, guidanceText) {
         guidanceLines[guidanceLines.length - 1] += '…';
     }
 
+    // --- 計算卡牌區塊高度 ---
+    let cardsBoxHeight = 0;
+    let meaningsLinesArr = [];
+    const cardImgWidth = 230;
+    const cardImgHeight = 391;
+    const cardGap = 66; // (contentWidth - 92 - 230*3) / 2 = 67
+    const meaningLineHeight = 36;
+    let cardImages = [];
+
+    if (cards && cards.length) {
+        // 先載入所有圖片
+        cardImages = await Promise.all(cards.map(card => waitImageLoad(`images/${card.name_short}.jpg`)));
+
+        measureCtx.font = "400 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+        meaningsLinesArr = cards.map(card => {
+            const text = card.isReversed ? card.meaning_rev : card.meaning_up;
+            const label = (card.isReversed ? '▽ 逆位：' : '▲ 正位：') + text;
+            return wrapCanvasText(measureCtx, label, cardImgWidth);
+        });
+        const maxMeaningLines = Math.max(1, ...meaningsLinesArr.map(l => l.length));
+
+        const cardAreaHeader = 70 + 31 + 30; // padding top + text + padding
+        const cardBlockHeight = 40 + 20 + cardImgHeight + 30 + 30 + 16 + (maxMeaningLines * meaningLineHeight) + 40;
+        cardsBoxHeight = cardAreaHeader + cardBlockHeight;
+    }
+
+    // --- 計算高度總和 ---
     const questionLineHeight = 62;
     const guidanceLineHeight = 55;
     const questionTextHeight = Math.max(1, questionLines.length) * questionLineHeight;
@@ -1125,8 +1160,9 @@ function buildGuidanceImageCanvas(questionText, guidanceText) {
     const headerHeight = 230;
     const betweenSections = 48;
     const footerHeight = 118;
-    const totalHeight = headerHeight + questionBoxHeight + guidanceBoxHeight + betweenSections + footerHeight + padding;
-    const height = Math.min(3000, Math.max(1500, Math.ceil(totalHeight)));
+    const cardsSectionTotalSpace = cardsBoxHeight > 0 ? cardsBoxHeight + betweenSections : 0;
+    const totalHeight = headerHeight + questionBoxHeight + betweenSections + cardsSectionTotalSpace + guidanceBoxHeight + footerHeight + padding;
+    const height = Math.min(4500, Math.max(1500, Math.ceil(totalHeight)));
 
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -1196,7 +1232,83 @@ function buildGuidanceImageCanvas(questionText, guidanceText) {
         questionY += questionLineHeight;
     });
 
-    const guidanceBoxY = questionBoxY + questionBoxHeight + betweenSections;
+    let currentSectionY = questionBoxY + questionBoxHeight + betweenSections;
+
+    // --- 繪製卡牌區塊 ---
+    if (cards && cards.length) {
+        drawRoundedRect(ctx, questionBoxX, currentSectionY, contentWidth, cardsBoxHeight, 28);
+        ctx.fillStyle = 'rgba(6, 11, 28, 0.72)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.36)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#f6d77a';
+        ctx.font = "600 31px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+        ctx.fillText('所選卡牌', questionBoxX + 46, currentSectionY + 62);
+
+        cards.forEach((card, idx) => {
+            const cx = questionBoxX + 46 + idx * (cardImgWidth + cardGap);
+            let childY = currentSectionY + 130;
+
+            // 位置
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(212, 175, 55, 0.12)';
+            drawRoundedRect(ctx, cx + cardImgWidth/2 - 60, childY - 28, 120, 40, 20);
+            ctx.fill();
+            ctx.fillStyle = '#f8e8a8';
+            ctx.font = "500 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+            ctx.fillText(`第 ${idx + 1} 張`, cx + cardImgWidth/2, childY);
+            
+            childY += 36;
+
+            // 圖片
+            const img = cardImages[idx];
+            if (img) {
+                if (card.isReversed) {
+                    ctx.save();
+                    ctx.translate(cx + cardImgWidth/2, childY + cardImgHeight/2);
+                    ctx.rotate(Math.PI);
+                    ctx.drawImage(img, -cardImgWidth/2, -cardImgHeight/2, cardImgWidth, cardImgHeight);
+                    ctx.restore();
+                } else {
+                    ctx.drawImage(img, cx, childY, cardImgWidth, cardImgHeight);
+                }
+                
+                // 框線
+                ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(cx, childY, cardImgWidth, cardImgHeight);
+            }
+            
+            childY += cardImgHeight + 36;
+
+            // 牌名
+            const posture = card.isReversed ? '逆位' : '正位';
+            ctx.textAlign = 'center';
+            ctx.fillStyle = '#f6d77a';
+            ctx.font = "700 26px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+            ctx.fillText(`${card.symbol || '✦'} ${card.name} [${posture}]`, cx + cardImgWidth/2, childY);
+
+            childY += 40;
+
+            // 牌意
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#eaf1ff';
+            ctx.font = "400 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+            const lines = meaningsLinesArr[idx];
+            lines.forEach(line => {
+                ctx.fillText(line || ' ', cx, childY);
+                childY += meaningLineHeight;
+            });
+        });
+
+        currentSectionY += cardsBoxHeight + betweenSections;
+    }
+
+    // --- 繪製星辰指引區塊 ---
+    const guidanceBoxY = currentSectionY;
     drawRoundedRect(ctx, questionBoxX, guidanceBoxY, contentWidth, guidanceBoxHeight, 28);
     ctx.fillStyle = 'rgba(5, 9, 24, 0.76)';
     ctx.fill();
@@ -1296,7 +1408,7 @@ async function saveReadingAsImage() {
     setSaveImageButtonState(true, '產生圖片中...');
 
     try {
-        const canvas = buildGuidanceImageCanvas(questionText, guidanceText);
+        const canvas = await buildGuidanceImageCanvas(questionText, guidanceText, selectedCards);
         const blob = await canvasToPngBlob(canvas);
         const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '-');
         const fileName = `celestial-tarot-guidance-${stamp}.png`;
