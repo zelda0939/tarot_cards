@@ -185,13 +185,21 @@
     </main>
 
     <footer>
-        <p>&copy; 2026 聖境塔羅 Celestial Tarot. All rights reserved.</p>
+        <p>&copy; 2026 聖境塔羅 Celestial Tarot. All rights reserved. <span id="app-version-display" style="opacity: 0.5; margin-left: 6px; font-size: 0.8em; font-family: monospace;"></span></p>
     </footer>
 
     <script src="version.js?v=1.4.3"></script>
     <script src="tarot_dict.js?v=1.4.3"></script>
     <script src="app.js?v=1.4.3"></script>
     <script>
+        // 在頁面載入時顯示目前版本號
+        document.addEventListener('DOMContentLoaded', () => {
+            const versionEl = document.getElementById('app-version-display');
+            if (versionEl && typeof APP_VERSION !== 'undefined') {
+                versionEl.textContent = 'v' + APP_VERSION;
+            }
+        });
+
         // 註冊 Service Worker（PWA）— 加版本號確保更新時重新註冊
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
