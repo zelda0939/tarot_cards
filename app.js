@@ -195,7 +195,10 @@ function detectInAppBrowser() {
 function initStars() {
     const container = document.getElementById('stars-container');
     if (!container) return;
-    const starCount = 150;
+    
+    // 手機端減少星星數量，桌面端維持 150
+    const isMobile = window.innerWidth <= 768;
+    const starCount = isMobile ? 50 : 150; 
 
     for (let i = 0; i < starCount; i++) {
         const star = document.createElement('div');
@@ -209,6 +212,18 @@ function initStars() {
         star.style.animationDelay = `${Math.random() * 5}s`;
         container.appendChild(star);
     }
+}
+
+function toggleStars(isVisible) {
+    const container = document.getElementById('stars-container');
+    if (!container) return;
+    
+    // 只隱藏星星，不隱藏 container 本身，以免漸層背景消失導致閃變全黑
+    const stars = container.querySelectorAll('.star');
+    const displayVal = isVisible ? 'block' : 'none';
+    stars.forEach(star => {
+        star.style.display = displayVal;
+    });
 }
 
 /* ============================
@@ -320,6 +335,7 @@ function initApp() {
         const loader = document.getElementById('loader');
         document.getElementById('carousel-scene').classList.remove('hidden');
         updateInstruction('🔮 正在連接星域牌庫...');
+        toggleStars(false); // 隱藏星空以減少負載
 
         // 嘗試從 API 載入牌庫
         await fetchCardsFromAPI();
@@ -669,15 +685,25 @@ function initMediaPipe() {
         return;
     }
 
+    let isProcessingFrame = false;
+
     mpCamera = new Camera(videoElement, {
         onFrame: async () => {
-            if (mpHands) {
-                await mpHands.send({ image: videoElement });
+            // 防止推積：上一幀還沒算完就不要送新的進去
+            if (mpHands && !isProcessingFrame) {
+                isProcessingFrame = true;
+                try {
+                    await mpHands.send({ image: videoElement });
+                } catch (e) {
+                    console.error('[MediaPipe] 偵測錯誤:', e);
+                } finally {
+                    isProcessingFrame = false;
+                }
             }
         },
         facingMode: 'user',
-        width: 640,
-        height: 480
+        width: isMobile ? 320 : 640,
+        height: isMobile ? 240 : 480
     });
 
     mpCamera.start()
@@ -748,11 +774,13 @@ function triggerGesture(gesture) {
 
     if (gesture === 'open_palm' && (gameState === 'idle' || gameState === 'stopped')) {
         gameState = 'rotating';
+        toggleStars(false);
         updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
         lastGestureTime = now;
 
     } else if (gesture === 'closed_fist' && gameState === 'rotating') {
         stopCardRing();
+        toggleStars(true);
         updateInstruction(`已鎖定！請【比 1 ☝️】翻牌，或【張開手掌 🖐】重轉`);
         lastGestureTime = now;
 
@@ -890,13 +918,15 @@ function confirmSelection() {
 
             if (selectedCards.length === 3) {
                 gameState = 'finished';
+                toggleStars(true);
                 const restartBtn = document.getElementById('restart-btn');
                 if (restartBtn) restartBtn.classList.remove('hidden');
-                updateInstruction('✨ 牌陣已完成，正在解讀星辰的指引...');
+                updateInstruction('✨ 星辰已定，正在解讀命運的軌跡...');
                 setTimeout(showAnalysis, 1500);
             } else {
                 gameState = 'idle';
-                updateInstruction(`已收錄第 ${slotIndex} 張！請【張開手掌】繼續旋轉命運之輪`);
+                toggleStars(true);
+                updateInstruction(`已選擇 ${slotIndex} 張牌。請【張開手掌 🖐】繼續`);
             }
         };
         flyClone.addEventListener('transitionend', onFlyEnd, { once: true });
@@ -925,6 +955,7 @@ function resetGame() {
 
     // 重置狀態
     gameState = 'idle';
+    toggleStars(true);
     selectedCards = [];
     usedCardIds.clear();
     currentRotation = 0;
