@@ -214,17 +214,6 @@ function initStars() {
     }
 }
 
-function toggleStars(isVisible) {
-    const container = document.getElementById('stars-container');
-    if (!container) return;
-    
-    // 只隱藏星星，不隱藏 container 本身，以免漸層背景消失導致閃變全黑
-    const stars = container.querySelectorAll('.star');
-    const displayVal = isVisible ? 'block' : 'none';
-    stars.forEach(star => {
-        star.style.display = displayVal;
-    });
-}
 
 /* ============================
    應用程式初始化
@@ -335,7 +324,6 @@ function initApp() {
         const loader = document.getElementById('loader');
         document.getElementById('carousel-scene').classList.remove('hidden');
         updateInstruction('🔮 正在連接星域牌庫...');
-        toggleStars(false); // 隱藏星空以減少負載
 
         // 嘗試從 API 載入牌庫
         await fetchCardsFromAPI();
@@ -460,12 +448,15 @@ function generateCardRing() {
     if (vw <= 480) {
         spreadRadius = 200;
         targetRotationSpeed = 1.5; // 手機板旋轉速度加倍
+        numberOfCards = 8; // 手機減少 2 張
     } else if (vw <= 768) {
         spreadRadius = 220;
         targetRotationSpeed = 1.5;
+        numberOfCards = 8; // 手機減少 2 張
     } else {
         spreadRadius = 300;
         //targetRotationSpeed = 1;
+        numberOfCards = 10;
     }
 
     // 從 78 張牌中隨機選出 numberOfCards 張擺在環上
@@ -774,13 +765,11 @@ function triggerGesture(gesture) {
 
     if (gesture === 'open_palm' && (gameState === 'idle' || gameState === 'stopped')) {
         gameState = 'rotating';
-        toggleStars(false);
         updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
         lastGestureTime = now;
 
     } else if (gesture === 'closed_fist' && gameState === 'rotating') {
         stopCardRing();
-        toggleStars(true);
         updateInstruction(`已鎖定！請【比 1 ☝️】翻牌，或【張開手掌 🖐】重轉`);
         lastGestureTime = now;
 
@@ -918,14 +907,12 @@ function confirmSelection() {
 
             if (selectedCards.length === 3) {
                 gameState = 'finished';
-                toggleStars(true);
                 const restartBtn = document.getElementById('restart-btn');
                 if (restartBtn) restartBtn.classList.remove('hidden');
                 updateInstruction('✨ 星辰已定，正在解讀命運的軌跡...');
                 setTimeout(showAnalysis, 1500);
             } else {
                 gameState = 'idle';
-                toggleStars(true);
                 updateInstruction(`已選擇 ${slotIndex} 張牌。請【張開手掌 🖐】繼續`);
             }
         };
@@ -955,7 +942,6 @@ function resetGame() {
 
     // 重置狀態
     gameState = 'idle';
-    toggleStars(true);
     selectedCards = [];
     usedCardIds.clear();
     currentRotation = 0;
