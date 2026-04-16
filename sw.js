@@ -8,10 +8,10 @@
  * 3. 同步修改 index.html 中所有 ?v= 參數
  */
 
-const CACHE_VERSION = '1.4.14';
+const CACHE_VERSION = '1.4.15';
 const CACHE_NAME = `celestial-tarot-v${CACHE_VERSION}`;
 
-// 需要預先快取的核心檔案
+// 需要預先快取的核心檔案 (精簡版以確保安裝成功率)
 const CORE_ASSETS = [
     './',
     './index.html',
@@ -20,11 +20,7 @@ const CORE_ASSETS = [
     './app.js',
     './tarot_dict.js',
     './manifest.json',
-    './icons/icon-192.svg',
-    './icons/icon-512.svg',
-    './icons/icon-192.png',
-    './icons/icon-512.png',
-    './images/card_back.png'
+    './icons/icon-192.png'
 ];
 
 // 安裝：預先快取核心資源
