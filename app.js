@@ -342,10 +342,8 @@ function initApp() {
         animateCardRing();
         updateInstruction('🔄 卡牌旋轉中，正在啟動鏡頭...');
 
-        // 非同步啟動 MediaPipe（不阻塞旋轉）
-        if (!mediaPipeInitialized) {
-            initMediaPipe();
-        }
+        // 非同步啟動/重啟 MediaPipe（不阻塞旋轉）
+        initMediaPipe();
     });
 
     // 重新抽牌按鈕
@@ -654,21 +652,38 @@ function initMediaPipe() {
         return;
     }
 
-    mpHands = new Hands({
-        locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        }
-    });
+    // 若攝影機已初始化過，直接啟動即可，避免重複建立實例
+    if (mpCamera && mediaPipeInitialized) {
+        console.log('[聖境塔羅] 重新啟動既有攝影機實體');
+        mpCamera.start()
+            .then(() => {
+                updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
+            })
+            .catch(err => {
+                console.error('[聖境塔羅] 重新啟動失敗:', err);
+                updateInstruction('❌ 攝影機重新啟動失敗');
+            });
+        return;
+    }
 
     const isMobile = window.innerWidth <= 768;
-    mpHands.setOptions({
-        maxNumHands: 1,
-        modelComplexity: isMobile ? 0 : 1, // 手機直接用最快的模型，降低 CPU 負擔
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-    });
 
-    mpHands.onResults(onHandResults);
+    if (!mpHands) {
+        mpHands = new Hands({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }
+        });
+
+        mpHands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: isMobile ? 0 : 1, // 手機直接用最快的模型，降低 CPU 負擔
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        mpHands.onResults(onHandResults);
+    }
 
     if (typeof Camera === 'undefined') {
         console.error('[聖境塔羅] MediaPipe Camera 未載入！');
@@ -907,6 +922,12 @@ function confirmSelection() {
 
             if (selectedCards.length === 3) {
                 gameState = 'finished';
+                // 選完三張牌後關閉攝影機偵測，節省資源
+                if (mpCamera) {
+                    console.log('[聖境塔羅] 牌陣已滿，正在關閉攝影機...');
+                    mpCamera.stop();
+                    mpCamera = null; // 清除實體以確保下一次可以重新獲取權限並啟動
+                }
                 const restartBtn = document.getElementById('restart-btn');
                 if (restartBtn) restartBtn.classList.remove('hidden');
                 updateInstruction('✨ 星辰已定，正在解讀命運的軌跡...');
@@ -973,7 +994,9 @@ function resetGame() {
     // 重新啟動旋轉
     gameState = 'rotating';
     animateCardRing();
-    updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
+    
+    // 重新啟動 MediaPipe 攝像頭
+    initMediaPipe();
 }
 
 /* ============================
