@@ -195,10 +195,10 @@ function detectInAppBrowser() {
 function initStars() {
     const container = document.getElementById('stars-container');
     if (!container) return;
-    
+
     // 手機端減少星星數量，桌面端維持 150
     const isMobile = window.innerWidth <= 768;
-    const starCount = isMobile ? 50 : 150; 
+    const starCount = isMobile ? 50 : 150;
 
     for (let i = 0; i < starCount; i++) {
         const star = document.createElement('div');
@@ -994,7 +994,7 @@ function resetGame() {
     // 重新啟動旋轉
     gameState = 'rotating';
     animateCardRing();
-    
+
     // 重新啟動 MediaPipe 攝像頭
     initMediaPipe();
 }
@@ -1720,9 +1720,9 @@ async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
 人際關係型問題（如：我跟他的合作關係？）：AI 會預設為 「自己 / 對方 / 雙方互動」。
 
 【嚴格規則】
-- 先輸出「三張牌定義」，再輸出「綜合運勢解析」
-- 三張牌的定義必須緊扣使用者提問，不能套用固定的過去/現在/未來
-- 不要逐張牌分開解讀，請強調三張牌彼此的關聯與整體訊息
+- 先輸出「牌陣的定義」，再輸出「綜合運勢解析」
+- 牌陣的定義必須緊扣使用者提問，不能套用固定的過去/現在/未來
+- 不要逐張牌分開解讀，請強調所有已選牌彼此的關聯與整體訊息
 - 直接輸出內容，不要打招呼、不要自我介紹
 - 使用白話文，約 320~520 字
 - 語氣保持溫柔、神祕、有智慧感`;
@@ -1736,7 +1736,7 @@ ${normalizedQuestion}
 3. ${cardsLog[2]}
 
 請依照以下格式輸出：
-【三張牌的定義】
+【牌陣的定義】
 第1張：...
 第2張：...
 第3張：...
