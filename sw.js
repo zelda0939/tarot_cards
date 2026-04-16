@@ -8,7 +8,7 @@
  * 3. 同步修改 index.html 中所有 ?v= 參數
  */
 
-const CACHE_VERSION = '1.4.7';
+const CACHE_VERSION = '1.4.8';
 const CACHE_NAME = `celestial-tarot-v${CACHE_VERSION}`;
 
 // 需要預先快取的核心檔案
@@ -55,7 +55,7 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// 攔截請求：Cache-First + 網路 Fallback
+// 攔截請求：Network-First (網路優先) + Cache Fallback
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
@@ -65,22 +65,22 @@ self.addEventListener('fetch', (event) => {
     if (request.url.includes('tarotapi.dev')) return;
 
     event.respondWith(
-        caches.match(request).then((cachedResponse) => {
-            if (cachedResponse) {
-                return cachedResponse;
+        fetch(request).then((networkResponse) => {
+            // 從網路成功取得資源，將新版存入快取供日後離線使用
+            if (networkResponse && networkResponse.status === 200) {
+                const responseClone = networkResponse.clone();
+                caches.open(CACHE_NAME).then((cache) => {
+                    cache.put(request, responseClone);
+                });
             }
-            // 快取未命中 → 從網路取得，並將回應放入快取
-            return fetch(request).then((networkResponse) => {
-                // 只快取成功的同源/CORS 回應
-                if (networkResponse && networkResponse.status === 200) {
-                    const responseClone = networkResponse.clone();
-                    caches.open(CACHE_NAME).then((cache) => {
-                        cache.put(request, responseClone);
-                    });
+            return networkResponse;
+        }).catch(() => {
+            // 網路失敗 (例如離線或伺服器異常) -> Fallback 到快取
+            return caches.match(request).then((cachedResponse) => {
+                if (cachedResponse) {
+                    return cachedResponse;
                 }
-                return networkResponse;
-            }).catch(() => {
-                // 離線且快取無此資源 — 返回 fallback（可選）
+                // 離線且快取無此資源 — 返回 fallback 首頁
                 if (request.destination === 'document') {
                     return caches.match('./index.html');
                 }
