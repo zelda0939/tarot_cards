@@ -90,7 +90,10 @@
         <section id="question-panel" class="question-panel">
             <div class="question-panel-head">
                 <label for="user-question-input">開始選牌前，先寫下你想提問的問題</label>
-                <button id="question-toggle-btn" class="question-toggle-btn hidden" type="button">修改問題</button>
+                <div style="display: flex; gap: 8px;">
+                    <button id="question-clear-btn" class="question-toggle-btn" type="button" style="background: rgba(255,100,100,0.1); color: #ff6b6b; border-color: rgba(255,100,100,0.3); padding: 0.3rem 0.6rem;">清空</button>
+                    <button id="question-toggle-btn" class="question-toggle-btn hidden" type="button">修改問題</button>
+                </div>
             </div>
             <textarea id="user-question-input" rows="2" maxlength="120" placeholder="例如：我接下來三個月的工作與財務重心是什麼？"></textarea>
             <p id="question-preview" class="question-preview hidden"></p>

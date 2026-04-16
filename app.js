@@ -221,6 +221,7 @@ function initApp() {
     const questionPanel = document.getElementById('question-panel');
     const questionInput = document.getElementById('user-question-input');
     const questionToggleBtn = document.getElementById('question-toggle-btn');
+    const questionClearBtn = document.getElementById('question-clear-btn');
 
     // 初始進入時將按鈕置中
     if (controlPanel) {
@@ -267,6 +268,19 @@ function initApp() {
         questionInput.addEventListener('input', () => {
             if (questionPanel && questionPanel.classList.contains('compact')) {
                 syncQuestionPreview();
+            }
+        });
+    }
+
+    if (questionClearBtn) {
+        questionClearBtn.addEventListener('click', () => {
+            if (questionInput) {
+                questionInput.value = '';
+                userQuestion = '';
+                if (questionPanel && questionPanel.classList.contains('compact')) {
+                    syncQuestionPreview();
+                }
+                questionInput.focus();
             }
         });
     }
@@ -459,6 +473,7 @@ function createCardElement(index, card) {
     cardEl.className = 'tarot-card';
     cardEl.dataset.index = index;
     cardEl.dataset.id = card.id;
+    cardEl.style.willChange = 'transform, opacity, z-index';
 
     // 判斷是否為逆位，若是則加上 reversed class 處理圓角，並旋轉圖片 180 度，然後在名稱加上標註
     const reversedClass = card.isReversed ? 'reversed' : '';
@@ -551,18 +566,18 @@ function updateCardPositions() {
         const zIndex = Math.round(50 + Math.cos(rad) * 50); // 0 ~ 100
 
         el.style.transform = `translateX(${tx}px) translateY(${ty}px) translateZ(${tz}px) scale(${scale})`;
-        el.style.opacity = String(opacity);
+        el.style.opacity = String(opacity.toFixed(3));
         el.style.zIndex = String(zIndex);
-        el.style.pointerEvents = absAngle < anglePerCard / 2 ? 'auto' : 'none';
 
-        // 焦點標記：最前方的卡加上 focus class
-        if (absAngle < anglePerCard / 2) {
-            el.classList.add('focus');
-            el.classList.add('active');
-            el.style.pointerEvents = 'auto';
-        } else {
-            el.classList.remove('focus');
-            el.classList.remove('active');
+        const isActive = (absAngle < anglePerCard / 2);
+        if (isActive !== (el.dataset.isActive === 'true')) {
+            el.dataset.isActive = isActive ? 'true' : 'false';
+            el.style.pointerEvents = isActive ? 'auto' : 'none';
+            if (isActive) {
+                el.classList.add('focus', 'active');
+            } else {
+                el.classList.remove('focus', 'active');
+            }
         }
     });
 }
@@ -638,9 +653,10 @@ function initMediaPipe() {
         }
     });
 
+    const isMobile = window.innerWidth <= 768;
     mpHands.setOptions({
         maxNumHands: 1,
-        modelComplexity: 1,
+        modelComplexity: isMobile ? 0 : 1, // 手機直接用最快的模型，降低 CPU 負擔
         minDetectionConfidence: 0.5,
         minTrackingConfidence: 0.5
     });
@@ -971,6 +987,7 @@ function syncQuestionPreview() {
 function setQuestionPanelCompact(shouldCompact) {
     const questionPanel = document.getElementById('question-panel');
     const questionToggleBtn = document.getElementById('question-toggle-btn');
+    const questionClearBtn = document.getElementById('question-clear-btn');
     const questionPreview = document.getElementById('question-preview');
     const questionInput = document.getElementById('user-question-input');
     if (!questionPanel) return;
@@ -983,6 +1000,7 @@ function setQuestionPanelCompact(shouldCompact) {
             questionToggleBtn.classList.remove('hidden');
             questionToggleBtn.textContent = '修改問題';
         }
+        if (questionClearBtn) questionClearBtn.classList.add('hidden');
         return;
     }
 
@@ -992,6 +1010,7 @@ function setQuestionPanelCompact(shouldCompact) {
         questionToggleBtn.classList.remove('hidden');
         questionToggleBtn.textContent = '收合';
     }
+    if (questionClearBtn) questionClearBtn.classList.remove('hidden');
     if (questionInput) questionInput.focus();
 }
 
@@ -1208,7 +1227,7 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
 
     ctx.fillStyle = 'rgba(249, 229, 150, 0.95)';
     ctx.font = "500 34px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
-    ctx.fillText('提問與星辰指引', width / 2, 178);
+    ctx.fillText('聖境塔羅', width / 2, 178);
 
     const questionBoxY = 236;
     const questionBoxX = padding;
@@ -1255,12 +1274,12 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
             // 位置
             ctx.textAlign = 'center';
             ctx.fillStyle = 'rgba(212, 175, 55, 0.12)';
-            drawRoundedRect(ctx, cx + cardImgWidth/2 - 60, childY - 28, 120, 40, 20);
+            drawRoundedRect(ctx, cx + cardImgWidth / 2 - 60, childY - 28, 120, 40, 20);
             ctx.fill();
             ctx.fillStyle = '#f8e8a8';
             ctx.font = "500 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
-            ctx.fillText(`第 ${idx + 1} 張`, cx + cardImgWidth/2, childY);
-            
+            ctx.fillText(`第 ${idx + 1} 張`, cx + cardImgWidth / 2, childY);
+
             childY += 36;
 
             // 圖片
@@ -1268,20 +1287,20 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
             if (img) {
                 if (card.isReversed) {
                     ctx.save();
-                    ctx.translate(cx + cardImgWidth/2, childY + cardImgHeight/2);
+                    ctx.translate(cx + cardImgWidth / 2, childY + cardImgHeight / 2);
                     ctx.rotate(Math.PI);
-                    ctx.drawImage(img, -cardImgWidth/2, -cardImgHeight/2, cardImgWidth, cardImgHeight);
+                    ctx.drawImage(img, -cardImgWidth / 2, -cardImgHeight / 2, cardImgWidth, cardImgHeight);
                     ctx.restore();
                 } else {
                     ctx.drawImage(img, cx, childY, cardImgWidth, cardImgHeight);
                 }
-                
+
                 // 框線
                 ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
                 ctx.lineWidth = 2;
                 ctx.strokeRect(cx, childY, cardImgWidth, cardImgHeight);
             }
-            
+
             childY += cardImgHeight + 36;
 
             // 牌名
@@ -1289,7 +1308,7 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
             ctx.textAlign = 'center';
             ctx.fillStyle = '#f6d77a';
             ctx.font = "700 26px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
-            ctx.fillText(`${card.symbol || '✦'} ${card.name} [${posture}]`, cx + cardImgWidth/2, childY);
+            ctx.fillText(`${card.symbol || '✦'} ${card.name} [${posture}]`, cx + cardImgWidth / 2, childY);
 
             childY += 40;
 
