@@ -20,7 +20,8 @@ const CORE_ASSETS = [
     './app.js',
     './tarot_dict.js',
     './manifest.json',
-    './icons/icon-192.png'
+    './icons/icon-192.png',
+    './images/card_back.png'
 ];
 
 // 安裝：預先快取核心資源
