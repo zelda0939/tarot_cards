@@ -1,4 +1,5 @@
 {
+  "id": "/?source=pwa",
   "name": "聖境塔羅 Celestial Tarot",
   "short_name": "聖境塔羅",
   "description": "探索靈魂的指引 — 美觀、直覺的塔羅牌抽取體驗，搭配 AI 綜合神諭解讀。",
@@ -8,6 +9,18 @@
   "background_color": "#07080a",
   "theme_color": "#d4af37",
   "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "icons/icon-192.svg",
       "sizes": "192x192",
@@ -21,5 +34,19 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["entertainment", "lifestyle"]
+  "categories": ["entertainment", "lifestyle"],
+  "screenshots": [
+    {
+      "src": "images/screenshot-desktop.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "images/screenshot-mobile.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
 }
