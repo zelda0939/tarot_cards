@@ -112,7 +112,7 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     let cardImages = [];
 
     if (cards && cards.length) {
-        cardImages = await Promise.all(cards.map(card => waitImageLoad(`images/${card.name_short}.jpg`)));
+        cardImages = await Promise.all(cards.map(card => waitImageLoad(`assets/images/${card.name_short}.jpg`)));
 
         measureCtx.font = "400 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
         meaningsLinesArr = cards.map(card => {

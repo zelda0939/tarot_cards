@@ -29,7 +29,7 @@ function showAnalysis() {
     selectedCards.forEach((card, idx) => {
         const posture = card.isReversed ? '逆位' : '正位';
         const activeMeaning = card.isReversed ? card.meaning_rev : card.meaning_up;
-        const imgUrl = `images/${card.name_short}.jpg`;
+        const imgUrl = `assets/images/${card.name_short}.jpg`;
         const imgRotateAttr = card.isReversed ? 'transform: rotate(180deg);' : '';
         const cardDesc = card.desc ? `<div class="analysis-desc">${card.desc.substring(0, 150)}...</div>` : '';
         const meaningLabel = card.isReversed ? '▽ 逆位' : '▲ 正位';

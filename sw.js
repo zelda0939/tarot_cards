@@ -15,13 +15,13 @@ const CACHE_NAME = `celestial-tarot-v${CACHE_VERSION}`;
 const CORE_ASSETS = [
     './',
     './index.html',
-    './version.js',
-    './style.css',
-    './app.js',
-    './tarot_dict.js',
+    './js/version.js',
+    './css/style.css',
+    './js/app.js',
+    './js/tarot_dict.js',
     './manifest.json',
-    './icons/icon-192.png',
-    './images/card_back.png'
+    './assets/icons/icon-192.png',
+    './assets/images/card_back.png'
 ];
 
 // 安裝：預先快取核心資源

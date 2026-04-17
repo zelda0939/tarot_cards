@@ -10,25 +10,25 @@
   "theme_color": "#d4af37",
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "assets/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "assets/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/icon-192.svg",
+      "src": "assets/icons/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     },
     {
-      "src": "icons/icon-512.svg",
+      "src": "assets/icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
@@ -37,13 +37,13 @@
   "categories": ["entertainment", "lifestyle"],
   "screenshots": [
     {
-      "src": "images/screenshot-desktop.png",
+      "src": "assets/images/screenshot-desktop.png",
       "sizes": "1024x1024",
       "type": "image/jpeg",
       "form_factor": "wide"
     },
     {
-      "src": "images/screenshot-mobile.png",
+      "src": "assets/images/screenshot-mobile.png",
       "sizes": "1024x1024",
       "type": "image/jpeg",
       "form_factor": "narrow"

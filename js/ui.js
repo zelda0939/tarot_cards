@@ -45,7 +45,7 @@ function showLoadingOverlay() {
             const imgRotate = card.isReversed ? 'transform: rotate(180deg);' : '';
             const thumb = document.createElement('div');
             thumb.className = 'loading-card-thumb';
-            thumb.innerHTML = `<img src="images/${card.name_short}.jpg" alt="${card.name}" style="${imgRotate}">`;
+            thumb.innerHTML = `<img src="assets/images/${card.name_short}.jpg" alt="${card.name}" style="${imgRotate}">`;
             cardsRow.appendChild(thumb);
         });
     }

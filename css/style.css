@@ -506,7 +506,7 @@ main {
    牌背 (Card Back) - 使用圖片
    ═══════════════════════════════ */
 .card-back {
-    background-image: url('./images/card_back.png');
+    background-image: url('../assets/images/card_back.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

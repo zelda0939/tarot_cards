@@ -24,8 +24,8 @@ function drawTrueRandomCard() {
 function updateCardFrontDOM(cardEl, card) {
     const reversedClass = card.isReversed ? 'reversed' : '';
     const artStyle = card.isReversed
-        ? `background-image: url('./images/${card.name_short}.jpg'); transform: rotate(180deg);`
-        : `background-image: url('./images/${card.name_short}.jpg');`;
+        ? `background-image: url('./assets/images/${card.name_short}.jpg'); transform: rotate(180deg);`
+        : `background-image: url('./assets/images/${card.name_short}.jpg');`;
 
     const postureText = card.isReversed
         ? '<span style="display: block; font-size: 0.85em; color: #a03030; margin-top: 1px;">(逆位)</span>'
@@ -87,8 +87,8 @@ function createCardElement(index, card) {
 
     const reversedClass = card.isReversed ? 'reversed' : '';
     const artStyle = card.isReversed
-        ? `background-image: url('./images/${card.name_short}.jpg'); transform: rotate(180deg);`
-        : `background-image: url('./images/${card.name_short}.jpg');`;
+        ? `background-image: url('./assets/images/${card.name_short}.jpg'); transform: rotate(180deg);`
+        : `background-image: url('./assets/images/${card.name_short}.jpg');`;
 
     const postureText = card.isReversed
         ? '<span style="display: block; font-size: 0.85em; color: #a03030; margin-top: 1px;">(逆位)</span>'
