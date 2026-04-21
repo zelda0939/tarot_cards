@@ -82,11 +82,11 @@ async function fetchCardsFromAPI() {
             };
         });
 
-        apiCardsLoaded = true;
+        AppState.apiCardsLoaded = true;
         console.log(`[聖境塔羅] ✅ 成功載入 ${TAROT_CARDS.length} 張牌（含完整 78 張）`);
     } catch (err) {
         console.warn('[聖境塔羅] ⚠️ API 載入失敗，使用本地 22 張大阿爾克那:', err.message);
-        apiCardsLoaded = false;
+        AppState.apiCardsLoaded = false;
     }
 }
 
@@ -243,7 +243,7 @@ function initApp() {
         questionClearBtn.addEventListener('click', () => {
             if (questionInput) {
                 questionInput.value = '';
-                userQuestion = '';
+                AppState.userQuestion = '';
                 if (questionPanel && questionPanel.classList.contains('compact')) {
                     syncQuestionPreview();
                 }
@@ -271,7 +271,7 @@ function initApp() {
             if (questionInput) questionInput.focus();
             return;
         }
-        userQuestion = activeQuestion;
+        AppState.userQuestion = activeQuestion;
 
         console.log('[聖境塔羅] 使用者點擊「開啟手勢抽牌」');
         startBtn.classList.add('hidden');
@@ -301,7 +301,7 @@ function initApp() {
         generateCardRing();
 
         // 🔥 立即開始旋轉卡牌，讓使用者馬上看到效果
-        gameState = 'rotating';
+        AppState.gameState = 'rotating';
         animateCardRing();
         updateInstruction('🔄 卡牌旋轉中，正在啟動鏡頭...');
 
@@ -352,7 +352,7 @@ function initApp() {
    飛入結束後將 clone 嵌入 slot，保持卡牌正面原樣
    ============================ */
 function confirmSelection() {
-    if (selectedCards.length >= 3) return;
+    if (AppState.selectedCards.length >= 3) return;
 
     const activeQuestion = getActiveQuestionText();
     if (!activeQuestion) {
@@ -364,9 +364,9 @@ function confirmSelection() {
         if (questionInput) questionInput.focus();
         return;
     }
-    userQuestion = activeQuestion;
+    AppState.userQuestion = activeQuestion;
 
-    const activeEl = cardElements[activeCardIndex];
+    const activeEl = AppState.cardElements[AppState.activeCardIndex];
     if (!activeEl || activeEl.classList.contains('flipped')) return;
 
     // ★ 核心改動：不從環上取牌，改為從全部 78 張牌庫中真隨機抽取
@@ -381,12 +381,12 @@ function confirmSelection() {
     activeEl.classList.add('flipped');
 
     // 記住要補牌的位置索引
-    const refillIndex = activeCardIndex;
+    const refillIndex = AppState.activeCardIndex;
 
     // 等待翻牌動畫完成後執行飛入動畫
     setTimeout(() => {
-        selectedCards.push(card);
-        const slotIndex = selectedCards.length;
+        AppState.selectedCards.push(card);
+        const slotIndex = AppState.selectedCards.length;
         const slot = document.getElementById(`slot-${slotIndex}`);
         if (!slot) return;
 
@@ -472,21 +472,21 @@ function confirmSelection() {
             // 補牌：在原位置放上新的卡片
             refillCardSlot(refillIndex);
 
-            if (selectedCards.length === 3) {
-                gameState = 'finished';
+            if (AppState.selectedCards.length === 3) {
+                AppState.gameState = 'finished';
                 // 選完三張牌後關閉攝影機偵測，節省資源
-                if (mpCamera) {
+                if (AppState.mpCamera) {
                     console.log('[聖境塔羅] 牌陣已滿，正在關閉攝影機...');
-                    mpCamera.stop();
-                    mpCamera = null; // 清除實體以確保下一次可以重新獲取權限並啟動
-                    mediaPipeInitialized = false; // 重置初始化旗標，避免下次走到錯誤的早期返回
+                    AppState.mpCamera.stop();
+                    AppState.mpCamera = null; // 清除實體以確保下一次可以重新獲取權限並啟動
+                    AppState.mediaPipeInitialized = false; // 重置初始化旗標，避免下次走到錯誤的早期返回
                 }
                 const restartBtn = document.getElementById('restart-btn');
                 if (restartBtn) restartBtn.classList.remove('hidden');
                 updateInstruction('✨ 星辰已定，正在解讀命運的軌跡...');
                 setTimeout(showAnalysis, 1500);
             } else {
-                gameState = 'idle';
+                AppState.gameState = 'idle';
                 updateInstruction(`已選擇 ${slotIndex} 張牌。請【張開手掌 🖐】繼續`);
             }
         };
@@ -509,20 +509,20 @@ function resetGame() {
     console.log('[聖境塔羅] 🔄 重新抽牌');
 
     // 取消動畫循環
-    if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
+    if (AppState.animationFrameId) {
+        cancelAnimationFrame(AppState.animationFrameId);
+        AppState.animationFrameId = null;
     }
 
     // 重置狀態
-    gameState = 'idle';
-    selectedCards = [];
-    usedCardIds.clear();
-    currentRotation = 0;
-    lastFrameTime = 0;  // 重設 delta-time 計算
-    activeCardIndex = 0;
-    ringCardData = [];
-    cardElements = [];
+    AppState.gameState = 'idle';
+    AppState.selectedCards = [];
+    AppState.usedCardIds.clear();
+    AppState.currentRotation = 0;
+    AppState.lastFrameTime = 0;  // 重設 delta-time 計算
+    AppState.activeCardIndex = 0;
+    AppState.ringCardData = [];
+    AppState.cardElements = [];
 
     // 重置 slot UI
     for (let i = 1; i <= 3; i++) {
@@ -545,7 +545,7 @@ function resetGame() {
     generateCardRing();
 
     // 重新啟動旋轉
-    gameState = 'rotating';
+    AppState.gameState = 'rotating';
     animateCardRing();
 
     // 重新啟動 MediaPipe 攝像頭
@@ -570,9 +570,9 @@ async function requestWakeLock() {
         return;
     }
     try {
-        wakeLockSentinel = await navigator.wakeLock.request('screen');
+        AppState.wakeLockSentinel = await navigator.wakeLock.request('screen');
         console.log('[聖境塔羅] ✅ 螢幕恆亮已啟用');
-        wakeLockSentinel.addEventListener('release', () => {
+        AppState.wakeLockSentinel.addEventListener('release', () => {
             console.log('[聖境塔羅] 螢幕恆亮已釋放');
         });
     } catch (err) {

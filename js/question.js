@@ -4,7 +4,7 @@
 function getActiveQuestionText() {
     const questionInput = document.getElementById('user-question-input');
     const typedQuestion = questionInput ? questionInput.value.trim() : '';
-    return typedQuestion || userQuestion;
+    return typedQuestion || AppState.userQuestion;
 }
 
 function syncQuestionPreview() {

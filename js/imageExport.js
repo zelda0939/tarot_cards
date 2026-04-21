@@ -361,11 +361,11 @@ function downloadImageBlob(blob, fileName) {
 }
 
 async function saveReadingAsImage() {
-    if (saveImageBusy) return;
+    if (AppState.saveImageBusy) return;
 
     const questionText = getActiveQuestionText();
     const guidanceText = normalizeGuidanceText(
-        latestGuidanceText || document.getElementById('gemini-text')?.innerHTML || ''
+        AppState.latestGuidanceText || document.getElementById('gemini-text')?.innerHTML || ''
     );
 
     if (!guidanceText) {
@@ -373,12 +373,12 @@ async function saveReadingAsImage() {
         return;
     }
 
-    saveImageBusy = true;
+    AppState.saveImageBusy = true;
     setSaveImageStatus('');
     setSaveImageButtonState(true, '產生圖片中...');
 
     try {
-        const canvas = await buildGuidanceImageCanvas(questionText, guidanceText, selectedCards);
+        const canvas = await buildGuidanceImageCanvas(questionText, guidanceText, AppState.selectedCards);
         const blob = await canvasToPngBlob(canvas);
         const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\..+/, '').replace('T', '-');
         const fileName = `celestial-tarot-guidance-${stamp}.png`;
@@ -388,7 +388,7 @@ async function saveReadingAsImage() {
         console.error('[星辰塔羅] 儲存圖片失敗:', err);
         setSaveImageStatus('儲存圖片失敗，請稍後再試。', 'error');
     } finally {
-        saveImageBusy = false;
+        AppState.saveImageBusy = false;
         setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
     }
 }

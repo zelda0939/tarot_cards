@@ -540,11 +540,6 @@ main {
     border-radius: 0 0 8px 8px;
 }
 
-/* 移除框架樣式 */
-.card-frame {
-    display: none;
-}
-
 /* 底部名牌區域 - 顯示卡牌名稱 */
 .card-name-plate {
     width: 100%;
@@ -569,15 +564,6 @@ main {
     line-height: 1.2;
 }
 
-/* 卡牌英文名 */
-.card-en {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.55rem;
-    font-weight: 300;
-    color: var(--text-muted);
-    letter-spacing: 0.1rem;
-    margin-top: 2px;
-}
 
 /* Modal 彈出視窗 */
 .modal {
@@ -797,6 +783,202 @@ footer {
     padding: 0.3rem;
     font-size: 0.7rem;
     color: var(--text-muted);
+}
+
+/* ═══════════════════════════════
+   從 inline style 抽出的共用樣式
+   ═══════════════════════════════ */
+
+/* 設定 / 解牌 Modal 專用 padding-top（騰出關閉按鈕空間） */
+.modal-content--padded {
+    padding-top: 3.5rem;
+}
+
+/* 關閉 Modal 的圓形按鈕 */
+.close-modal-btn {
+    font-size: 1.5rem;
+    background: rgba(255, 100, 100, 0.1);
+    color: #ff6b6b;
+    border: 1px solid #ff6b6b;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.close-modal-btn:hover {
+    background: rgba(255, 100, 100, 0.25);
+}
+
+/* 設定 Modal 標題 */
+.settings-title {
+    font-family: 'Cinzel', serif;
+    color: var(--gold);
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+/* 設定區域標籤文字 */
+.settings-label {
+    color: var(--gold);
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+/* API Key 輸入框 */
+.settings-input {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--gold-glow);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    margin-bottom: 0.6rem;
+    -webkit-text-security: disc;
+}
+
+/* API 取得引導區塊 */
+.settings-api-guide {
+    margin-bottom: 1rem;
+    padding: 0.7rem;
+    background: rgba(212, 175, 55, 0.06);
+    border: 1px solid rgba(212, 175, 55, 0.15);
+    border-radius: 8px;
+}
+
+.settings-api-guide a {
+    color: var(--gold-light);
+    font-size: 0.8rem;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.settings-api-guide p {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* 模型選擇下拉 */
+.settings-select {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid var(--gold-glow);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    margin-bottom: 0.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.85rem;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22%3E%3Cpath fill=%22%23d4af37%22 d=%22M6 8L1 3h10z%22/%3E%3C/svg%3E');
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+}
+
+/* 設定區域的說明文字 */
+.settings-hint {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.settings-hint--security {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+
+/* Header 右上角設定按鈕 */
+.header-settings-wrap {
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+}
+
+.header-settings-btn {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.3s;
+}
+
+.header-settings-btn:hover {
+    color: var(--gold-light);
+}
+
+/* Footer 版本號 */
+.app-version {
+    opacity: 0.5;
+    margin-left: 6px;
+    font-size: 0.8em;
+    font-family: monospace;
+}
+
+/* 設定 Modal 寬度限制 */
+.settings-modal-content {
+    max-width: 450px;
+}
+
+/* Gemini Loading 提示文字 */
+.gemini-loading-text {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--gold-light);
+}
+
+/* 解牌 Modal 底部操作列 */
+.reading-modal-actions {
+    text-align: center;
+    margin-top: 2rem;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    padding-top: 1.5rem;
+}
+
+/* 清空按鈕樣式 */
+.question-clear-style {
+    background: rgba(255, 100, 100, 0.1);
+    color: #ff6b6b;
+    border-color: rgba(255, 100, 100, 0.3);
+    padding: 0.3rem 0.6rem;
+}
+
+/* analysis 卡牌圖片區域共用 */
+.analysis-card-img {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.analysis-card-img img {
+    width: 140px;
+    border-radius: 6px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--gold-glow);
+}
+
+.analysis-card-img img.reversed-img {
+    transform: rotate(180deg);
+}
+
+/* 正逆位小標 */
+.analysis-posture-tag {
+    font-size: 0.8rem;
+    color: var(--gold-light);
 }
 
 /* 響應式 — 平板 */

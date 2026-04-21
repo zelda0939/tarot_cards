@@ -41,7 +41,7 @@ function showLoadingOverlay() {
 
     if (cardsRow) {
         cardsRow.innerHTML = '';
-        selectedCards.forEach(card => {
+        AppState.selectedCards.forEach(card => {
             const imgRotate = card.isReversed ? 'transform: rotate(180deg);' : '';
             const thumb = document.createElement('div');
             thumb.className = 'loading-card-thumb';

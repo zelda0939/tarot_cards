@@ -10,9 +10,9 @@ function initMediaPipe() {
         return;
     }
 
-    if (mpCamera && mediaPipeInitialized) {
+    if (AppState.mpCamera && AppState.mediaPipeInitialized) {
         console.log('[聖境塔羅] 重新啟動既有攝影機實體');
-        mpCamera.start()
+        AppState.mpCamera.start()
             .then(() => {
                 updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
             })
@@ -25,21 +25,21 @@ function initMediaPipe() {
 
     const isMobile = window.innerWidth <= 768;
 
-    if (!mpHands) {
-        mpHands = new Hands({
+    if (!AppState.mpHands) {
+        AppState.mpHands = new Hands({
             locateFile: (file) => {
                 return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
             }
         });
 
-        mpHands.setOptions({
+        AppState.mpHands.setOptions({
             maxNumHands: 1,
             modelComplexity: isMobile ? 0 : 1,
             minDetectionConfidence: 0.5,
             minTrackingConfidence: 0.5
         });
 
-        mpHands.onResults(onHandResults);
+        AppState.mpHands.onResults(onHandResults);
     }
 
     if (typeof Camera === 'undefined') {
@@ -50,12 +50,12 @@ function initMediaPipe() {
 
     let isProcessingFrame = false;
 
-    mpCamera = new Camera(videoElement, {
+    AppState.mpCamera = new Camera(videoElement, {
         onFrame: async () => {
-            if (mpHands && !isProcessingFrame) {
+            if (AppState.mpHands && !isProcessingFrame) {
                 isProcessingFrame = true;
                 try {
-                    await mpHands.send({ image: videoElement });
+                    await AppState.mpHands.send({ image: videoElement });
                 } catch (e) {
                     console.error('[MediaPipe] 偵測錯誤:', e);
                 } finally {
@@ -68,10 +68,10 @@ function initMediaPipe() {
         height: isMobile ? 240 : 480
     });
 
-    mpCamera.start()
+    AppState.mpCamera.start()
         .then(() => {
             console.log('[聖境塔羅] ✅ 鏡頭啟動成功！');
-            mediaPipeInitialized = true;
+            AppState.mediaPipeInitialized = true;
             updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
         })
         .catch((err) => {
@@ -81,7 +81,7 @@ function initMediaPipe() {
 }
 
 function onHandResults(results) {
-    if (gameState === 'finished') return;
+    if (AppState.gameState === 'finished') return;
 
     if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
         return;
@@ -109,25 +109,25 @@ function onHandResults(results) {
         triggerGesture('open_palm');
     } else if (isClosedFist) {
         triggerGesture('closed_fist');
-    } else if (isPointing && gameState === 'stopped') {
+    } else if (isPointing && AppState.gameState === 'stopped') {
         triggerGesture('pointing');
     }
 }
 
 function triggerGesture(gesture) {
     const now = Date.now();
-    if (now - lastGestureTime < GESTURE_COOLDOWN) return;
+    if (now - AppState.lastGestureTime < AppState.GESTURE_COOLDOWN) return;
 
-    if (gesture === 'open_palm' && (gameState === 'idle' || gameState === 'stopped')) {
-        gameState = 'rotating';
+    if (gesture === 'open_palm' && (AppState.gameState === 'idle' || AppState.gameState === 'stopped')) {
+        AppState.gameState = 'rotating';
         updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
-        lastGestureTime = now;
-    } else if (gesture === 'closed_fist' && gameState === 'rotating') {
+        AppState.lastGestureTime = now;
+    } else if (gesture === 'closed_fist' && AppState.gameState === 'rotating') {
         stopCardRing();
         updateInstruction('已鎖定！請【比 1 ☝️】翻牌，或【張開手掌 🖐】重轉');
-        lastGestureTime = now;
-    } else if (gesture === 'pointing' && gameState === 'stopped') {
+        AppState.lastGestureTime = now;
+    } else if (gesture === 'pointing' && AppState.gameState === 'stopped') {
         confirmSelection();
-        lastGestureTime = now;
+        AppState.lastGestureTime = now;
     }
 }

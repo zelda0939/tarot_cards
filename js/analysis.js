@@ -25,8 +25,8 @@ function showAnalysis() {
     const questionText = getActiveQuestionText();
 
     if (!modal || !container) return;
-    latestGuidanceText = '';
-    saveImageBusy = false;
+    AppState.latestGuidanceText = '';
+    AppState.saveImageBusy = false;
     setSaveImageStatus('');
     setSaveImageButtonState(true, '等待星辰指引...');
 
@@ -37,11 +37,11 @@ function showAnalysis() {
     let html = '';
     const cardNamesForPrompt = [];
 
-    selectedCards.forEach((card, idx) => {
+    AppState.selectedCards.forEach((card, idx) => {
         const posture = card.isReversed ? '逆位' : '正位';
         const activeMeaning = card.isReversed ? card.meaning_rev : card.meaning_up;
         const imgUrl = `assets/images/${card.name_short}.jpg`;
-        const imgRotateAttr = card.isReversed ? 'transform: rotate(180deg);' : '';
+        const imgReversedClass = card.isReversed ? ' reversed-img' : '';
         const cardDesc = card.desc ? `<div class="analysis-desc">${card.desc.substring(0, 150)}...</div>` : '';
         const meaningLabel = card.isReversed ? '▽ 逆位' : '▲ 正位';
         const meaningClass = card.isReversed ? 'analysis-meaning-rev' : 'analysis-meaning';
@@ -49,12 +49,12 @@ function showAnalysis() {
         html += `
         <div class="analysis-card">
             <div class="analysis-position">${positions[idx]}</div>
-            <div style="text-align: center; margin-bottom: 1rem;">
-                <img src="${imgUrl}" alt="${card.name}" onerror="this.parentElement.style.display='none'" style="width: 140px; border-radius: 6px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid var(--gold-glow); ${imgRotateAttr}">
+            <div class="analysis-card-img">
+                <img src="${imgUrl}" alt="${card.name}" class="${imgReversedClass}" onerror="this.parentElement.style.display='none'">
             </div>
             <div class="analysis-header">
                 <div class="analysis-symbol">${card.symbol || '✦'}</div>
-                <div class="analysis-name">${card.name} <span style="font-size: 0.8rem; color: var(--gold-light);">[${posture}]</span></div>
+                <div class="analysis-name">${card.name} <span class="analysis-posture-tag">[${posture}]</span></div>
                 <div class="analysis-en">${card.en}</div>
             </div>
             ${cardDesc}
@@ -87,7 +87,7 @@ function showAnalysis() {
                 geminiText.classList.remove('hidden');
                 if (result.success) {
                     // 將 AI 回傳結果寫入全域變數，供圖片匯出使用
-                    latestGuidanceText = result.text;
+                    AppState.latestGuidanceText = result.text;
                     // 跳脫 HTML 特殊字元後再插入 DOM，防止 XSS
                     const formattedReply = escapeHtml(result.text).replace(/\n/g, '<br>');
                     geminiText.innerHTML = '';
@@ -95,12 +95,14 @@ function showAnalysis() {
                     if (!formattedReply.length) {
                         setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
                     }
+                    // 使用 insertAdjacentHTML 取代 innerHTML +=
+                    // 避免每 15ms 觸發完整 DOM 重新解析
                     const typeWriter = setInterval(() => {
                         if (formattedReply.substring(i, i + 4) === '<br>') {
-                            geminiText.innerHTML += '<br>';
+                            geminiText.insertAdjacentHTML('beforeend', '<br>');
                             i += 4;
                         } else {
-                            geminiText.innerHTML += formattedReply.charAt(i);
+                            geminiText.insertAdjacentHTML('beforeend', formattedReply.charAt(i));
                             i++;
                         }
                         if (i >= formattedReply.length) {

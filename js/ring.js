@@ -2,34 +2,43 @@
    抽牌環渲染與動畫
    ============================ */
 function drawRandomCard() {
-    const available = TAROT_CARDS.filter(c => !usedCardIds.has(c.id));
+    const available = TAROT_CARDS.filter(c => !AppState.usedCardIds.has(c.id));
     if (available.length === 0) {
-        usedCardIds.clear();
+        AppState.usedCardIds.clear();
         const baseCard = TAROT_CARDS[Math.floor(Math.random() * TAROT_CARDS.length)];
         return { ...baseCard, isReversed: Math.random() >= 0.5 };
     }
     const baseCard = available[Math.floor(Math.random() * available.length)];
-    usedCardIds.add(baseCard.id);
+    AppState.usedCardIds.add(baseCard.id);
     return { ...baseCard, isReversed: Math.random() >= 0.5 };
 }
 
 function drawTrueRandomCard() {
-    const selectedIds = new Set(selectedCards.map(c => c.id));
+    const selectedIds = new Set(AppState.selectedCards.map(c => c.id));
     const available = TAROT_CARDS.filter(c => !selectedIds.has(c.id));
     if (available.length === 0) return null;
     const baseCard = available[Math.floor(Math.random() * available.length)];
     return { ...baseCard, isReversed: Math.random() >= 0.5 };
 }
 
-function updateCardFrontDOM(cardEl, card) {
+/**
+ * 取得卡牌的視覺屬性（共用邏輯，消除 createCardElement 與 updateCardFrontDOM 的重複）
+ * @param {Object} card - 卡牌資料
+ * @returns {{ reversedClass: string, artStyle: string, postureText: string }}
+ */
+function getCardVisualProps(card) {
     const reversedClass = card.isReversed ? 'reversed' : '';
     const artStyle = card.isReversed
         ? `background-image: url('./assets/images/${card.name_short}.jpg'); transform: rotate(180deg);`
         : `background-image: url('./assets/images/${card.name_short}.jpg');`;
-
     const postureText = card.isReversed
         ? '<span style="display: block; font-size: 0.85em; color: #a03030; margin-top: 1px;">(逆位)</span>'
         : '';
+    return { reversedClass, artStyle, postureText };
+}
+
+function updateCardFrontDOM(cardEl, card) {
+    const { reversedClass, artStyle, postureText } = getCardVisualProps(card);
 
     const cardArt = cardEl.querySelector('.card-art');
     const cardName = cardEl.querySelector('.card-name');
@@ -44,35 +53,35 @@ function updateCardFrontDOM(cardEl, card) {
 }
 
 function generateCardRing() {
-    carouselEl = document.getElementById('carousel');
-    carouselEl.innerHTML = '';
-    cardElements = [];
-    latestGuidanceText = '';
-    saveImageBusy = false;
+    AppState.carouselEl = document.getElementById('carousel');
+    AppState.carouselEl.innerHTML = '';
+    AppState.cardElements = [];
+    AppState.latestGuidanceText = '';
+    AppState.saveImageBusy = false;
     setSaveImageStatus('');
     setSaveImageButtonState(true, '儲存提問＋星辰指引圖');
-    ringCardData = [];
+    AppState.ringCardData = [];
 
     const vw = window.innerWidth;
     if (vw <= 480) {
-        spreadRadius = 200;
-        targetRotationSpeed = 1.5;
-        numberOfCards = 8;
+        AppState.spreadRadius = 200;
+        AppState.targetRotationSpeed = 1.5;
+        AppState.numberOfCards = 8;
     } else if (vw <= 768) {
-        spreadRadius = 220;
-        targetRotationSpeed = 1.5;
-        numberOfCards = 8;
+        AppState.spreadRadius = 220;
+        AppState.targetRotationSpeed = 1.5;
+        AppState.numberOfCards = 8;
     } else {
-        spreadRadius = 300;
-        numberOfCards = 10;
+        AppState.spreadRadius = 300;
+        AppState.numberOfCards = 10;
     }
 
-    for (let i = 0; i < numberOfCards; i++) {
+    for (let i = 0; i < AppState.numberOfCards; i++) {
         const card = drawRandomCard();
-        ringCardData[i] = card;
+        AppState.ringCardData[i] = card;
         const cardEl = createCardElement(i, card);
-        carouselEl.appendChild(cardEl);
-        cardElements[i] = cardEl;
+        AppState.carouselEl.appendChild(cardEl);
+        AppState.cardElements[i] = cardEl;
     }
 
     updateCardPositions();
@@ -83,16 +92,8 @@ function createCardElement(index, card) {
     cardEl.className = 'tarot-card';
     cardEl.dataset.index = index;
     cardEl.dataset.id = card.id;
-    cardEl.style.willChange = 'transform, opacity, z-index';
 
-    const reversedClass = card.isReversed ? 'reversed' : '';
-    const artStyle = card.isReversed
-        ? `background-image: url('./assets/images/${card.name_short}.jpg'); transform: rotate(180deg);`
-        : `background-image: url('./assets/images/${card.name_short}.jpg');`;
-
-    const postureText = card.isReversed
-        ? '<span style="display: block; font-size: 0.85em; color: #a03030; margin-top: 1px;">(逆位)</span>'
-        : '';
+    const { reversedClass, artStyle, postureText } = getCardVisualProps(card);
 
     cardEl.innerHTML = `
         <div class="card-inner">
@@ -110,33 +111,33 @@ function createCardElement(index, card) {
 
 function refillCardSlot(slotIndex) {
     const newCard = drawRandomCard();
-    ringCardData[slotIndex] = newCard;
+    AppState.ringCardData[slotIndex] = newCard;
 
     const newCardEl = createCardElement(slotIndex, newCard);
 
-    const oldEl = cardElements[slotIndex];
+    const oldEl = AppState.cardElements[slotIndex];
     if (oldEl && oldEl.parentNode) {
         oldEl.parentNode.removeChild(oldEl);
     }
-    carouselEl.appendChild(newCardEl);
-    cardElements[slotIndex] = newCardEl;
+    AppState.carouselEl.appendChild(newCardEl);
+    AppState.cardElements[slotIndex] = newCardEl;
 
     updateCardPositions();
 }
 
 function updateCardPositions() {
-    const anglePerCard = 360 / numberOfCards;
-    const ellipseVerticalRadius = spreadRadius * 0.4;
+    const anglePerCard = 360 / AppState.numberOfCards;
+    const ellipseVerticalRadius = AppState.spreadRadius * 0.4;
 
-    cardElements.forEach((el, i) => {
+    AppState.cardElements.forEach((el, i) => {
         if (!el || el.classList.contains('flying')) return;
 
-        let cardAngle = i * anglePerCard + currentRotation;
+        let cardAngle = i * anglePerCard + AppState.currentRotation;
         cardAngle = ((cardAngle % 360) + 540) % 360 - 180;
         const absAngle = Math.abs(cardAngle);
         const rad = cardAngle * Math.PI / 180;
 
-        const tx = Math.sin(rad) * spreadRadius;
+        const tx = Math.sin(rad) * AppState.spreadRadius;
         const ty = (Math.cos(rad) - 1) * ellipseVerticalRadius;
         const tz = (Math.cos(rad) - 1) * 150;
         const scale = 0.55 + (Math.cos(rad) + 1) * 0.3;
@@ -162,39 +163,39 @@ function updateCardPositions() {
 
 function animateCardRing(timestamp) {
     if (!timestamp) timestamp = performance.now();
-    if (!lastFrameTime) lastFrameTime = timestamp;
-    const elapsed = timestamp - lastFrameTime;
+    if (!AppState.lastFrameTime) AppState.lastFrameTime = timestamp;
+    const elapsed = timestamp - AppState.lastFrameTime;
     const delta = elapsed > 0 ? elapsed / 16.667 : 1;
-    lastFrameTime = timestamp;
+    AppState.lastFrameTime = timestamp;
 
-    if (gameState === 'rotating') {
-        currentRotation -= targetRotationSpeed * delta;
+    if (AppState.gameState === 'rotating') {
+        AppState.currentRotation -= AppState.targetRotationSpeed * delta;
         updateCardPositions();
     }
-    if (gameState !== 'finished') {
-        animationFrameId = requestAnimationFrame(animateCardRing);
+    if (AppState.gameState !== 'finished') {
+        AppState.animationFrameId = requestAnimationFrame(animateCardRing);
     }
 }
 
 function stopCardRing() {
-    gameState = 'stopped';
-    const anglePerCard = 360 / numberOfCards;
+    AppState.gameState = 'stopped';
+    const anglePerCard = 360 / AppState.numberOfCards;
 
-    const logicalPos = Math.round(-currentRotation / anglePerCard);
-    currentRotation = -logicalPos * anglePerCard;
+    const logicalPos = Math.round(-AppState.currentRotation / anglePerCard);
+    AppState.currentRotation = -logicalPos * anglePerCard;
 
-    let activeIdx = logicalPos % numberOfCards;
-    if (activeIdx < 0) activeIdx += numberOfCards;
-    activeCardIndex = activeIdx;
+    let activeIdx = logicalPos % AppState.numberOfCards;
+    if (activeIdx < 0) activeIdx += AppState.numberOfCards;
+    AppState.activeCardIndex = activeIdx;
 
-    cardElements.forEach(el => {
+    AppState.cardElements.forEach(el => {
         if (el) el.classList.add('smooth-transition');
     });
 
     updateCardPositions();
 
     setTimeout(() => {
-        cardElements.forEach(el => {
+        AppState.cardElements.forEach(el => {
             if (el) el.classList.remove('smooth-transition');
         });
     }, 400);
