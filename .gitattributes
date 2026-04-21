@@ -1,0 +1,2 @@
+# 自動正規化行尾字元為 LF
+* text=auto eol=lf

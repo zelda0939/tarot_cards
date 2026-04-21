@@ -38,3 +38,11 @@
 - **3D Array 減壓**：為降低手機 3D 和重繪壓力，在手機將 `numberOfCards` （旋轉卡牌總張數）從 10 降為 8 張。
 - **漸層背景切換注意**：不要透過隱藏父級 `container` 來停止動畫，這會導致 `background: radial-gradient` 消失而造成畫面嚴重閃黑。
 - **功能新增**：提問欄位增加「清空」按鈕，方便快速重置輸入。
+
+## 2026-04-21 - Code Review 修復
+- **XSS 安全修補**：新增 `escapeHtml()` 函式，AI 回應與錯誤訊息在插入 DOM 前先做 HTML 跳脫處理，防止潛在的 XSS 注入。
+- **latestGuidanceText 修復**：原本為死碼（清空後從未寫回），修正為在 AI 成功回傳後寫入，使圖片匯出能直接使用。
+- **mediaPipeInitialized 重置**：攝影機關閉時一併重置此旗標，避免重新洗牌時走到錯誤的早期返回邏輯。
+- **Service Worker 預快取補齊**：CORE_ASSETS 從 2 個 JS 模組擴充至全部 9 個，確保離線首次訪問不會缺少資源。SW 註解同步由「Cache-First」更正為「Network-First」。
+- **行尾字元統一**：`app.js` 從 CRLF 轉換為 LF，新增 `.gitattributes` 設定 `* text=auto eol=lf`。
+

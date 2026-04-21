@@ -6,6 +6,17 @@ const AI_MODELS = {
     'gemma-4-31b-it': { name: 'Gemma 4 31B', id: 'gemma-4-31b-it' }
 };
 
+/**
+ * HTML 特殊字元跳脫（防止 XSS 注入）
+ * @param {string} str - 原始字串
+ * @returns {string} 跳脫後的安全字串
+ */
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
 function showAnalysis() {
     const modal = document.getElementById('reading-modal');
     const container = document.getElementById('cards-analysis-container');
@@ -75,7 +86,10 @@ function showAnalysis() {
             if (geminiText) {
                 geminiText.classList.remove('hidden');
                 if (result.success) {
-                    const formattedReply = result.text.replace(/\n/g, '<br>');
+                    // 將 AI 回傳結果寫入全域變數，供圖片匯出使用
+                    latestGuidanceText = result.text;
+                    // 跳脫 HTML 特殊字元後再插入 DOM，防止 XSS
+                    const formattedReply = escapeHtml(result.text).replace(/\n/g, '<br>');
                     geminiText.innerHTML = '';
                     let i = 0;
                     if (!formattedReply.length) {
@@ -183,9 +197,11 @@ ${normalizedQuestion}
         return { success: true, text: reply };
     } catch (err) {
         console.error('[聖境塔羅] AI API 呼叫失敗:', err);
+        // 跳脫錯誤訊息中的特殊字元，防止 XSS
+        const safeErrMsg = escapeHtml(err.message || '未知錯誤');
         return {
             success: false,
-            text: `<span style="color: #ff6b6b;">無法取得神諭指引。請確認您的 API Key 是否正確或網路是否通暢。(錯誤: ${err.message})</span>`
+            text: `<span style="color: #ff6b6b;">無法取得神諭指引。請確認您的 API Key 是否正確或網路是否通暢。(錯誤: ${safeErrMsg})</span>`
         };
     }
 }

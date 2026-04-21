@@ -479,6 +479,7 @@ function confirmSelection() {
                     console.log('[聖境塔羅] 牌陣已滿，正在關閉攝影機...');
                     mpCamera.stop();
                     mpCamera = null; // 清除實體以確保下一次可以重新獲取權限並啟動
+                    mediaPipeInitialized = false; // 重置初始化旗標，避免下次走到錯誤的早期返回
                 }
                 const restartBtn = document.getElementById('restart-btn');
                 if (restartBtn) restartBtn.classList.remove('hidden');
