@@ -20,7 +20,7 @@
     <!-- MediaPipe Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="css/style.css?v=1.5.0">
+    <link rel="stylesheet" href="css/style.css?v=1.6.0">
 </head>
 
 <body>
@@ -60,7 +60,8 @@
     </section>
 
     <header>
-        <div class="header-settings-wrap">
+        <div class="header-settings-wrap" style="display: flex; gap: 12px; align-items: center;">
+            <button id="history-btn" class="header-settings-btn" title="占卜日誌">📜</button>
             <button id="settings-btn" class="header-settings-btn"
                 title="設定 API Key">⚙️</button>
         </div>
@@ -174,6 +175,45 @@
                 </div>
             </div>
         </section>
+
+        <!-- 歷史紀錄 Modal -->
+        <section id="history-modal" class="modal hidden">
+            <div class="modal-content history-modal-content modal-content--padded">
+                <div class="close-modal close-modal-btn" id="close-history-modal" title="關閉日誌">&times;</div>
+                <h2 class="settings-title">📜 占卜日誌</h2>
+
+                <!-- 列表視圖 -->
+                <div id="history-list-view" class="history-list-view-container">
+                    <div id="history-list-container">
+                        <!-- 歷史清單將動態生成於此 -->
+                    </div>
+                    <div class="history-clear-btn-container">
+                        <button id="clear-history-btn" class="premium-btn history-clear-btn">清空所有日誌</button>
+                    </div>
+                </div>
+
+                <!-- 詳情視圖 -->
+                <div id="history-detail-view" class="history-detail-view-container hidden">
+                    <button id="history-back-btn" class="premium-btn history-back-btn">← 返回列表</button>
+                    <div id="history-detail-content">
+                        <!-- 詳細內容動態生成 -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 自訂確認 Modal -->
+        <section id="confirm-modal" class="modal hidden" style="z-index: 10000;">
+            <div class="modal-content confirm-modal-content modal-content--padded">
+                <div class="close-modal close-modal-btn" id="close-confirm-modal" title="取消">&times;</div>
+                <h3 id="confirm-modal-title" class="confirm-title">系統提示</h3>
+                <p id="confirm-modal-message" class="confirm-message"></p>
+                <div class="confirm-actions">
+                    <button id="confirm-modal-cancel" class="premium-btn confirm-cancel-btn">取消</button>
+                    <button id="confirm-modal-ok" class="premium-btn confirm-ok-btn">確定</button>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer>
@@ -181,16 +221,17 @@
                 class="app-version"></span></p>
     </footer>
 
-    <script src="js/version.js?v=1.5.0"></script>
-    <script src="js/tarot_dict.js?v=1.5.0"></script>
-    <script src="js/state.js?v=1.5.0"></script>
-    <script src="js/ui.js?v=1.5.0"></script>
-    <script src="js/question.js?v=1.5.0"></script>
-    <script src="js/ring.js?v=1.5.0"></script>
-    <script src="js/gesture.js?v=1.5.0"></script>
-    <script src="js/imageExport.js?v=1.5.0"></script>
-    <script src="js/analysis.js?v=1.5.0"></script>
-    <script src="js/app.js?v=1.5.0"></script>
+    <script src="js/version.js?v=1.6.0"></script>
+    <script src="js/tarot_dict.js?v=1.6.0"></script>
+    <script src="js/state.js?v=1.6.0"></script>
+    <script src="js/ui.js?v=1.6.0"></script>
+    <script src="js/question.js?v=1.6.0"></script>
+    <script src="js/ring.js?v=1.6.0"></script>
+    <script src="js/gesture.js?v=1.6.0"></script>
+    <script src="js/imageExport.js?v=1.6.0"></script>
+    <script src="js/history.js?v=1.6.0"></script>
+    <script src="js/analysis.js?v=1.6.0"></script>
+    <script src="js/app.js?v=1.6.0"></script>
     <script>
         // 在頁面載入時顯示目前版本號
         document.addEventListener('DOMContentLoaded', () => {

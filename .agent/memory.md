@@ -18,7 +18,9 @@
 - [2026-04-14] 修正佈局(body 100vh + overflow:hidden)，確保精簡 header/carousel/slot 區域，新增 max-height media query。
 - [2026-04-15] 檢討 drawRandomCard() 機制：目前使用 Math.random()(PRNG)，對機率公平性尚可。建議若需求更高公平性可換用 crypto.getRandomValues() + 伺服器端洗牌系統。結論：當前用途足夠，暫維持。
 - [2026-04-15] 修正選牌邏輯：原本使用者只能從環上 12 張挑（其餘 66 張抽不到），改為確保翻牌時才從 78 張牌陣真隨機中選一張(drawTrueRandomCard)，環上展示僅為效果。新增 updateCardFrontDOM() 在翻牌前換牌面。
-- [2026-04-15] 新增 AI 模式選項：設定中加入下拉選單，支援 Gemini 3 Flash 與 Gemma 4 31B 兩種模型，透過 AI_MODELS 對應表與 localStorage('gemini_model') 動態切換 API endpoint。提示詞 modal 會顯示目前使用模型名稱。
+- [2026-04-15] 新增 AI 模式選項：設定中加入下拉選單，支援 Gemini 3 Flash 與 Gemma 4 31B 兩種模型，透過- **資料儲存**：
+  - AI API Key、模型偏好存於 `localStorage` (不傳輸至伺服器)。
+  - 歷史占卜日誌儲存於瀏覽器內建 `IndexedDB` (`CelestialTarotDB`)，支援大量數據存儲。'gemini_model') 動態切換 API endpoint。提示詞 modal 會顯示目前使用模型名稱。
 - [2026-04-15] PWA 支援：新增 manifest.json(含名稱、圖片、色調)、sw.js(Cache-First Service Worker)、icons 目錄(SVG 格式 192/512 圖片)。index.html 加入 PWA meta 標籤與 SW 註冊。支援桌面端與行動端安裝。
 - [2026-04-15] 預設模型改為 gemma-4-31b-it：所有 fallback 都從 gemini-3-flash-preview 改為 gemma-4-31b-it，select 預設選項調為 Gemma 4 31B。
 - [2026-04-15] API Key 取得教學：在設定 Modal 的 API Key 輸入框下方新增 Google AI Studio 連結位置、詳細教學語。
@@ -43,6 +45,6 @@
 - **XSS 安全修補**：新增 `escapeHtml()` 函式，AI 回應與錯誤訊息在插入 DOM 前先做 HTML 跳脫處理，防止潛在的 XSS 注入。
 - **latestGuidanceText 修復**：原本為死碼（清空後從未寫回），修正為在 AI 成功回傳後寫入，使圖片匯出能直接使用。
 - **mediaPipeInitialized 重置**：攝影機關閉時一併重置此旗標，避免重新洗牌時走到錯誤的早期返回邏輯。
-- **Service Worker 預快取補齊**：CORE_ASSETS 從 2 個 JS 模組擴充至全部 9 個，確保離線首次訪問不會缺少資源。SW 註解同步由「Cache-First」更正為「Network-First」。
+- ✅ 完成 **PWA 部署與離線支援**，並補齊 `CORE_ASSETS` 以確保離線無虞。
+- ✅ 實作 **IndexedDB 占卜日誌**，讓使用者能保存並隨時回顧歷史紀錄。從 2 個 JS 模組擴充至全部 9 個，確保離線首次訪問不會缺少資源。SW 註解同步由「Cache-First」更正為「Network-First」。
 - **行尾字元統一**：`app.js` 從 CRLF 轉換為 LF，新增 `.gitattributes` 設定 `* text=auto eol=lf`。
-

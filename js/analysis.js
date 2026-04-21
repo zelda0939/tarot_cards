@@ -88,6 +88,22 @@ function showAnalysis() {
                 if (result.success) {
                     // 將 AI 回傳結果寫入全域變數，供圖片匯出使用
                     AppState.latestGuidanceText = result.text;
+                    
+                    // 將紀錄寫入 IndexedDB 占卜日誌
+                    if (typeof saveHistoryRecord === 'function') {
+                        saveHistoryRecord({
+                            question: getActiveQuestionText(),
+                            cards: AppState.selectedCards.map(c => ({
+                                id: c.id,
+                                name: c.name,
+                                name_short: c.name_short,
+                                isReversed: c.isReversed,
+                                symbol: c.symbol,
+                                meaning: c.isReversed ? c.meaning_rev : c.meaning_up
+                            })),
+                            aiText: result.text
+                        }).catch(e => console.error('[聖境塔羅] 存入歷史紀錄失敗', e));
+                    }
                     // 跳脫 HTML 特殊字元後再插入 DOM，防止 XSS
                     const formattedReply = escapeHtml(result.text).replace(/\n/g, '<br>');
                     geminiText.innerHTML = '';
