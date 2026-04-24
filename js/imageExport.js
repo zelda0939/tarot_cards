@@ -104,12 +104,12 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     }
 
     let cardsBoxHeight = 0;
-    let meaningsLinesArr = [];
     const cardImgWidth = 230;
     const cardImgHeight = 391;
     const cardGap = 66;
     const meaningLineHeight = 36;
     let cardImages = [];
+    const isSingleCard = cards && cards.length === 1;
 
     if (cards && cards.length) {
         cardImages = await Promise.all(cards.map(card => waitImageLoad(`assets/images/${card.name_short}.jpg`)));
@@ -118,7 +118,8 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
         meaningsLinesArr = cards.map(card => {
             const text = card.isReversed ? card.meaning_rev : card.meaning_up;
             const label = (card.isReversed ? '▽ 逆位：' : '▲ 正位：') + text;
-            return wrapCanvasText(measureCtx, label, cardImgWidth);
+            const textWidth = isSingleCard ? (contentWidth - 96) : cardImgWidth;
+            return wrapCanvasText(measureCtx, label, textWidth);
         });
         const maxMeaningLines = Math.max(1, ...meaningsLinesArr.map(l => l.length));
 
@@ -225,7 +226,11 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
         ctx.fillText('所選卡牌', questionBoxX + 46, currentSectionY + 62);
 
         cards.forEach((card, idx) => {
-            const cx = questionBoxX + 46 + idx * (cardImgWidth + cardGap);
+            // 單卡模式置中
+            const cx = isSingleCard
+                ? (width / 2 - cardImgWidth / 2)
+                : (questionBoxX + 46 + idx * (cardImgWidth + cardGap));
+                
             let childY = currentSectionY + 130;
 
             ctx.textAlign = 'center';
@@ -234,7 +239,8 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
             ctx.fill();
             ctx.fillStyle = '#f8e8a8';
             ctx.font = "500 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
-            ctx.fillText(`第 ${idx + 1} 張`, cx + cardImgWidth / 2, childY);
+            const posLabel = isSingleCard ? '今日指引' : `第 ${idx + 1} 張`;
+            ctx.fillText(posLabel, cx + cardImgWidth / 2, childY);
 
             childY += 36;
 
@@ -265,14 +271,23 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
 
             childY += 40;
 
-            ctx.textAlign = 'left';
             ctx.fillStyle = '#eaf1ff';
             ctx.font = "400 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
             const lines = meaningsLinesArr[idx];
-            lines.forEach(line => {
-                ctx.fillText(line || ' ', cx, childY);
-                childY += meaningLineHeight;
-            });
+            
+            if (isSingleCard) {
+                ctx.textAlign = 'center';
+                lines.forEach(line => {
+                    ctx.fillText(line || ' ', width / 2, childY);
+                    childY += meaningLineHeight;
+                });
+            } else {
+                ctx.textAlign = 'left';
+                lines.forEach(line => {
+                    ctx.fillText(line || ' ', cx, childY);
+                    childY += meaningLineHeight;
+                });
+            }
         });
 
         currentSectionY += cardsBoxHeight + betweenSections;
@@ -286,6 +301,7 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     ctx.lineWidth = 1.2;
     ctx.stroke();
 
+    ctx.textAlign = 'left';
     ctx.fillStyle = '#f6d77a';
     ctx.font = "600 31px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
     ctx.fillText('星辰指引', questionBoxX + 46, guidanceBoxY + 62);

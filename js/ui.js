@@ -74,3 +74,43 @@ function hideLoadingOverlay(callback) {
         }
     }, 1000);
 }
+
+// ============================
+// 自訂確認對話框 (Confirm Modal)
+// ============================
+
+function showConfirmDialog(title, message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const titleEl = document.getElementById('confirm-modal-title');
+        const msgEl = document.getElementById('confirm-modal-message');
+        const okBtn = document.getElementById('confirm-modal-ok');
+        const cancelBtn = document.getElementById('confirm-modal-cancel');
+        const closeBtn = document.getElementById('close-confirm-modal');
+
+        if (!modal) {
+            resolve(confirm(message));
+            return;
+        }
+
+        titleEl.textContent = title;
+        // 將換行符號 \n 轉換為 <br>
+        msgEl.innerHTML = message.replace(/\n/g, '<br>');
+
+        const cleanup = () => {
+            modal.classList.add('hidden');
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            closeBtn.removeEventListener('click', onCancel);
+        };
+
+        const onOk = () => { cleanup(); resolve(true); };
+        const onCancel = () => { cleanup(); resolve(false); };
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        closeBtn.addEventListener('click', onCancel);
+
+        modal.classList.remove('hidden');
+    });
+}

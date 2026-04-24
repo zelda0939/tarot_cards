@@ -259,6 +259,11 @@ function initApp() {
         });
     }
 
+    const dailyBtn = document.getElementById('daily-card-btn');
+    if (dailyBtn) {
+        dailyBtn.addEventListener('click', triggerDailyCard);
+    }
+
     if (!startBtn) return;
 
     // 開始按鈕
@@ -503,6 +508,86 @@ function confirmSelection() {
 }
 
 /* ============================
+   每日指引特效與邏輯
+   ============================ */
+async function triggerDailyCard() {
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const lastDailyDate = localStorage.getItem('dailyCardDate');
+
+    if (lastDailyDate === todayStr) {
+        // 今日已抽過
+        const msg = "您今日已經抽取過每日指引了！塔羅的意義在於一天的沉澱。\n\n如果您想回顧今日的指引，請前往「占卜日誌」。\n\n是否仍要強制重新抽取一組新的？";
+        const confirmed = await showConfirmDialog('重新抽取指引', msg);
+        if (confirmed) {
+            startDailyFlow(todayStr); // 強制重新抽取
+        }
+        return;
+    }
+
+    startDailyFlow(todayStr);
+}
+
+function startDailyFlow(todayStr) {
+    if (AppState.gameState !== 'idle') return; // 防呆
+    
+    // 設定狀態
+    AppState.isDailyMode = true;
+    AppState.gameState = 'finished'; // 跳過鏡頭互動
+    AppState.userQuestion = '今日運勢與星辰指引';
+    localStorage.setItem('dailyCardDate', todayStr);
+
+    // 真隨機抽牌 (1張)
+    AppState.selectedCards = [];
+    AppState.usedCardIds.clear();
+    const card = drawTrueRandomCard();
+    if (!card) return;
+    AppState.selectedCards.push(card);
+
+    // 啟動華麗動畫
+    const overlay = document.getElementById('daily-animation-overlay');
+    const backImg = document.getElementById('daily-card-back-img');
+    const faceImg = document.getElementById('daily-card-face-img');
+
+    if (!overlay || !faceImg) {
+        // fallback
+        showAnalysis();
+        return;
+    }
+
+    // 綁定圖檔
+    faceImg.src = `assets/images/${card.name_short}.jpg`;
+    if (card.isReversed) {
+        faceImg.style.transform = 'rotate(180deg)';
+    } else {
+        faceImg.style.transform = 'none';
+    }
+
+    overlay.classList.remove('hidden', 'stage-enter', 'stage-flip');
+    
+    // 1. 背景漸隱出現
+    setTimeout(() => {
+        overlay.classList.add('show');
+    }, 50);
+
+    // 2. 卡牌飛入
+    setTimeout(() => {
+        overlay.classList.add('stage-enter');
+    }, 600);
+
+    // 3. 翻牌 + 衝擊波
+    setTimeout(() => {
+        overlay.classList.add('stage-flip');
+    }, 2000);
+
+    // 4. 動畫結束，進入分析畫面
+    setTimeout(() => {
+        overlay.classList.remove('show', 'stage-enter', 'stage-flip');
+        setTimeout(() => overlay.classList.add('hidden'), 500); // 等待淡出
+        showAnalysis();
+    }, 4500);
+}
+
+/* ============================
    重新抽牌 — 重置所有狀態
    ============================ */
 function resetGame() {
@@ -514,8 +599,18 @@ function resetGame() {
         AppState.animationFrameId = null;
     }
 
+    // 如果是從「每日一抽」重新洗牌，應清空提問，避免影響下一次的正常抽牌
+    if (AppState.isDailyMode) {
+        AppState.userQuestion = '';
+        const questionInput = document.getElementById('user-question-input');
+        if (questionInput) questionInput.value = '';
+        if (typeof syncQuestionPreview === 'function') syncQuestionPreview();
+        if (typeof setQuestionPanelCompact === 'function') setQuestionPanelCompact(false);
+    }
+
     // 重置狀態
     AppState.gameState = 'idle';
+    AppState.isDailyMode = false;
     AppState.selectedCards = [];
     AppState.usedCardIds.clear();
     AppState.currentRotation = 0;

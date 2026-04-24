@@ -10,6 +10,7 @@ const AppState = {
 
     // 遊戲狀態：idle | rotating | stopped | finished
     gameState: 'idle',
+    isDailyMode: false,
     selectedCards: [],
     userQuestion: '',
     latestGuidanceText: '',

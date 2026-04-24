@@ -48,3 +48,15 @@
 - ✅ 完成 **PWA 部署與離線支援**，並補齊 `CORE_ASSETS` 以確保離線無虞。
 - ✅ 實作 **IndexedDB 占卜日誌**，讓使用者能保存並隨時回顧歷史紀錄。從 2 個 JS 模組擴充至全部 9 個，確保離線首次訪問不會缺少資源。SW 註解同步由「Cache-First」更正為「Network-First」。
 - **行尾字元統一**：`app.js` 從 CRLF 轉換為 LF，新增 `.gitattributes` 設定 `* text=auto eol=lf`。
+
+## 2026-04-21 - 每日指引 (Daily Card) 實作
+- **功能定位**：於首頁新增不須經由手勢互動與提問的「一鍵抽牌」入口，培養使用者高頻次回訪率。
+- **純 CSS 動畫分離**：為配合「每日一抽極致流暢」的體驗，獨立開發專屬單卡翻轉 3D 特效與背景光晕(`#daily-animation-overlay`)，保證視覺衝擊效果。
+- **特規 Prompt 與排版優化**：
+  - `AppState.isDailyMode` 切換：此模式下向 AI 送出的提問與規則改變，強制輸出「今日主題 / 重點建議 / 綜合指引」。
+  - 獨立相容圖片的單機匯出：單卡的產生圖片(`buildGuidanceImageCanvas`)自動置中佈局放寬文字段落長度，產出類似神諭卡的高級感。
+  - 防呆保護：使用 `localStorage.getItem('dailyCardDate')` 紀錄今日日期，同日再次點擊會遭到攔截。
+- [2026-04-24] Bug Fix: 修正 `index.html` 每日指引卡背圖檔副檔名錯誤 (由 `.jpg` 改為 `.png`)。
+- [2026-04-24] Bug Fix: 統一 `showConfirmDialog` 實作為 Promise 基礎版本至 `ui.js`，解決了因 `history.js` 載入順序覆蓋函數並造成閉包箭頭函數意外被轉換成字串渲染在提示彈跳窗的臭蟲。
+- [2026-04-24] Bug Fix: 修正匯出圖片 `js/imageExport.js` 的每日一抽（單卡模式）會遺留 `ctx.textAlign = 'center'` 給下分段 星辰指引區塊的排版問題，補上重新歸零 `left`。
+- [2026-04-24] UX 優化: 在 `app.js` 的 `resetGame` 中加入判斷，如果是從「每日一抽」結束後點擊重新抽牌，會自動清空前一次隱性設定的「今日運勢...」提問以及輸入框，避免異常沿用到下一次的手勢抽牌。

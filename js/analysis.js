@@ -33,7 +33,7 @@ function showAnalysis() {
     showLoadingOverlay();
 
     container.innerHTML = '';
-    const positions = ['第1張', '第2張', '第3張'];
+    const positions = AppState.isDailyMode ? ['今日運勢'] : ['第1張', '第2張', '第3張'];
     let html = '';
     const cardNamesForPrompt = [];
 
@@ -46,9 +46,11 @@ function showAnalysis() {
         const meaningLabel = card.isReversed ? '▽ 逆位' : '▲ 正位';
         const meaningClass = card.isReversed ? 'analysis-meaning-rev' : 'analysis-meaning';
 
+        const posLabel = positions[idx] || '';
+
         html += `
-        <div class="analysis-card">
-            <div class="analysis-position">${positions[idx]}</div>
+        <div class="analysis-card ${AppState.isDailyMode ? 'daily-layout-card' : ''}">
+            <div class="analysis-position">${posLabel}</div>
             <div class="analysis-card-img">
                 <img src="${imgUrl}" alt="${card.name}" class="${imgReversedClass}" onerror="this.parentElement.style.display='none'">
             </div>
@@ -160,7 +162,25 @@ async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
     console.log(`[聖境塔羅] 使用模型: ${modelInfo.name} (${modelInfo.id})`);
     const normalizedQuestion = (userQuestionText || '').trim() || '未提供明確提問';
 
-    const systemPrompt = `你是一位充滿智慧、語氣溫柔且帶有神祕感的高階塔羅占卜師。
+    let systemPrompt = '';
+    let userPrompt = '';
+
+    if (AppState.isDailyMode) {
+        systemPrompt = `你是一位充滿智慧、語氣溫柔且帶有神祕感的高階塔羅占卜師。
+這是使用者的「每日一抽」指引。請根據使用者抽出的單一張牌，給予今天專屬的深入分析與重點建議。
+
+【嚴格規則】
+- 不要打招呼、不要自我介紹
+- 請直接輸出內容，使用繁體中文（台灣用語）
+- 依序輸出三個區塊：【✦ 今日主題 ✦】、【✧ 重點建議 ✧】、【❉ 綜合指引 ❉】
+- 語氣保持溫暖、神祕、具啟發性，總字數約 300字左右`;
+
+        userPrompt = `使用者針對今日運勢抽出了這張專屬塔羅牌：
+【${cardsLog[0]}】
+
+請給予今日的星辰指引。`;
+    } else {
+        systemPrompt = `你是一位充滿智慧、語氣溫柔且帶有神祕感的高階塔羅占卜師。
 你的任務是先根據使用者提問，定義本次占卜中 三張牌 的角色，再綜合三張塔羅牌給出整體運勢解析與未來指引。
 
 客觀的對應邏輯如下：
@@ -176,7 +196,7 @@ async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
 - 使用白話文，約 320~520 字
 - 語氣保持溫柔、神祕、有智慧感`;
 
-    const userPrompt = `使用者提問：
+        userPrompt = `使用者提問：
 ${normalizedQuestion}
 
 使用者抽出了以下三張牌（順序為第1張到第3張）：
@@ -192,6 +212,7 @@ ${normalizedQuestion}
 
 【綜合運勢解析】
 ...`;
+    }
 
     try {
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelInfo.id}:generateContent?key=${apiKey}`, {

@@ -295,41 +295,4 @@ document.addEventListener('DOMContentLoaded', () => {
     initDB();
 });
 
-/* ============================
-   自訂確認視窗 (代替 confirm)
-   ============================ */
 
-function showConfirmDialog(title, message) {
-    return new Promise((resolve) => {
-        const modal = document.getElementById('confirm-modal');
-        const titleEl = document.getElementById('confirm-modal-title');
-        const msgEl = document.getElementById('confirm-modal-message');
-        const okBtn = document.getElementById('confirm-modal-ok');
-        const cancelBtn = document.getElementById('confirm-modal-cancel');
-        const closeBtn = document.getElementById('close-confirm-modal');
-
-        if (!modal) {
-            resolve(confirm(message));
-            return;
-        }
-
-        titleEl.textContent = title;
-        msgEl.textContent = message;
-
-        const cleanup = () => {
-            modal.classList.add('hidden');
-            okBtn.removeEventListener('click', onOk);
-            cancelBtn.removeEventListener('click', onCancel);
-            closeBtn.removeEventListener('click', onCancel);
-        };
-
-        const onOk = () => { cleanup(); resolve(true); };
-        const onCancel = () => { cleanup(); resolve(false); };
-
-        okBtn.addEventListener('click', onOk);
-        cancelBtn.addEventListener('click', onCancel);
-        closeBtn.addEventListener('click', onCancel);
-
-        modal.classList.remove('hidden');
-    });
-}

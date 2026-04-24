@@ -75,7 +75,10 @@
 
         <!-- 控制按鈕 — 放在最上方，開啟手勢抽牌 / 重新抽牌 -->
         <section id="control-panel">
-            <button id="start-gesture-btn" class="premium-btn active">開啟手勢抽牌</button>
+            <div class="control-panel-buttons">
+                <button id="daily-card-btn" class="premium-btn daily-btn">✨ 每日一抽</button>
+                <button id="start-gesture-btn" class="premium-btn active">開啟手勢抽牌</button>
+            </div>
             <button id="restart-btn" class="premium-btn hidden">✦ 重新抽牌</button>
         </section>
 
@@ -214,6 +217,24 @@
                 </div>
             </div>
         </section>
+
+        <!-- 每日指引 華麗動畫容器 -->
+        <div id="daily-animation-overlay" class="hidden">
+            <div class="daily-sunburst"></div>
+            <div class="daily-particles-container"></div>
+            <div class="daily-card-stage">
+                <div class="daily-card-flip-container">
+                    <div class="daily-card-flipper">
+                        <div class="daily-card-front">
+                            <img id="daily-card-back-img" src="assets/images/card_back.png" alt="Daily Card Back">
+                        </div>
+                        <div class="daily-card-back">
+                            <img id="daily-card-face-img" src="" alt="Daily Card Face">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
     <footer>
