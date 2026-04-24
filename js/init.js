@@ -31,20 +31,19 @@ function detectInAppBrowser() {
         banner.id = 'inapp-browser-warning';
         banner.innerHTML = `
             <div style="
-                position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;
+                position: fixed; top: 0; left: 0; width: 100vw; z-index: 9999;
                 background: linear-gradient(135deg, #1a0a00, #2a1500);
                 border-bottom: 2px solid var(--gold);
-                padding: 1rem 5%;
+                padding: 1.2rem 5vw;
                 box-sizing: border-box;
                 text-align: center;
                 box-shadow: 0 4px 20px rgba(0,0,0,0.6);
                 animation: slideDown 0.5s ease;
-                display: flex; flex-direction: column; align-items: center; justify-content: center;
             ">
-                <p style="color: var(--gold-light); font-size: 0.95rem; margin: 0 0 0.5rem 0; line-height: 1.4;">
+                <p style="color: var(--gold-light); font-size: 0.95rem; margin: 0 0 0.5rem 0; line-height: 1.4; white-space: normal; word-break: break-word;">
                     ⚠️ 偵測到您正在使用 <strong>${appName}</strong> 內建瀏覽器
                 </p>
-                <p style="color: var(--text-white); font-size: 0.85rem; margin: 0 0 1rem 0; line-height: 1.5; opacity: 0.9;">
+                <p style="color: var(--text-white); font-size: 0.85rem; margin: 0 0 1rem 0; line-height: 1.5; opacity: 0.9; white-space: normal; word-break: break-word;">
                     手勢抽牌功能需要攝影機權限，<strong>${appName}</strong> 瀏覽器可能無法正常取得授權。<br>
                     請點擊下方按鈕以 <strong>Chrome 或 Safari 系統瀏覽器</strong> 開啟，獲得最佳體驗 ✨
                 </p>
