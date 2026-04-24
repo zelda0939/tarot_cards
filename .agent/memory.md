@@ -60,3 +60,23 @@
 - [2026-04-24] Bug Fix: 統一 `showConfirmDialog` 實作為 Promise 基礎版本至 `ui.js`，解決了因 `history.js` 載入順序覆蓋函數並造成閉包箭頭函數意外被轉換成字串渲染在提示彈跳窗的臭蟲。
 - [2026-04-24] Bug Fix: 修正匯出圖片 `js/imageExport.js` 的每日一抽（單卡模式）會遺留 `ctx.textAlign = 'center'` 給下分段 星辰指引區塊的排版問題，補上重新歸零 `left`。
 - [2026-04-24] UX 優化: 在 `app.js` 的 `resetGame` 中加入判斷，如果是從「每日一抽」結束後點擊重新抽牌，會自動清空前一次隱性設定的「今日運勢...」提問以及輸入框，避免異常沿用到下一次的手勢抽牌。
+
+## 2026-04-24 - 每日一抽動畫大改版
+- **特效升級**：完全重構每日一抽動畫系統，由簡單的 CSS 翻牌改為多階段魔幻開牌儀式（總長約 15s）：
+  - Stage 1 (50ms): 背景漸入 + 星雲呼吸 + 雙層公轉光芒 + SVG 魔法陣旋轉 + 浮遊符文
+  - Stage 2 (800ms): **19 張密集扇形牌陣動態展開**（JS 動態產生，CSS `--i`/`--mid` 控制扇角）
+  - **掃描系統 (1600ms~5000ms)**：requestAnimationFrame 驅動的掃描光柱（真實 DOM `.daily-scan-beam`），三階段路徑：
+    - Phase 1: 左→右完整掃一遍 (1.2s)
+    - Phase 2: 右→左回掃 (1.2s)
+    - Phase 3: 從左側漸慢滑到隨機選中牌位置 (1.0s, ease-out)
+    - **掃到的牌會微微上浮** (`.peeking` class, translateY -38px)，掃過後沉回原位 (0.4s ease-in)
+    - 掃描結束後選中牌閃金光彈起 (`cardChosenGlow` 動畫)
+  - Stage 3 (5300ms): 選中牌被上浮抽出（scale 1.3，至 translateY -90px），其餘牌散開模糊消失
+  - Stage 4 (6500ms): 主卡牌從抽出牌的位置（scale 0.42, translateY -90px）無縫接替，並滑動放大至畫面正中央 + 光暈環(Aura)脈動
+  - Stage 5 (8200ms): 能量蓄積（暗化微縮再亮起）
+  - Stage 6 (9500ms): 540° 翻牌 + 多層衝擊波 + 螢幕震動 + 鏡頭光暈 + 150 顆爆發粒子
+  - Stage 7 (11500ms): 牌名揭示文字飛入（毛玻璃膠囊背景）
+  - Stage 8 (14000ms): 淡出 → 進入分析畫面
+- **Canvas 粒子系統**：120 顆漂浮星塵 + 翻牌瞬間 150 顆爆發粒子，requestAnimationFrame 驅動。
+- **HTML 結構擴充**：`#daily-animation-overlay` 內新增 canvas、星雲、sunburst、SVG 魔法陣、符文、扇形牌陣容器（JS 動態產生牌 + 掃描光柱）、Aura、Lens Flare、揭示文字。
+- **牌名辨識修正**：毛玻璃膠囊背景 + 白色大字 + 多層金色 text-shadow，避免與卡片重疊。

@@ -545,8 +545,9 @@ function startDailyFlow(todayStr) {
 
     // 啟動華麗動畫
     const overlay = document.getElementById('daily-animation-overlay');
-    const backImg = document.getElementById('daily-card-back-img');
     const faceImg = document.getElementById('daily-card-face-img');
+    const cardNameEl = document.getElementById('daily-card-name-reveal');
+    const cardSubEl = document.getElementById('daily-card-sub-reveal');
 
     if (!overlay || !faceImg) {
         // fallback
@@ -562,29 +563,343 @@ function startDailyFlow(todayStr) {
         faceImg.style.transform = 'none';
     }
 
-    overlay.classList.remove('hidden', 'stage-enter', 'stage-flip');
-    
-    // 1. 背景漸隱出現
+    // 綁定揭示文字
+    if (cardNameEl) {
+        const orientText = card.isReversed ? '（逆位）' : '（正位）';
+        cardNameEl.textContent = `✦ ${card.name} ${orientText} ✦`;
+    }
+    if (cardSubEl) {
+        cardSubEl.textContent = card.en || '';
+    }
+
+    // ── Canvas 粒子系統初始化 ──
+    const canvas = document.getElementById('daily-particle-canvas');
+    let particleAnimId = null;
+    let particles = [];
+
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // 粒子生成函式
+        function createParticle(burst) {
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            if (burst) {
+                // 爆發型粒子（翻牌衝擊波）
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 2 + Math.random() * 8;
+                return {
+                    x: cx, y: cy,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: 1 + Math.random() * 3,
+                    opacity: 0.8 + Math.random() * 0.2,
+                    decay: 0.008 + Math.random() * 0.015,
+                    hue: 35 + Math.random() * 30, // 金色色調
+                    type: 'burst'
+                };
+            } else {
+                // 漂浮星塵
+                return {
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: -0.3 - Math.random() * 1.2,
+                    size: 0.5 + Math.random() * 2,
+                    opacity: 0.1 + Math.random() * 0.5,
+                    decay: 0.001 + Math.random() * 0.003,
+                    hue: 35 + Math.random() * 50,
+                    type: 'dust'
+                };
+            }
+        }
+
+        // 初始粒子填充
+        for (let i = 0; i < 120; i++) {
+            particles.push(createParticle(false));
+        }
+
+        // 繪製循環
+        function drawParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.opacity -= p.decay;
+
+                if (p.opacity <= 0) {
+                    if (p.type === 'dust') {
+                        // 漂浮星塵重生
+                        particles[i] = createParticle(false);
+                    } else {
+                        particles.splice(i, 1);
+                    }
+                    continue;
+                }
+
+                // 發光效果
+                const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+                gradient.addColorStop(0, `hsla(${p.hue}, 80%, 75%, ${p.opacity})`);
+                gradient.addColorStop(0.4, `hsla(${p.hue}, 70%, 60%, ${p.opacity * 0.5})`);
+                gradient.addColorStop(1, `hsla(${p.hue}, 60%, 50%, 0)`);
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+
+                // 核心亮點
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${p.hue}, 90%, 90%, ${p.opacity})`;
+                ctx.fill();
+            }
+            particleAnimId = requestAnimationFrame(drawParticles);
+        }
+        drawParticles();
+    }
+
+    // ── 動態產生扇形牌陣 ──
+    const deckFan = document.getElementById('daily-deck-fan');
+    let chosenIndex = 0;
+    const totalFanCards = 19;
+    const midIndex = Math.floor(totalFanCards / 2);
+    let scanAnimId = null;
+    const fanCards = []; // 存放所有牌 DOM 參考
+
+    if (deckFan) {
+        deckFan.innerHTML = '';
+        chosenIndex = Math.floor(Math.random() * totalFanCards);
+
+        // 產生牌
+        for (let i = 0; i < totalFanCards; i++) {
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'daily-deck-card';
+            cardDiv.style.setProperty('--i', i);
+            cardDiv.style.setProperty('--mid', midIndex);
+            cardDiv.dataset.index = i;
+            const img = document.createElement('img');
+            img.src = 'assets/images/card_back.png';
+            img.alt = '';
+            cardDiv.appendChild(img);
+            deckFan.appendChild(cardDiv);
+            fanCards.push(cardDiv);
+        }
+
+        // 產生掃描光 DOM 元素
+        const scanBeam = document.createElement('div');
+        scanBeam.className = 'daily-scan-beam';
+        deckFan.appendChild(scanBeam);
+
+        // ── 掃描動畫 ──
+        // 在牌陣展開後才開始掃描
+        const SCAN_DELAY = 1600; // 從動畫開始算，等牌全部展開後
+        const SWEEP_RIGHT = 1200; // 左→右花費 (ms)
+        const SWEEP_LEFT = 1200; // 右→左花費 (ms)
+        const SWEEP_TO_CHOSEN = 1000; // 收尾滑到選中牌 (ms)
+        const TOTAL_SCAN = SWEEP_RIGHT + SWEEP_LEFT + SWEEP_TO_CHOSEN;
+        let scanStartTime = null;
+        const firstSweepToRight = Math.random() < 0.5;
+        const firstEdge = firstSweepToRight ? (totalFanCards - 1) : 0;
+        const secondEdge = firstSweepToRight ? 0 : (totalFanCards - 1);
+
+        // 掃描未啟動前先固定在中央，避免一出現就跳邊緣
+        scanBeam.style.transform = 'rotate(0deg) translateY(-20px)';
+
+        function updateScan(now) {
+            if (!scanStartTime) scanStartTime = now;
+            const elapsed = now - scanStartTime;
+
+            if (elapsed > TOTAL_SCAN) {
+                // ── 掃描結束：選中牌亮起 ──
+                scanBeam.style.opacity = '0';
+                fanCards.forEach(c => c.classList.remove('peeking'));
+                const chosenCard = fanCards[chosenIndex];
+                if (chosenCard) chosenCard.classList.add('chosen');
+                return; // 停止 rAF
+            }
+
+            // ── 計算目前掃描位置（0~18 的浮點數）──
+            let scanPos;
+            if (elapsed < SWEEP_RIGHT) {
+                // Phase 1: 中間 -> 第一側（左或右，隨機）
+                const t = elapsed / SWEEP_RIGHT;
+                const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                scanPos = midIndex + (firstEdge - midIndex) * eased;
+            } else if (elapsed < SWEEP_RIGHT + SWEEP_LEFT) {
+                // Phase 2: 第一側 -> 另一側
+                const t = (elapsed - SWEEP_RIGHT) / SWEEP_LEFT;
+                const eased = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                scanPos = firstEdge + (secondEdge - firstEdge) * eased;
+            } else {
+                // Phase 3: 另一側 -> 目標牌，ease-out 收斂
+                const t = (elapsed - SWEEP_RIGHT - SWEEP_LEFT) / SWEEP_TO_CHOSEN;
+                const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+                scanPos = secondEdge + (chosenIndex - secondEdge) * eased;
+            }
+
+            // ── 更新掃描光位置（跟牌同弧度）──
+            const beamAngle = (scanPos - midIndex) * 4;
+            scanBeam.style.transform = `rotate(${beamAngle}deg) translateY(-20px)`;
+
+            // ── 掃到的牌上浮（peek）──
+            fanCards.forEach((card, i) => {
+                const dist = Math.abs(i - scanPos);
+                if (dist < 1.2) {
+                    card.classList.add('peeking');
+                } else {
+                    card.classList.remove('peeking');
+                }
+            });
+
+            scanAnimId = requestAnimationFrame(updateScan);
+        }
+
+        // 延遲啟動掃描
+        setTimeout(() => {
+            scanAnimId = requestAnimationFrame(updateScan);
+        }, SCAN_DELAY);
+    }
+
+    // ── 清除所有 class，重置動畫 ──
+    overlay.classList.remove('hidden', 'show', 'stage-deck', 'stage-draw', 'stage-enter', 'stage-charge', 'stage-flip', 'stage-reveal', 'stage-fadeout');
+
+    // ── Stage 1 (50ms): 背景漸隱出現 + 魔法陣 + 符文 + 星塵 ──
     setTimeout(() => {
         overlay.classList.add('show');
     }, 50);
 
-    // 2. 卡牌飛入
+    // ── Stage 2 (800ms): 扇形牌陣展開 ──
     setTimeout(() => {
+        overlay.classList.add('stage-deck');
+    }, 800);
+
+    // -- 掃描結束時間 = SCAN_DELAY + TOTAL_SCAN = 1600 + 3400 = 5000ms --
+
+    // ── Stage 3 (5300ms): 選中牌抽出，其餘散開 ──
+    setTimeout(() => {
+        overlay.classList.remove('stage-deck');
+        overlay.classList.add('stage-draw');
+    }, 5300);
+
+    // ── Stage 4 (6500ms): 牌陣消失，主卡牌從抽出牌位置飛到正中央 ──
+    setTimeout(() => {
+        // ── 計算被抽出牌的實際螢幕位置 ──
+        const cardStage = overlay.querySelector('.daily-card-stage');
+        const chosenCard = deckFan ? deckFan.querySelector('.daily-deck-card.chosen') : null;
+
+        if (cardStage && chosenCard) {
+            const chosenRect = chosenCard.getBoundingClientRect();
+            const stageRect = cardStage.getBoundingClientRect();
+
+            // 計算兩者中心點的差值
+            const chosenCenterX = chosenRect.left + chosenRect.width / 2;
+            const chosenCenterY = chosenRect.top + chosenRect.height / 2;
+            const stageCenterX = stageRect.left + stageRect.width / 2;
+            const stageCenterY = stageRect.top + stageRect.height / 2;
+
+            const offsetX = chosenCenterX - stageCenterX;
+            const offsetY = chosenCenterY - stageCenterY;
+
+            // 起始縮放：依照實際 DOM 尺寸比，讓進場接棒不會忽大忽小
+            const stageWidth = stageRect.width || 250;
+            const stageHeight = stageRect.height || 425;
+            const rawScaleX = chosenRect.width / stageWidth;
+            const rawScaleY = chosenRect.height / stageHeight;
+            const startScale = Math.max(0.22, Math.min(0.55, (rawScaleX + rawScaleY) / 2));
+
+            // 起始角度：沿用扇形牌角度，避免主牌瞬間被扶正
+            const cardIndex = Number.parseFloat(chosenCard.style.getPropertyValue('--i'))
+                || Number.parseFloat(chosenCard.dataset.index || '0')
+                || 0;
+            const fanMid = Number.parseFloat(chosenCard.style.getPropertyValue('--mid'))
+                || midIndex;
+            const startRotate = (cardIndex - fanMid) * 4;
+
+            // 設定起始位置（對齊被抽出牌）
+            cardStage.style.setProperty('--start-x', `${offsetX}px`);
+            cardStage.style.setProperty('--start-y', `${offsetY}px`);
+            cardStage.style.setProperty('--start-scale', startScale.toFixed(4));
+            cardStage.style.setProperty('--start-rot', `${startRotate}deg`);
+
+            // 強制重排，確保瀏覽器已套用起始位置
+            cardStage.offsetHeight; // force reflow
+        }
+
+        overlay.classList.remove('stage-draw');
         overlay.classList.add('stage-enter');
-    }, 600);
+    }, 6500);
 
-    // 3. 翻牌 + 衝擊波
+    // ── Stage 5 (8200ms): 能量蓄積 — 卡牌微縮暗化再亮起 ──
     setTimeout(() => {
+        overlay.classList.add('stage-charge');
+    }, 8200);
+
+    // ── Stage 6 (9500ms): 翻牌 + 衝擊波 + 螢幕震動 + 鏡頭光暈 ──
+    setTimeout(() => {
+        overlay.classList.remove('stage-charge');
         overlay.classList.add('stage-flip');
-    }, 2000);
 
-    // 4. 動畫結束，進入分析畫面
+        // 爆發粒子
+        if (canvas) {
+            for (let i = 0; i < 150; i++) {
+                particles.push(
+                    (function() {
+                        const cx = canvas.width / 2;
+                        const cy = canvas.height / 2;
+                        const angle = Math.random() * Math.PI * 2;
+                        const speed = 2 + Math.random() * 8;
+                        return {
+                            x: cx, y: cy,
+                            vx: Math.cos(angle) * speed,
+                            vy: Math.sin(angle) * speed,
+                            size: 1 + Math.random() * 3,
+                            opacity: 0.8 + Math.random() * 0.2,
+                            decay: 0.008 + Math.random() * 0.015,
+                            hue: 35 + Math.random() * 30,
+                            type: 'burst'
+                        };
+                    })()
+                );
+            }
+        }
+    }, 9500);
+
+    // ── Stage 7 (11500ms): 揭示牌名文字 ──
     setTimeout(() => {
-        overlay.classList.remove('show', 'stage-enter', 'stage-flip');
-        setTimeout(() => overlay.classList.add('hidden'), 500); // 等待淡出
-        showAnalysis();
-    }, 4500);
+        overlay.classList.add('stage-reveal');
+    }, 11500);
+
+    // ── Stage 8 (14000ms): 淡出 → 進入解析畫面 ──
+    setTimeout(() => {
+        overlay.classList.add('stage-fadeout');
+
+        // 停止所有動畫
+        if (particleAnimId) {
+            cancelAnimationFrame(particleAnimId);
+            particleAnimId = null;
+        }
+        if (scanAnimId) {
+            cancelAnimationFrame(scanAnimId);
+            scanAnimId = null;
+        }
+
+        // 等淡出完成後清理並進入分析
+        setTimeout(() => {
+            overlay.classList.remove('show', 'stage-deck', 'stage-draw', 'stage-enter', 'stage-charge', 'stage-flip', 'stage-reveal', 'stage-fadeout');
+            overlay.classList.add('hidden');
+            // 清空 canvas
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            particles = [];
+            showAnalysis();
+        }, 1000);
+    }, 14000);
 }
 
 /* ============================
@@ -688,4 +1003,3 @@ document.addEventListener('visibilitychange', () => {
 /* ============================
    AI 解牌流程已拆分至 analysis.js
    ============================ */
-

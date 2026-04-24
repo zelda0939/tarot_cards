@@ -1722,141 +1722,635 @@ footer {
     box-shadow: 0 0 25px rgba(255, 215, 100, 0.6);
 }
 
+/* ─── Overlay 主容器 ─── */
 #daily-animation-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at center, rgba(15, 20, 40, 0.95), rgba(0, 0, 5, 0.98));
+    background: radial-gradient(ellipse at center, #0a0d1e 0%, #020308 60%, #000 100%);
     z-index: 15000;
     display: flex;
     justify-content: center;
     align-items: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.5s ease-in-out;
-    perspective: 1500px;
+    transition: opacity 0.6s ease-in-out;
+    perspective: 1800px;
+    overflow: hidden;
 }
-
 #daily-animation-overlay.show {
     opacity: 1;
     pointer-events: auto;
 }
 
-/* 華麗背景：公轉光芒 */
+/* ─── Canvas 粒子層 ─── */
+#daily-particle-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ─── 星雲背景 ─── */
+.daily-nebula {
+    position: absolute;
+    width: 160vmin; height: 160vmin;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        rgba(90, 50, 180, 0.12) 0%,
+        rgba(60, 20, 140, 0.08) 30%,
+        rgba(20, 10, 80, 0.04) 60%,
+        transparent 80%
+    );
+    filter: blur(40px);
+    opacity: 0;
+    transition: opacity 2.5s ease-in-out;
+    animation: nebulaBreath 8s ease-in-out infinite;
+    z-index: 0;
+}
+#daily-animation-overlay.show .daily-nebula {
+    opacity: 1;
+}
+@keyframes nebulaBreath {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.08) rotate(3deg); }
+}
+
+/* ─── 公轉光芒（雙層） ─── */
 .daily-sunburst {
     position: absolute;
-    width: 200vmin;
-    height: 200vmin;
+    width: 200vmin; height: 200vmin;
     background: repeating-conic-gradient(
-        from 0deg, 
-        rgba(255, 215, 100, 0.05) 0deg 10deg, 
-        rgba(255, 215, 100, 0) 10deg 20deg
+        from 0deg,
+        rgba(255, 215, 100, 0.06) 0deg 8deg,
+        transparent 8deg 16deg
     );
     border-radius: 50%;
-    animation: rotateSunburst 30s linear infinite;
+    animation: rotateSunburst 25s linear infinite;
     mix-blend-mode: screen;
     opacity: 0;
     transition: opacity 2s ease-in-out;
+    z-index: 0;
 }
-
-#daily-animation-overlay.show .daily-sunburst {
+.daily-sunburst-inner {
+    position: absolute;
+    width: 140vmin; height: 140vmin;
+    background: repeating-conic-gradient(
+        from 15deg,
+        rgba(180, 140, 255, 0.04) 0deg 6deg,
+        transparent 6deg 12deg
+    );
+    border-radius: 50%;
+    animation: rotateSunburst 18s linear infinite reverse;
+    mix-blend-mode: screen;
+    opacity: 0;
+    transition: opacity 2.5s ease-in-out 0.5s;
+    z-index: 0;
+}
+#daily-animation-overlay.show .daily-sunburst,
+#daily-animation-overlay.show .daily-sunburst-inner {
     opacity: 1;
 }
-
 @keyframes rotateSunburst {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
 
-/* 飛入與翻牌容器 */
-.daily-card-stage {
-    position: relative;
-    z-index: 2;
-    transform: translateY(-100vh) scale(0.5);
+/* ─── 魔法陣(SVG旋轉) ─── */
+.daily-magic-circle {
+    position: absolute;
+    z-index: 1;
     opacity: 0;
-    transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: opacity 1.5s ease-in-out;
+    pointer-events: none;
 }
-
-#daily-animation-overlay.stage-enter .daily-card-stage {
-    transform: translateY(0) scale(1.2);
+.daily-magic-circle svg {
+    width: 420px; height: 420px;
+    filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.5))
+            drop-shadow(0 0 40px rgba(180, 140, 255, 0.3));
+}
+.daily-magic-circle-outer {
+    animation: magicCircleSpin 20s linear infinite;
+}
+.daily-magic-circle-inner {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+}
+.daily-magic-circle-inner svg {
+    width: 280px; height: 280px;
+    animation: magicCircleSpin 12s linear infinite reverse;
+    filter: drop-shadow(0 0 12px rgba(249, 229, 150, 0.4));
+}
+#daily-animation-overlay.show .daily-magic-circle {
     opacity: 1;
 }
-
-#daily-animation-overlay.stage-flip .daily-card-stage {
-    transform: translateY(0) scale(1); /* 翻轉時稍微退回原大小，製造衝擊感 */
+#daily-animation-overlay.stage-flip .daily-magic-circle {
+    opacity: 0;
+    transition: opacity 0.8s ease-out;
+}
+@keyframes magicCircleSpin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
-.daily-card-flip-container {
-    width: 250px;
-    height: 425px;
-    border-radius: 12px;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 100, 0.2);
-    perspective: 1500px;
-}
-
-.daily-card-flipper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    transition: transform 1.2s cubic-bezier(0.4, 0.0, 0.2, 1);
-    transform-style: preserve-3d;
-}
-
-#daily-animation-overlay.stage-flip .daily-card-flipper {
-    transform: rotateY(180deg);
-}
-
-.daily-card-front, .daily-card-back {
+/* ─── 浮遊符文 ─── */
+.daily-rune {
     position: absolute;
+    font-size: 1.8rem;
+    color: rgba(212, 175, 55, 0.6);
+    text-shadow: 0 0 14px rgba(212, 175, 55, 0.8), 0 0 30px rgba(180, 140, 255, 0.4);
+    pointer-events: none;
+    opacity: 0;
+    z-index: 1;
+}
+#daily-animation-overlay.show .daily-rune {
+    animation: runeFloat 4s ease-in-out infinite, runeFadeIn 2s ease-out forwards;
+}
+#daily-animation-overlay.stage-flip .daily-rune {
+    animation: runeExplode 0.8s ease-out forwards;
+}
+@keyframes runeFadeIn {
+    0% { opacity: 0; transform: scale(0.3); }
+    100% { opacity: 0.7; transform: scale(1); }
+}
+@keyframes runeFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-12px) rotate(5deg); }
+    75% { transform: translateY(8px) rotate(-3deg); }
+}
+@keyframes runeExplode {
+    0% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+    100% { opacity: 0; transform: scale(0) rotate(180deg); }
+}
+
+/* ─── 扇形牌陣 (Deck Fan) ─── */
+.daily-deck-fan {
+    position: absolute;
+    z-index: 3;
     width: 100%;
     height: 100%;
-    backface-visibility: hidden;
-    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease-out;
+}
+
+.daily-deck-card {
+    position: absolute;
+    width: 80px;
+    height: 130px;
+    border-radius: 6px;
     overflow: hidden;
-    border: 3px solid rgba(255, 215, 100, 0.5);
+    border: 1.5px solid rgba(212, 175, 55, 0.3);
+    background: #0a0a14;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 4px rgba(212, 175, 55, 0.08);
+    /* 初始：全部疊在一起 */
+    transform: rotate(0deg) translateY(0);
+    opacity: 0;
+    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    /* --i: 卡牌索引, --mid: 中間位置（由 JS 設定） */
 }
-
-.daily-card-front {
-    background-color: #111;
-}
-
-.daily-card-front img, .daily-card-back img {
+.daily-deck-card img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.daily-card-back {
-    background-color: #000;
-    transform: rotateY(180deg);
-    box-shadow: inset 0 0 30px rgba(255, 215, 100, 0.4);
+/* ── Stage: deck — 牌陣展開扇形 ── */
+#daily-animation-overlay.stage-deck .daily-deck-fan {
+    opacity: 1;
+}
+#daily-animation-overlay.stage-deck .daily-deck-card {
+    opacity: 1;
+    /* 以 --mid 為中心，每張牌相隔 4deg 扇形展開 */
+    transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-20px);
+    transform-origin: center 420px; /* 旋轉支點在下方遠處，製造密集扇形 */
+    transition-delay: calc(var(--i) * 0.04s); /* 交錯動畫，更快更密 */
 }
 
-/* 翻開時的強烈發光效果 */
+/* 選中牌 — JS 在掃描光掃到後才動態加入 .chosen，觸發閃光動畫 */
+#daily-animation-overlay.stage-deck .daily-deck-card.chosen {
+    z-index: 5;
+    animation: cardChosenGlow 0.6s ease-out forwards;
+    transform-origin: center 420px;
+}
+@keyframes cardChosenGlow {
+    0% {
+        border-color: rgba(212, 175, 55, 0.3);
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+        transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-20px);
+    }
+    40% {
+        border-color: rgba(255, 255, 200, 1);
+        box-shadow: 0 0 40px rgba(255, 215, 100, 0.9), 0 0 80px rgba(255, 215, 100, 0.5), 0 0 120px rgba(255, 215, 100, 0.3);
+        transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-40px) scale(1.1);
+    }
+    100% {
+        border-color: rgba(255, 215, 100, 0.8);
+        box-shadow: 0 0 30px rgba(255, 215, 100, 0.6), 0 0 60px rgba(255, 215, 100, 0.3);
+        transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-35px) scale(1.05);
+    }
+}
+
+/* ── JS 驅動掃描光（真實 DOM 元素）── */
+.daily-scan-beam {
+    position: absolute;
+    width: 6px;
+    height: 300px;
+    background: linear-gradient(180deg,
+        transparent,
+        rgba(255, 215, 100, 0.5),
+        rgba(255, 255, 200, 0.95),
+        rgba(255, 215, 100, 0.5),
+        transparent
+    );
+    filter: blur(4px);
+    opacity: 0;
+    z-index: 10;
+    pointer-events: none;
+    transform-origin: center 420px;
+    transition: opacity 0.3s;
+}
+#daily-animation-overlay.stage-deck .daily-scan-beam {
+    opacity: 1;
+}
+
+/* ── 掃描經過的牌微微上浮（peek 效果）── */
+#daily-animation-overlay.stage-deck .daily-deck-card.peeking {
+    transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-38px);
+    transition: transform 0.15s ease-out;
+    border-color: rgba(255, 215, 100, 0.5);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 215, 100, 0.3);
+}
+/* 沒被掃到時沈回原位 */
+#daily-animation-overlay.stage-deck .daily-deck-card:not(.peeking):not(.chosen) {
+    transition: transform 0.4s ease-in, border-color 0.3s, box-shadow 0.3s;
+}
+
+/* ── Stage: draw — 抽出選中牌，其他散開 ── */
+#daily-animation-overlay.stage-draw .daily-deck-fan {
+    opacity: 1;
+}
+#daily-animation-overlay.stage-draw .daily-deck-card,
+#daily-animation-overlay.stage-enter .daily-deck-card {
+    opacity: 0;
+    /* 非選中牌往外散開 */
+    transform: rotate(calc((var(--i) - var(--mid)) * 12deg)) translateY(80px);
+    filter: blur(3px);
+    transition: all 0.7s ease-in;
+}
+#daily-animation-overlay.stage-draw .daily-deck-card.chosen {
+    opacity: 1;
+    /* 保持在抽出的扇形位置，避免先跳到中間再進入後續過場 */
+    transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-35px) scale(1.05);
+    filter: blur(0);
+    border-color: rgba(255, 215, 100, 0.9);
+    box-shadow:
+        0 0 50px rgba(255, 215, 100, 0.6),
+        0 0 100px rgba(212, 175, 55, 0.35),
+        0 12px 40px rgba(0, 0, 0, 0.5);
+    transition:
+        transform 0.9s cubic-bezier(0.23, 1, 0.32, 1),
+        filter 0.6s ease-out,
+        border-color 0.6s ease-out,
+        box-shadow 0.6s ease-out;
+    z-index: 5;
+}
+#daily-animation-overlay.stage-enter .daily-deck-card.chosen {
+    /* 和主卡交疊淡出，視覺上像同一張牌被「接棒」到中央 */
+    opacity: 0;
+    transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-18px) scale(0.92);
+    filter: blur(1.4px) brightness(1.15);
+    transition:
+        transform 0.52s cubic-bezier(0.33, 1, 0.68, 1) 0.06s,
+        opacity 0.48s ease-out 0.06s,
+        filter 0.48s ease-out 0.06s;
+}
+
+/* ── 牌陣消失（延遲淡出，讓主卡牌有時間對齊位置形成交疊融合）── */
+#daily-animation-overlay.stage-enter .daily-deck-fan {
+    opacity: 0;
+    transition: opacity 0.8s ease-out 0.15s;
+    pointer-events: none;
+}
+
+/* ─── 卡牌舞台 ─── */
+.daily-card-stage {
+    position: relative;
+    z-index: 3;
+    /* 初始位置：由 JS 動態注入 --start-x, --start-y（對齊被抽出的扇形牌實際位置） */
+    --start-x: 0px;
+    --start-y: 0px;
+    --start-scale: 0.32;
+    --start-rot: 0deg;
+    transform: translate(var(--start-x), var(--start-y)) rotate(var(--start-rot)) scale(var(--start-scale));
+    transform-origin: center center;
+    opacity: 0;
+    filter: brightness(0.8);
+    will-change: transform, opacity, filter;
+    /* 非 enter 階段不要有 transition，避免初始化時閃動 */
+}
+#daily-animation-overlay.stage-enter .daily-card-stage {
+    /* 滑到正中央並放大 */
+    transform: translate(0, 0) rotate(0deg) scale(1.12);
+    opacity: 1;
+    filter: brightness(1);
+    transition: transform 1.55s cubic-bezier(0.19, 0.9, 0.28, 1),
+                opacity 0.42s ease-out 0.03s,
+                filter 1s ease-out;
+}
+#daily-animation-overlay.stage-charge .daily-card-stage {
+    transform: translate(0, 0) rotate(0deg) scale(1.05);
+    animation: cardCharge 1.2s ease-in-out;
+}
+#daily-animation-overlay.stage-flip .daily-card-stage {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    filter: brightness(1.2);
+}
+@keyframes cardCharge {
+    0% { filter: brightness(1); }
+    30% { filter: brightness(0.6); transform: translate(0, 0) rotate(0deg) scale(0.95); }
+    60% { filter: brightness(0.4); transform: translate(0, 0) rotate(0deg) scale(0.92); }
+    100% { filter: brightness(1.2); transform: translate(0, 0) rotate(0deg) scale(1.05); }
+}
+
+/* ─── 卡牌容器與翻轉 ─── */
+.daily-card-flip-container {
+    width: 250px; height: 425px;
+    border-radius: 12px;
+    perspective: 1800px;
+    position: relative;
+}
+.daily-card-flipper {
+    position: relative;
+    width: 100%; height: 100%;
+    text-align: center;
+    transition: transform 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform-style: preserve-3d;
+}
+#daily-animation-overlay.stage-flip .daily-card-flipper {
+    transform: rotateY(540deg);
+}
+.daily-card-front, .daily-card-back {
+    position: absolute;
+    width: 100%; height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 3px solid rgba(255, 215, 100, 0.5);
+}
+.daily-card-front {
+    background-color: #0a0a14;
+}
+.daily-card-front img, .daily-card-back img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+}
+.daily-card-back {
+    background-color: #080810;
+    transform: rotateY(180deg);
+    box-shadow: inset 0 0 40px rgba(255, 215, 100, 0.35);
+}
+
+/* ─── 卡牌光暈環(Aura) ─── */
+.daily-card-aura {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 300px; height: 480px;
+    transform: translate(-50%, -50%);
+    border-radius: 16px;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.8s ease-out;
+}
+#daily-animation-overlay.stage-enter .daily-card-aura {
+    opacity: 1;
+    animation: auraPulse 2s ease-in-out infinite;
+    box-shadow:
+        0 0 30px rgba(212, 175, 55, 0.4),
+        0 0 60px rgba(212, 175, 55, 0.2),
+        0 0 100px rgba(180, 140, 255, 0.15),
+        inset 0 0 30px rgba(212, 175, 55, 0.1);
+}
+#daily-animation-overlay.stage-charge .daily-card-aura {
+    animation: auraCharge 1.2s ease-in-out;
+}
+#daily-animation-overlay.stage-flip .daily-card-aura {
+    animation: auraExplode 1s ease-out forwards;
+}
+@keyframes auraPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 30px rgba(212, 175, 55, 0.3),
+            0 0 60px rgba(212, 175, 55, 0.15),
+            0 0 100px rgba(180, 140, 255, 0.1);
+    }
+    50% {
+        box-shadow:
+            0 0 50px rgba(212, 175, 55, 0.5),
+            0 0 90px rgba(212, 175, 55, 0.25),
+            0 0 140px rgba(180, 140, 255, 0.2);
+    }
+}
+@keyframes auraCharge {
+    0% {
+        box-shadow: 0 0 30px rgba(212, 175, 55, 0.3), 0 0 60px rgba(180, 140, 255, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 10px rgba(100, 50, 200, 0.6), 0 0 20px rgba(100, 50, 200, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 80px rgba(255, 215, 100, 0.8), 0 0 150px rgba(212, 175, 55, 0.4), 0 0 200px rgba(180, 140, 255, 0.3);
+    }
+}
+@keyframes auraExplode {
+    0% {
+        box-shadow: 0 0 80px rgba(255, 215, 100, 0.8), 0 0 150px rgba(212, 175, 55, 0.4);
+        transform: translate(-50%, -50%) scale(1);
+    }
+    40% {
+        box-shadow: 0 0 200px rgba(255, 255, 200, 1), 0 0 400px rgba(255, 215, 100, 0.6);
+        transform: translate(-50%, -50%) scale(1.4);
+    }
+    100% {
+        box-shadow: 0 0 40px rgba(212, 175, 55, 0.3), 0 0 80px rgba(180, 140, 255, 0.1);
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+/* ─── 翻開時的多層衝擊波(Shockwave) ─── */
 .daily-card-stage::after {
     content: '';
     position: absolute;
     top: 50%; left: 50%;
-    width: 100%; height: 100%;
+    width: 120%; height: 120%;
     transform: translate(-50%, -50%);
-    background: radial-gradient(circle, rgba(255, 215, 100, 0.8) 0%, rgba(255, 215, 100, 0) 70%);
+    background: radial-gradient(circle,
+        rgba(255, 255, 240, 0.9) 0%,
+        rgba(255, 215, 100, 0.6) 20%,
+        rgba(180, 140, 255, 0.3) 40%,
+        transparent 70%
+    );
+    border-radius: 50%;
     opacity: 0;
     pointer-events: none;
     z-index: -1;
-    transition: opacity 0.5s ease-out;
 }
-
 #daily-animation-overlay.stage-flip .daily-card-stage::after {
-    animation: pulseFlash 1.5s ease-out forwards;
+    animation: shockwave 1.8s ease-out forwards;
+}
+@keyframes shockwave {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    15% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(4); }
 }
 
-@keyframes pulseFlash {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-    30% { opacity: 1; transform: translate(-50%, -50%) scale(1.5); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(2); }
+/* 第二層衝擊波 — 使用 ::before */
+.daily-card-stage::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 80%; height: 80%;
+    transform: translate(-50%, -50%);
+    border: 2px solid rgba(255, 215, 100, 0.6);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+#daily-animation-overlay.stage-flip .daily-card-stage::before {
+    animation: shockwaveRing 1.5s ease-out 0.15s forwards;
+}
+@keyframes shockwaveRing {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); border-width: 3px; }
+    20% { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(5); border-width: 0.5px; }
 }
 
-/* 漂浮粒子 */
+/* ─── 螢幕震動 ─── */
+#daily-animation-overlay.stage-flip {
+    animation: screenShake 0.6s ease-out;
+}
+@keyframes screenShake {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-4px, 3px); }
+    20% { transform: translate(5px, -2px); }
+    30% { transform: translate(-3px, 4px); }
+    40% { transform: translate(4px, -3px); }
+    50% { transform: translate(-2px, 2px); }
+    60% { transform: translate(3px, -1px); }
+    70% { transform: translate(-1px, 2px); }
+    80% { transform: translate(2px, -1px); }
+    100% { transform: translate(0, 0); }
+}
+
+/* ─── 鏡頭光暈(Lens Flare) ─── */
+.daily-lens-flare {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 600px; height: 600px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 4;
+    opacity: 0;
+    mix-blend-mode: screen;
+}
+.daily-lens-flare::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 100%; height: 4px;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(90deg,
+        transparent 0%,
+        rgba(255, 255, 200, 0) 20%,
+        rgba(255, 255, 200, 0.8) 45%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 200, 0.8) 55%,
+        rgba(255, 255, 200, 0) 80%,
+        transparent 100%
+    );
+}
+.daily-lens-flare::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 4px; height: 100%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(180deg,
+        transparent 0%,
+        rgba(255, 255, 200, 0) 20%,
+        rgba(255, 255, 200, 0.6) 45%,
+        rgba(255, 255, 255, 0.8) 50%,
+        rgba(255, 255, 200, 0.6) 55%,
+        rgba(255, 255, 200, 0) 80%,
+        transparent 100%
+    );
+}
+#daily-animation-overlay.stage-flip .daily-lens-flare {
+    animation: lensFlareReveal 2s ease-out forwards;
+}
+@keyframes lensFlareReveal {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(0deg); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2) rotate(15deg); }
+    60% { opacity: 0.6; transform: translate(-50%, -50%) scale(1) rotate(25deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) rotate(45deg); }
+}
+
+/* ─── 揭示文字 ─── */
+.daily-reveal-text {
+    position: absolute;
+    bottom: 4%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    text-align: center;
+    opacity: 0;
+    pointer-events: none;
+    /* 毛玻璃背景膠囊 */
+    background: rgba(5, 5, 15, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(212, 175, 55, 0.25);
+    border-radius: 16px;
+    padding: 0.8rem 2rem 0.7rem;
+    min-width: 240px;
+}
+.daily-reveal-text .card-name-reveal {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow:
+        0 0 12px var(--gold),
+        0 0 30px rgba(212, 175, 55, 0.6),
+        0 0 60px rgba(212, 175, 55, 0.3),
+        0 2px 4px rgba(0, 0, 0, 1);
+    letter-spacing: 0.12rem;
+    white-space: nowrap;
+}
+.daily-reveal-text .card-sub-reveal {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1rem;
+    color: var(--gold-light);
+    margin-top: 0.35rem;
+    letter-spacing: 0.15rem;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+#daily-animation-overlay.stage-reveal .daily-reveal-text {
+    animation: revealTextIn 1.2s ease-out forwards;
+}
+@keyframes revealTextIn {
+    0% { opacity: 0; transform: translateX(-50%) translateY(25px) scale(0.9); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+/* ─── 漂浮粒子(CSS fallback) ─── */
 .daily-particle {
     position: absolute;
     background: #fff;
@@ -1864,10 +2358,77 @@ footer {
     box-shadow: 0 0 10px #fff, 0 0 20px rgba(255, 215, 100, 0.8);
     pointer-events: none;
     opacity: 0;
-    animation: particleUp 2s linear forwards;
+    z-index: 2;
 }
 
-@keyframes particleUp {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(-100px) scale(0); opacity: 0; }
+/* ─── 淡出階段 ─── */
+#daily-animation-overlay.stage-fadeout {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+/* ─── 手機響應式 ─── */
+@media (max-width: 768px) {
+    .daily-deck-card {
+        width: 65px; height: 105px;
+    }
+    #daily-animation-overlay.stage-deck .daily-deck-card {
+        transform-origin: center 350px;
+    }
+    .daily-card-flip-container {
+        width: 200px; height: 340px;
+    }
+    .daily-card-aura {
+        width: 240px; height: 390px;
+    }
+    .daily-magic-circle svg {
+        width: 300px; height: 300px;
+    }
+    .daily-magic-circle-inner svg {
+        width: 200px; height: 200px;
+    }
+    .daily-reveal-text {
+        padding: 0.6rem 1.5rem 0.5rem;
+        min-width: 200px;
+    }
+    .daily-reveal-text .card-name-reveal {
+        font-size: 1.5rem;
+    }
+    .daily-reveal-text .card-sub-reveal {
+        font-size: 0.85rem;
+    }
+    .daily-lens-flare {
+        width: 400px; height: 400px;
+    }
+}
+@media (max-width: 480px) {
+    .daily-deck-card {
+        width: 52px; height: 85px;
+    }
+    #daily-animation-overlay.stage-deck .daily-deck-card {
+        transform-origin: center 280px;
+    }
+    .daily-card-flip-container {
+        width: 170px; height: 290px;
+    }
+    .daily-card-aura {
+        width: 210px; height: 340px;
+    }
+    .daily-magic-circle svg {
+        width: 240px; height: 240px;
+    }
+    .daily-magic-circle-inner svg {
+        width: 160px; height: 160px;
+    }
+    .daily-reveal-text {
+        padding: 0.5rem 1.2rem 0.4rem;
+        min-width: 180px;
+        bottom: 3%;
+    }
+    .daily-reveal-text .card-name-reveal {
+        font-size: 1.2rem;
+    }
+    .daily-reveal-text .card-sub-reveal {
+        font-size: 0.75rem;
+    }
 }
