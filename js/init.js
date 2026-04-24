@@ -27,6 +27,19 @@ function detectInAppBrowser() {
 
     if (isLine || isFB) {
         const appName = isLine ? 'LINE' : 'Facebook';
+        let targetUrl = window.location.href;
+        
+        // LINE 支援使用 openExternalBrowser=1 參數強制跳轉至系統預設瀏覽器
+        if (isLine) {
+            try {
+                const urlObj = new URL(window.location.href);
+                urlObj.searchParams.set('openExternalBrowser', '1');
+                targetUrl = urlObj.toString();
+            } catch (e) {
+                targetUrl += (targetUrl.includes('?') ? '&' : '?') + 'openExternalBrowser=1';
+            }
+        }
+
         const banner = document.createElement('div');
         banner.id = 'inapp-browser-warning';
         banner.innerHTML = `
@@ -47,7 +60,7 @@ function detectInAppBrowser() {
                     手勢抽牌功能需要攝影機權限，<strong>${appName}</strong> 瀏覽器可能無法正常取得授權。<br>
                     請點擊下方按鈕以 <strong>Chrome 或 Safari 系統瀏覽器</strong> 開啟，獲得最佳體驗 ✨
                 </p>
-                <a href="${window.location.href}" target="_blank" rel="noopener"
+                <a href="${targetUrl}" target="_blank" rel="noopener"
                    style="display: inline-block; background: var(--gold); color: #111; padding: 0.6rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.95rem; letter-spacing: 0.5px; box-shadow: 0 2px 10px rgba(212,175,55,0.3);">
                     🌐 用外部瀏覽器開啟
                 </a>
