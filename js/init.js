@@ -34,25 +34,27 @@ function detectInAppBrowser() {
                 position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;
                 background: linear-gradient(135deg, #1a0a00, #2a1500);
                 border-bottom: 2px solid var(--gold);
-                padding: 1rem 1.2rem;
+                padding: 1rem 5%;
+                box-sizing: border-box;
                 text-align: center;
                 box-shadow: 0 4px 20px rgba(0,0,0,0.6);
                 animation: slideDown 0.5s ease;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
             ">
-                <p style="color: var(--gold-light); font-size: 0.85rem; margin-bottom: 0.5rem; line-height: 1.5;">
+                <p style="color: var(--gold-light); font-size: 0.95rem; margin: 0 0 0.5rem 0; line-height: 1.4;">
                     ⚠️ 偵測到您正在使用 <strong>${appName}</strong> 內建瀏覽器
                 </p>
-                <p style="color: var(--text-white); font-size: 0.8rem; margin-bottom: 0.8rem; line-height: 1.5;">
-                    手勢抽牌功能需要攝影機權限，<strong>${appName}</strong> 瀏覽器可能無法正常使用。<br>
-                    請點擊下方按鈕用 <strong>Chrome</strong> 開啟以獲得最佳體驗 ✨
+                <p style="color: var(--text-white); font-size: 0.85rem; margin: 0 0 1rem 0; line-height: 1.5; opacity: 0.9;">
+                    手勢抽牌功能需要攝影機權限，<strong>${appName}</strong> 瀏覽器可能無法正常取得授權。<br>
+                    請點擊下方按鈕以 <strong>Chrome 或 Safari 系統瀏覽器</strong> 開啟，獲得最佳體驗 ✨
                 </p>
                 <a href="${window.location.href}" target="_blank" rel="noopener"
-                   style="display: inline-block; background: var(--gold); color: #111; padding: 0.5rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem;">
-                    用外部瀏覽器開啟
+                   style="display: inline-block; background: var(--gold); color: #111; padding: 0.6rem 2rem; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 0.95rem; letter-spacing: 0.5px; box-shadow: 0 2px 10px rgba(212,175,55,0.3);">
+                    🌐 用外部瀏覽器開啟
                 </a>
                 <button onclick="this.closest('#inapp-browser-warning').remove()"
-                    style="display: block; margin: 0.6rem auto 0; background: transparent; border: none; color: var(--text-muted); font-size: 0.7rem; cursor: pointer;">
-                    略過此提示
+                    style="display: block; margin-top: 0.8rem; background: transparent; border: none; color: var(--text-muted); font-size: 0.75rem; padding: 0.5rem; cursor: pointer; text-decoration: underline;">
+                    略過此提示並繼續
                 </button>
             </div>
         `;
