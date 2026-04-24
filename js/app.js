@@ -555,6 +555,72 @@ function startDailyFlow(todayStr) {
         return;
     }
 
+    overlay.classList.remove('daily-perf-mobile', 'daily-perf-lite');
+
+    // 每日一抽效能分級：手機/低功耗裝置自動降載
+    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isMobileViewport = window.innerWidth <= 768;
+    const touchCapable = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    const isMobileDevice = isMobileViewport || (touchCapable && window.innerWidth <= 1024);
+    const cpuCores = Number(navigator.hardwareConcurrency) || 8;
+    const memoryGB = Number(navigator.deviceMemory) || 8;
+    const isLowPowerMobile = isMobileDevice && (cpuCores <= 4 || memoryGB <= 4);
+
+    let perfTier = 'full';
+    if (prefersReducedMotion || isLowPowerMobile) {
+        perfTier = 'lite';
+    } else if (isMobileDevice) {
+        perfTier = 'mobile';
+    }
+
+    if (perfTier === 'mobile') overlay.classList.add('daily-perf-mobile');
+    if (perfTier === 'lite') overlay.classList.add('daily-perf-lite');
+
+    const dailyPerf = perfTier === 'full'
+        ? {
+            tier: 'full',
+            enableParticles: true,
+            particleCount: 120,
+            burstCount: 150,
+            particleFrameInterval: 16,
+            useSimpleParticles: false,
+            canvasScale: 1,
+            fanCards: 19,
+            scanDelay: 1600,
+            sweepPrimary: 1200,
+            sweepSecondary: 1200,
+            sweepToChosen: 1000
+        }
+        : perfTier === 'mobile'
+            ? {
+                tier: 'mobile',
+                enableParticles: true,
+                particleCount: 56,
+                burstCount: 70,
+                particleFrameInterval: 33,
+                useSimpleParticles: true,
+                canvasScale: 0.8,
+                fanCards: 15,
+                scanDelay: 1000,
+                sweepPrimary: 900,
+                sweepSecondary: 900,
+                sweepToChosen: 700
+            }
+            : {
+                tier: 'lite',
+                enableParticles: false,
+                particleCount: 0,
+                burstCount: 0,
+                particleFrameInterval: 50,
+                useSimpleParticles: true,
+                canvasScale: 0.7,
+                fanCards: 11,
+                scanDelay: 700,
+                sweepPrimary: 700,
+                sweepSecondary: 700,
+                sweepToChosen: 550
+            };
+
     // 綁定圖檔
     faceImg.src = `assets/images/${card.name_short}.jpg`;
     if (card.isReversed) {
@@ -577,10 +643,12 @@ function startDailyFlow(todayStr) {
     let particleAnimId = null;
     let particles = [];
 
-    if (canvas) {
+    if (canvas && dailyPerf.enableParticles) {
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        const canvasScale = dailyPerf.canvasScale;
+        canvas.width = Math.max(1, Math.floor(window.innerWidth * canvasScale));
+        canvas.height = Math.max(1, Math.floor(window.innerHeight * canvasScale));
+        let lastParticleFrameTime = 0;
 
         // 粒子生成函式
         function createParticle(burst) {
@@ -589,40 +657,46 @@ function startDailyFlow(todayStr) {
             if (burst) {
                 // 爆發型粒子（翻牌衝擊波）
                 const angle = Math.random() * Math.PI * 2;
-                const speed = 2 + Math.random() * 8;
+                const speed = (dailyPerf.useSimpleParticles ? 1.4 : 2) + Math.random() * (dailyPerf.useSimpleParticles ? 5 : 8);
                 return {
                     x: cx, y: cy,
                     vx: Math.cos(angle) * speed,
                     vy: Math.sin(angle) * speed,
-                    size: 1 + Math.random() * 3,
+                    size: (dailyPerf.useSimpleParticles ? 0.8 : 1) + Math.random() * (dailyPerf.useSimpleParticles ? 2.2 : 3),
                     opacity: 0.8 + Math.random() * 0.2,
                     decay: 0.008 + Math.random() * 0.015,
                     hue: 35 + Math.random() * 30, // 金色色調
                     type: 'burst'
                 };
-            } else {
-                // 漂浮星塵
-                return {
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.5,
-                    vy: -0.3 - Math.random() * 1.2,
-                    size: 0.5 + Math.random() * 2,
-                    opacity: 0.1 + Math.random() * 0.5,
-                    decay: 0.001 + Math.random() * 0.003,
-                    hue: 35 + Math.random() * 50,
-                    type: 'dust'
-                };
             }
+
+            // 漂浮星塵
+            return {
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * (dailyPerf.useSimpleParticles ? 0.35 : 0.5),
+                vy: -0.3 - Math.random() * (dailyPerf.useSimpleParticles ? 0.8 : 1.2),
+                size: 0.5 + Math.random() * (dailyPerf.useSimpleParticles ? 1.5 : 2),
+                opacity: 0.1 + Math.random() * 0.5,
+                decay: 0.001 + Math.random() * 0.003,
+                hue: 35 + Math.random() * 50,
+                type: 'dust'
+            };
         }
 
         // 初始粒子填充
-        for (let i = 0; i < 120; i++) {
+        for (let i = 0; i < dailyPerf.particleCount; i++) {
             particles.push(createParticle(false));
         }
 
-        // 繪製循環
-        function drawParticles() {
+        // 繪製循環（手機降為較低幀率 + 簡化渲染）
+        function drawParticles(now) {
+            if ((now - lastParticleFrameTime) < dailyPerf.particleFrameInterval) {
+                particleAnimId = requestAnimationFrame(drawParticles);
+                return;
+            }
+            lastParticleFrameTime = now;
+
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let i = particles.length - 1; i >= 0; i--) {
                 const p = particles[i];
@@ -640,32 +714,44 @@ function startDailyFlow(todayStr) {
                     continue;
                 }
 
-                // 發光效果
-                const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
-                gradient.addColorStop(0, `hsla(${p.hue}, 80%, 75%, ${p.opacity})`);
-                gradient.addColorStop(0.4, `hsla(${p.hue}, 70%, 60%, ${p.opacity * 0.5})`);
-                gradient.addColorStop(1, `hsla(${p.hue}, 60%, 50%, 0)`);
+                if (dailyPerf.useSimpleParticles) {
+                    // 手機簡化版：單層圓點，避免大量 radial gradient
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * 2.2, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${p.hue}, 82%, ${p.type === 'burst' ? '72%' : '64%'}, ${p.opacity})`;
+                    ctx.fill();
+                } else {
+                    // 桌機完整發光效果
+                    const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 3);
+                    gradient.addColorStop(0, `hsla(${p.hue}, 80%, 75%, ${p.opacity})`);
+                    gradient.addColorStop(0.4, `hsla(${p.hue}, 70%, 60%, ${p.opacity * 0.5})`);
+                    gradient.addColorStop(1, `hsla(${p.hue}, 60%, 50%, 0)`);
 
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
-                ctx.fillStyle = gradient;
-                ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
 
-                // 核心亮點
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
-                ctx.fillStyle = `hsla(${p.hue}, 90%, 90%, ${p.opacity})`;
-                ctx.fill();
+                    // 核心亮點
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * 0.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${p.hue}, 90%, 90%, ${p.opacity})`;
+                    ctx.fill();
+                }
             }
             particleAnimId = requestAnimationFrame(drawParticles);
         }
-        drawParticles();
+
+        particleAnimId = requestAnimationFrame(drawParticles);
+    } else if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
     // ── 動態產生扇形牌陣 ──
     const deckFan = document.getElementById('daily-deck-fan');
     let chosenIndex = 0;
-    const totalFanCards = 19;
+    const totalFanCards = dailyPerf.fanCards;
     const midIndex = Math.floor(totalFanCards / 2);
     let scanAnimId = null;
     const fanCards = []; // 存放所有牌 DOM 參考
@@ -696,10 +782,10 @@ function startDailyFlow(todayStr) {
 
         // ── 掃描動畫 ──
         // 在牌陣展開後才開始掃描
-        const SCAN_DELAY = 1600; // 從動畫開始算，等牌全部展開後
-        const SWEEP_RIGHT = 1200; // 左→右花費 (ms)
-        const SWEEP_LEFT = 1200; // 右→左花費 (ms)
-        const SWEEP_TO_CHOSEN = 1000; // 收尾滑到選中牌 (ms)
+        const SCAN_DELAY = dailyPerf.scanDelay; // 從動畫開始算，等牌全部展開後
+        const SWEEP_RIGHT = dailyPerf.sweepPrimary; // 第一段擺掃花費 (ms)
+        const SWEEP_LEFT = dailyPerf.sweepSecondary; // 第二段橫掃花費 (ms)
+        const SWEEP_TO_CHOSEN = dailyPerf.sweepToChosen; // 收尾滑到選中牌 (ms)
         const TOTAL_SCAN = SWEEP_RIGHT + SWEEP_LEFT + SWEEP_TO_CHOSEN;
         let scanStartTime = null;
         const firstSweepToRight = Math.random() < 0.5;
@@ -722,7 +808,7 @@ function startDailyFlow(todayStr) {
                 return; // 停止 rAF
             }
 
-            // ── 計算目前掃描位置（0~18 的浮點數）──
+            // ── 計算目前掃描位置（0~最後一張的浮點數）──
             let scanPos;
             if (elapsed < SWEEP_RIGHT) {
                 // Phase 1: 中間 -> 第一側（左或右，隨機）
@@ -764,26 +850,70 @@ function startDailyFlow(todayStr) {
         }, SCAN_DELAY);
     }
 
+    const scanTotalMs = dailyPerf.sweepPrimary + dailyPerf.sweepSecondary + dailyPerf.sweepToChosen;
+    const stagePacing = dailyPerf.tier === 'full'
+        ? {
+            deckAt: 800,
+            drawLag: 300,
+            enterGap: 1200,
+            chargeGap: 1700,
+            flipGap: 1300,
+            revealGap: 2000,
+            fadeGap: 2500,
+            cleanupDelay: 1000
+        }
+        : dailyPerf.tier === 'mobile'
+            ? {
+                deckAt: 620,
+                drawLag: 220,
+                enterGap: 900,
+                chargeGap: 1200,
+                flipGap: 900,
+                revealGap: 1400,
+                fadeGap: 1700,
+                cleanupDelay: 800
+            }
+            : {
+                deckAt: 520,
+                drawLag: 180,
+                enterGap: 760,
+                chargeGap: 1000,
+                flipGap: 780,
+                revealGap: 1150,
+                fadeGap: 1450,
+                cleanupDelay: 700
+            };
+
+    const STAGE_SHOW_AT = 50;
+    const STAGE_DECK_AT = stagePacing.deckAt;
+    const STAGE_DRAW_AT = dailyPerf.scanDelay + scanTotalMs + stagePacing.drawLag;
+    const STAGE_ENTER_AT = STAGE_DRAW_AT + stagePacing.enterGap;
+    const STAGE_CHARGE_AT = STAGE_ENTER_AT + stagePacing.chargeGap;
+    const STAGE_FLIP_AT = STAGE_CHARGE_AT + stagePacing.flipGap;
+    const STAGE_REVEAL_AT = STAGE_FLIP_AT + stagePacing.revealGap;
+    const STAGE_FADEOUT_AT = STAGE_REVEAL_AT + stagePacing.fadeGap;
+    const STAGE_CLEANUP_DELAY = stagePacing.cleanupDelay;
+
     // ── 清除所有 class，重置動畫 ──
     overlay.classList.remove('hidden', 'show', 'stage-deck', 'stage-draw', 'stage-enter', 'stage-charge', 'stage-flip', 'stage-reveal', 'stage-fadeout');
 
     // ── Stage 1 (50ms): 背景漸隱出現 + 魔法陣 + 符文 + 星塵 ──
     setTimeout(() => {
         overlay.classList.add('show');
-    }, 50);
+    }, STAGE_SHOW_AT);
 
     // ── Stage 2 (800ms): 扇形牌陣展開 ──
     setTimeout(() => {
         overlay.classList.add('stage-deck');
-    }, 800);
+    }, STAGE_DECK_AT);
 
-    // -- 掃描結束時間 = SCAN_DELAY + TOTAL_SCAN = 1600 + 3400 = 5000ms --
+    // -- 掃描結束時間 = dailyPerf.scanDelay + (sweepPrimary + sweepSecondary + sweepToChosen) --
 
     // ── Stage 3 (5300ms): 選中牌抽出，其餘散開 ──
     setTimeout(() => {
         overlay.classList.remove('stage-deck');
         overlay.classList.add('stage-draw');
-    }, 5300);
+    }, STAGE_DRAW_AT);
 
     // ── Stage 4 (6500ms): 牌陣消失，主卡牌從抽出牌位置飛到正中央 ──
     setTimeout(() => {
@@ -831,12 +961,12 @@ function startDailyFlow(todayStr) {
 
         overlay.classList.remove('stage-draw');
         overlay.classList.add('stage-enter');
-    }, 6500);
+    }, STAGE_ENTER_AT);
 
     // ── Stage 5 (8200ms): 能量蓄積 — 卡牌微縮暗化再亮起 ──
     setTimeout(() => {
         overlay.classList.add('stage-charge');
-    }, 8200);
+    }, STAGE_CHARGE_AT);
 
     // ── Stage 6 (9500ms): 翻牌 + 衝擊波 + 螢幕震動 + 鏡頭光暈 ──
     setTimeout(() => {
@@ -844,19 +974,19 @@ function startDailyFlow(todayStr) {
         overlay.classList.add('stage-flip');
 
         // 爆發粒子
-        if (canvas) {
-            for (let i = 0; i < 150; i++) {
+        if (canvas && dailyPerf.enableParticles && dailyPerf.burstCount > 0) {
+            for (let i = 0; i < dailyPerf.burstCount; i++) {
                 particles.push(
                     (function() {
                         const cx = canvas.width / 2;
                         const cy = canvas.height / 2;
                         const angle = Math.random() * Math.PI * 2;
-                        const speed = 2 + Math.random() * 8;
+                        const speed = (dailyPerf.useSimpleParticles ? 1.4 : 2) + Math.random() * (dailyPerf.useSimpleParticles ? 5 : 8);
                         return {
                             x: cx, y: cy,
                             vx: Math.cos(angle) * speed,
                             vy: Math.sin(angle) * speed,
-                            size: 1 + Math.random() * 3,
+                            size: (dailyPerf.useSimpleParticles ? 0.8 : 1) + Math.random() * (dailyPerf.useSimpleParticles ? 2.2 : 3),
                             opacity: 0.8 + Math.random() * 0.2,
                             decay: 0.008 + Math.random() * 0.015,
                             hue: 35 + Math.random() * 30,
@@ -866,12 +996,12 @@ function startDailyFlow(todayStr) {
                 );
             }
         }
-    }, 9500);
+    }, STAGE_FLIP_AT);
 
     // ── Stage 7 (11500ms): 揭示牌名文字 ──
     setTimeout(() => {
         overlay.classList.add('stage-reveal');
-    }, 11500);
+    }, STAGE_REVEAL_AT);
 
     // ── Stage 8 (14000ms): 淡出 → 進入解析畫面 ──
     setTimeout(() => {
@@ -889,7 +1019,7 @@ function startDailyFlow(todayStr) {
 
         // 等淡出完成後清理並進入分析
         setTimeout(() => {
-            overlay.classList.remove('show', 'stage-deck', 'stage-draw', 'stage-enter', 'stage-charge', 'stage-flip', 'stage-reveal', 'stage-fadeout');
+            overlay.classList.remove('show', 'stage-deck', 'stage-draw', 'stage-enter', 'stage-charge', 'stage-flip', 'stage-reveal', 'stage-fadeout', 'daily-perf-mobile', 'daily-perf-lite');
             overlay.classList.add('hidden');
             // 清空 canvas
             if (canvas) {
@@ -898,8 +1028,8 @@ function startDailyFlow(todayStr) {
             }
             particles = [];
             showAnalysis();
-        }, 1000);
-    }, 14000);
+        }, STAGE_CLEANUP_DELAY);
+    }, STAGE_FADEOUT_AT);
 }
 
 /* ============================

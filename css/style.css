@@ -2367,6 +2367,84 @@ footer {
     transition: opacity 1s ease-in-out;
 }
 
+/* ─── 手機效能模式（由 JS 自動加到 overlay）── */
+#daily-animation-overlay.daily-perf-mobile .daily-sunburst,
+#daily-animation-overlay.daily-perf-mobile .daily-sunburst-inner,
+#daily-animation-overlay.daily-perf-mobile .daily-lens-flare {
+    display: none;
+}
+#daily-animation-overlay.daily-perf-mobile .daily-nebula {
+    animation: none;
+    filter: blur(24px);
+}
+#daily-animation-overlay.daily-perf-mobile .daily-magic-circle svg,
+#daily-animation-overlay.daily-perf-mobile .daily-magic-circle-inner svg {
+    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.28));
+}
+#daily-animation-overlay.daily-perf-mobile .daily-rune:nth-of-type(even) {
+    display: none;
+}
+#daily-animation-overlay.daily-perf-mobile .daily-rune {
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+}
+#daily-animation-overlay.daily-perf-mobile .daily-scan-beam {
+    filter: blur(2px);
+}
+#daily-animation-overlay.daily-perf-mobile.stage-flip {
+    animation: none;
+}
+#daily-animation-overlay.daily-perf-mobile .daily-card-stage::before,
+#daily-animation-overlay.daily-perf-mobile .daily-card-stage::after {
+    display: none;
+}
+#daily-animation-overlay.daily-perf-mobile .daily-card-aura,
+#daily-animation-overlay.daily-perf-mobile.stage-enter .daily-card-aura,
+#daily-animation-overlay.daily-perf-mobile.stage-charge .daily-card-aura,
+#daily-animation-overlay.daily-perf-mobile.stage-flip .daily-card-aura {
+    animation: none;
+    box-shadow: 0 0 24px rgba(212, 175, 55, 0.24);
+}
+#daily-animation-overlay.daily-perf-mobile.stage-draw .daily-deck-card,
+#daily-animation-overlay.daily-perf-mobile.stage-enter .daily-deck-card {
+    filter: none;
+}
+#daily-animation-overlay.daily-perf-mobile .daily-reveal-text {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(5, 5, 15, 0.82);
+}
+
+/* ─── 低功耗模式（低階手機 / 減少動作偏好）── */
+#daily-animation-overlay.daily-perf-lite #daily-particle-canvas,
+#daily-animation-overlay.daily-perf-lite .daily-nebula,
+#daily-animation-overlay.daily-perf-lite .daily-sunburst,
+#daily-animation-overlay.daily-perf-lite .daily-sunburst-inner,
+#daily-animation-overlay.daily-perf-lite .daily-magic-circle,
+#daily-animation-overlay.daily-perf-lite .daily-rune,
+#daily-animation-overlay.daily-perf-lite .daily-lens-flare,
+#daily-animation-overlay.daily-perf-lite .daily-card-aura {
+    display: none !important;
+}
+#daily-animation-overlay.daily-perf-lite.stage-flip {
+    animation: none;
+}
+#daily-animation-overlay.daily-perf-lite .daily-card-stage::before,
+#daily-animation-overlay.daily-perf-lite .daily-card-stage::after {
+    display: none;
+}
+#daily-animation-overlay.daily-perf-lite .daily-deck-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+#daily-animation-overlay.daily-perf-lite.stage-draw .daily-deck-card,
+#daily-animation-overlay.daily-perf-lite.stage-enter .daily-deck-card {
+    filter: none;
+}
+#daily-animation-overlay.daily-perf-lite .daily-reveal-text {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(5, 5, 15, 0.86);
+}
+
 /* ─── 手機響應式 ─── */
 @media (max-width: 768px) {
     .daily-deck-card {
