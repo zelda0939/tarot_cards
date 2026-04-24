@@ -8,7 +8,7 @@
  * 3. 同步修改 index.html 中所有 ?v= 參數
  */
 
-const CACHE_VERSION = '1.7.2';
+const CACHE_VERSION = '1.7.3';
 const CACHE_NAME = `celestial-tarot-v${CACHE_VERSION}`;
 
 // 需要預先快取的核心檔案
@@ -25,6 +25,8 @@ const CORE_ASSETS = [
     './js/imageExport.js',
     './js/analysis.js',
     './js/app.js',
+    './js/daily.js',
+    './js/init.js',
     './js/tarot_dict.js',
     './manifest.json',
     './assets/icons/icon-192.png',
