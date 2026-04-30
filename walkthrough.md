@@ -91,3 +91,8 @@
     - **CSS 層**：`.daily-deck-card` 的 `transition: all` 改為僅 transition `transform` 與 `opacity`，避免 `border-color`、`box-shadow` 等高代價屬性被隱性觸發。沈回原位的規則也從 3 條 transition 精簡為只有 `transform`。
     - **GPU 合成**：為 `.daily-deck-card` 與 `.daily-scan-beam` 加入 `will-change: transform`，促使瀏覽器預先提升至 GPU 合成層，減少主執行緒的佈局計算。
     - 版本號升級至 **1.7.22**。
+- **穩定性優化：狀態清理與 MediaPipe 啟動競爭修復 (v1.7.23)**:
+    - **狀態清理**：實作 `cleanupGestureTransientEffects` 與 `stopCardRingAnimation`，確保在「每日一抽」與「手勢抽牌」模式切換時，所有計時器 (setTimeout)、動畫幀 (rAF) 與暫時性卡牌 Clone 都能被徹底移除，防止記憶體洩漏與視覺殘留。
+    - **攝影機同步控制**：新增 `mediaPipeStarting` 狀態旗標與 `_mediaPipeSessionId` 會話 ID 機制。解決了快速連點或切換模式時，多個攝影機實體同時競爭啟動導致的 JS 報錯或畫面閃爍問題。
+    - **模組化優化**：將原本散落在各處的動畫開關統一為 `startCardRingAnimation` 與 `stopCardRingAnimation` 介面，並在 `AppState` 中精確追蹤 `ringAnimationRunning` 狀態。
+    - 版本號升級至 **1.7.23**。
