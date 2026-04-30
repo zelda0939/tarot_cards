@@ -27,7 +27,18 @@ body {
     align-items: center;
 }
 
-/* 背景星光 */
+/* 背景星光與魔幻星雲 */
+@keyframes nebula-drift {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-2%, -2%) scale(1.05); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes magic-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
+}
+
 #stars-container {
     position: fixed;
     top: 0;
@@ -35,21 +46,39 @@ body {
     width: 100%;
     height: 100%;
     z-index: -1;
-    background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+    /* 魔幻深邃星雲漸層底色 (紫、湛藍、深黑) */
+    background: radial-gradient(ellipse at center bottom, #2b1055 0%, #150a21 45%, #050608 100%);
     overflow: hidden;
+}
+
+/* 疊加星雲光暈層 */
+#stars-container::before {
+    content: '';
+    position: absolute;
+    top: -20%; left: -20%; right: -20%; bottom: -20%;
+    background: 
+        radial-gradient(circle at 25% 25%, rgba(138, 43, 226, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 75% 75%, rgba(212, 175, 55, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 50% 60%, rgba(30, 144, 255, 0.08) 0%, transparent 60%);
+    animation: nebula-drift 30s infinite ease-in-out alternate, magic-pulse 15s infinite ease-in-out;
+    pointer-events: none;
+    z-index: 1;
 }
 
 .star {
     position: absolute;
-    background: white;
+    background: #fff;
     border-radius: 50%;
     opacity: 0.5;
     animation: twinkle var(--duration, 3s) infinite ease-in-out;
+    z-index: 2;
+    /* 星星微弱魔法光暈 */
+    box-shadow: 0 0 3px 0px rgba(212, 175, 55, 0.5);
 }
 
 @keyframes twinkle {
-    0%, 100% { opacity: 0.3; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.2); }
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.3); box-shadow: 0 0 6px 1px rgba(212, 175, 55, 0.8); }
 }
 
 /* Header 樣式 — 緊湊版 */

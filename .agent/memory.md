@@ -118,6 +118,13 @@
   - **HTML**: 於 `#history-list-view` 頂部新增 `.history-actions-bar` 操作列（含全選、刪除所選、清空全部）。
   - **CSS**: 實作自訂 `.custom-checkbox`，並設計 `.history-item.selected` 的高亮樣式。
   - **JS**: `js/history.js` 引入 `selectedHistoryIds` (Set) 追蹤選取狀態；實作全選連動邏輯；透過 `Promise.all` 實現批次刪除 `deleteHistoryRecord`。
-- **版本控制**：升級至 **v1.7.11**。
+- **版本控制**：升級至 **1.7.11**。
+
+## 2026-04-30 - UI Enhancement: 背景魔幻風格升級
+- **調整內容**：
+  - 更新 `css/style.css` 中的 `#stars-container` 背景，改為深紫色系的星雲漸層。
+  - 新增 `nebula-drift` 與 `magic-pulse` 動畫，透過偽元素 `::before` 疊加緩慢移動與呼吸的星雲光暈層。
+  - 為原有的星星粒子加入金色微光 (`box-shadow`)，提升整體魔法氛圍。
+- **版本控制**：升級至 **v1.7.12**。
 
 
