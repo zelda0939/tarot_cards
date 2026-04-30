@@ -1,6 +1,32 @@
 /* ============================
    手勢辨識與 MediaPipe 控制
    ============================ */
+let _mediaPipeSessionId = 0;
+
+function stopMediaPipeCamera(reason = 'manual-stop') {
+    _mediaPipeSessionId++;
+
+    if (AppState.mpCamera) {
+        try {
+            AppState.mpCamera.stop();
+            console.log(`[聖境塔羅] 攝影機已停止：${reason}`);
+        } catch (err) {
+            console.warn('[聖境塔羅] 停止攝影機時發生錯誤:', err);
+        }
+    }
+
+    const videoElement = document.getElementById('videoElement');
+    if (videoElement && videoElement.srcObject && typeof videoElement.srcObject.getTracks === 'function') {
+        videoElement.srcObject.getTracks().forEach(track => track.stop());
+        videoElement.srcObject = null;
+    }
+
+    AppState.mpCamera = null;
+    AppState.mediaPipeInitialized = false;
+    AppState.mediaPipeRunning = false;
+    AppState.mediaPipeStarting = false;
+}
+
 function initMediaPipe() {
     const videoElement = document.getElementById('videoElement');
 
@@ -10,17 +36,13 @@ function initMediaPipe() {
         return;
     }
 
-    if (AppState.mpCamera && AppState.mediaPipeInitialized) {
-        console.log('[聖境塔羅] 重新啟動既有攝影機實體');
-        AppState.mpCamera.start()
-            .then(() => {
-                updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
-            })
-            .catch(err => {
-                console.error('[聖境塔羅] 重新啟動失敗:', err);
-                updateInstruction('❌ 攝影機重新啟動失敗');
-            });
+    if (AppState.mediaPipeRunning || AppState.mediaPipeStarting) {
+        updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
         return;
+    }
+
+    if (AppState.mpCamera) {
+        stopMediaPipeCamera('replace-stale-camera');
     }
 
     const isMobile = window.innerWidth <= 768;
@@ -52,6 +74,7 @@ function initMediaPipe() {
 
     AppState.mpCamera = new Camera(videoElement, {
         onFrame: async () => {
+            if (AppState.isDailyMode || AppState.gameState === 'finished') return;
             if (AppState.mpHands && !isProcessingFrame) {
                 isProcessingFrame = true;
                 try {
@@ -68,20 +91,30 @@ function initMediaPipe() {
         height: isMobile ? 240 : 480
     });
 
+    AppState.mediaPipeStarting = true;
+    const sessionId = ++_mediaPipeSessionId;
     AppState.mpCamera.start()
         .then(() => {
+            if (sessionId !== _mediaPipeSessionId) return;
             console.log('[聖境塔羅] ✅ 鏡頭啟動成功！');
             AppState.mediaPipeInitialized = true;
+            AppState.mediaPipeRunning = true;
+            AppState.mediaPipeStarting = false;
             updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
         })
         .catch((err) => {
+            if (sessionId !== _mediaPipeSessionId) return;
             console.error('[聖境塔羅] ❌ 鏡頭啟動失敗:', err);
+            AppState.mediaPipeInitialized = false;
+            AppState.mediaPipeRunning = false;
+            AppState.mediaPipeStarting = false;
+            AppState.mpCamera = null;
             updateInstruction('❌ 無法啟動鏡頭，請允許瀏覽器存取攝影機權限後重新整理');
         });
 }
 
 function onHandResults(results) {
-    if (AppState.gameState === 'finished') return;
+    if (AppState.isDailyMode || AppState.gameState === 'finished') return;
 
     if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
         return;

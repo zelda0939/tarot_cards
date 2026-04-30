@@ -7,6 +7,8 @@ const AppState = {
     mpHands: null,
     mpCamera: null,
     mediaPipeInitialized: false,
+    mediaPipeRunning: false,
+    mediaPipeStarting: false,
 
     // 遊戲狀態：idle | rotating | stopped | finished
     gameState: 'idle',
@@ -36,6 +38,7 @@ const AppState = {
     activeCardIndex: 0,        // 正前方面對使用者的卡片索引
     carouselEl: null,
     animationFrameId: null,
+    ringAnimationRunning: false,
     spreadRadius: 300,         // 扇形展開的水平半徑 (px)
     cardElements: [],          // 儲存生成的卡牌 DOM 元素
     lastFrameTime: 0,          // delta-time 用，紀錄上一幀時間戳

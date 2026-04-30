@@ -91,6 +91,9 @@ function startDailyFlow(todayStr) {
 
     // 先清理前一輪可能殘留的動畫資源
     cleanupDailyAnimation();
+    if (typeof cleanupGestureTransientEffects === 'function') cleanupGestureTransientEffects();
+    if (typeof stopMediaPipeCamera === 'function') stopMediaPipeCamera('daily-draw');
+    if (typeof stopCardRingAnimation === 'function') stopCardRingAnimation();
     
     // 設定狀態
     AppState.isDailyMode = true;

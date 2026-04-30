@@ -111,6 +111,39 @@ async function fetchCardsFromAPI() {
    使用 clone 元素掛到 body，避免 carousel 的 3D perspective 干擾
    飛入結束後將 clone 嵌入 slot，保持卡牌正面原樣
    ============================ */
+let _gestureTimers = [];
+const _gestureFlyClones = new Set();
+
+function scheduleGestureTimer(callback, delay) {
+    const timerId = setTimeout(() => {
+        _gestureTimers = _gestureTimers.filter(id => id !== timerId);
+        callback();
+    }, delay);
+    _gestureTimers.push(timerId);
+    return timerId;
+}
+
+function clearGestureTimer(timerId) {
+    if (!timerId) return;
+    clearTimeout(timerId);
+    _gestureTimers = _gestureTimers.filter(id => id !== timerId);
+}
+
+function cleanupGestureTransientEffects() {
+    _gestureTimers.forEach(id => clearTimeout(id));
+    _gestureTimers = [];
+
+    _gestureFlyClones.forEach(clone => {
+        if (clone && clone.parentNode) clone.parentNode.removeChild(clone);
+    });
+    _gestureFlyClones.clear();
+
+    document.querySelectorAll('.tarot-card.flying').forEach(clone => clone.remove());
+    AppState.cardElements.forEach(el => {
+        if (el) el.style.visibility = '';
+    });
+}
+
 function confirmSelection() {
     if (AppState.selectedCards.length >= 3) return;
 
@@ -144,7 +177,7 @@ function confirmSelection() {
     const refillIndex = AppState.activeCardIndex;
 
     // 等待翻牌動畫完成後執行飛入動畫
-    setTimeout(() => {
+    scheduleGestureTimer(() => {
         AppState.selectedCards.push(card);
         const slotIndex = AppState.selectedCards.length;
         const slot = document.getElementById(`slot-${slotIndex}`);
@@ -177,6 +210,7 @@ function confirmSelection() {
             transform-style: preserve-3d;
         `;
         document.body.appendChild(flyClone);
+        _gestureFlyClones.add(flyClone);
 
         // 強制 reflow 註冊起始位置
         void flyClone.offsetHeight;
@@ -193,17 +227,20 @@ function confirmSelection() {
 
         // 追蹤是否已執行結束處理
         let flyEndHandled = false;
+        let safetyTimerId = null;
 
         // 動畫結束後處理
         const onFlyEnd = () => {
             if (flyEndHandled) return;
             flyEndHandled = true;
             flyClone.removeEventListener('transitionend', onFlyEnd);
+            clearGestureTimer(safetyTimerId);
 
             // 將 clone 從 body 移入 slot，保持卡牌正面原樣顯示
             if (flyClone.parentNode) {
                 flyClone.parentNode.removeChild(flyClone);
             }
+            _gestureFlyClones.delete(flyClone);
 
             // 重新設定 clone 的樣式，讓它填滿 slot
             flyClone.classList.remove('flying', 'flipped');
@@ -235,16 +272,11 @@ function confirmSelection() {
             if (AppState.selectedCards.length === 3) {
                 AppState.gameState = 'finished';
                 // 選完三張牌後關閉攝影機偵測，節省資源
-                if (AppState.mpCamera) {
-                    console.log('[聖境塔羅] 牌陣已滿，正在關閉攝影機...');
-                    AppState.mpCamera.stop();
-                    AppState.mpCamera = null; // 清除實體以確保下一次可以重新獲取權限並啟動
-                    AppState.mediaPipeInitialized = false; // 重置初始化旗標，避免下次走到錯誤的早期返回
-                }
+                if (typeof stopMediaPipeCamera === 'function') stopMediaPipeCamera('reading-complete');
                 const restartBtn = document.getElementById('restart-btn');
                 if (restartBtn) restartBtn.classList.remove('hidden');
                 updateInstruction('✨ 星辰已定，正在解讀命運的軌跡...');
-                setTimeout(showAnalysis, 1500);
+                scheduleGestureTimer(showAnalysis, 1500);
             } else {
                 AppState.gameState = 'idle';
                 updateInstruction(`已選擇 ${slotIndex} 張牌。請【張開手掌 🖐】繼續`);
@@ -253,7 +285,7 @@ function confirmSelection() {
         flyClone.addEventListener('transitionend', onFlyEnd, { once: true });
 
         // 安全網：若 transitionend 未觸發，2s 後強制執行
-        setTimeout(() => {
+        safetyTimerId = scheduleGestureTimer(() => {
             if (!flyEndHandled) {
                 onFlyEnd();
             }
@@ -272,11 +304,10 @@ function confirmSelection() {
 function resetGame() {
     console.log('[聖境塔羅] 🔄 重新抽牌');
 
-    // 取消動畫循環
-    if (AppState.animationFrameId) {
-        cancelAnimationFrame(AppState.animationFrameId);
-        AppState.animationFrameId = null;
-    }
+    if (typeof cleanupDailyAnimation === 'function') cleanupDailyAnimation();
+    cleanupGestureTransientEffects();
+    if (typeof stopMediaPipeCamera === 'function') stopMediaPipeCamera('reset-game');
+    if (typeof stopCardRingAnimation === 'function') stopCardRingAnimation();
 
     // 如果是從「每日一抽」重新洗牌，應清空提問，避免影響下一次的正常抽牌
     if (AppState.isDailyMode) {
@@ -320,7 +351,7 @@ function resetGame() {
 
     // 重新啟動旋轉
     AppState.gameState = 'rotating';
-    animateCardRing();
+    startCardRingAnimation();
 
     // 重新啟動 MediaPipe 攝像頭
     initMediaPipe();

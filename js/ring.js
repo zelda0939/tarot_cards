@@ -1,6 +1,19 @@
 /* ============================
    抽牌環渲染與動畫
    ============================ */
+let _smoothTransitionTimer = null;
+const _ringAnimationFrameIds = new Set();
+
+function clearSmoothTransitionTimer() {
+    if (_smoothTransitionTimer) {
+        clearTimeout(_smoothTransitionTimer);
+        _smoothTransitionTimer = null;
+    }
+    AppState.cardElements.forEach(el => {
+        if (el) el.classList.remove('smooth-transition');
+    });
+}
+
 function drawRandomCard() {
     const available = TAROT_CARDS.filter(c => !AppState.usedCardIds.has(c.id));
     if (available.length === 0) {
@@ -53,6 +66,7 @@ function updateCardFrontDOM(cardEl, card) {
 }
 
 function generateCardRing() {
+    clearSmoothTransitionTimer();
     AppState.carouselEl = document.getElementById('carousel');
     AppState.carouselEl.innerHTML = '';
     AppState.cardElements = [];
@@ -161,7 +175,18 @@ function updateCardPositions() {
     });
 }
 
+function scheduleRingAnimationFrame() {
+    const frameId = requestAnimationFrame((timestamp) => {
+        _ringAnimationFrameIds.delete(frameId);
+        animateCardRing(timestamp);
+    });
+    _ringAnimationFrameIds.add(frameId);
+    AppState.animationFrameId = frameId;
+}
+
 function animateCardRing(timestamp) {
+    if (!AppState.ringAnimationRunning) return;
+
     if (!timestamp) timestamp = performance.now();
     if (!AppState.lastFrameTime) AppState.lastFrameTime = timestamp;
     const elapsed = timestamp - AppState.lastFrameTime;
@@ -173,8 +198,29 @@ function animateCardRing(timestamp) {
         updateCardPositions();
     }
     if (AppState.gameState !== 'finished') {
-        AppState.animationFrameId = requestAnimationFrame(animateCardRing);
+        scheduleRingAnimationFrame();
+    } else {
+        AppState.animationFrameId = null;
+        AppState.ringAnimationRunning = false;
+        AppState.lastFrameTime = 0;
     }
+}
+
+function startCardRingAnimation() {
+    if (AppState.ringAnimationRunning) return;
+
+    AppState.ringAnimationRunning = true;
+    AppState.lastFrameTime = 0;
+    scheduleRingAnimationFrame();
+}
+
+function stopCardRingAnimation() {
+    _ringAnimationFrameIds.forEach(frameId => cancelAnimationFrame(frameId));
+    _ringAnimationFrameIds.clear();
+    AppState.animationFrameId = null;
+    AppState.ringAnimationRunning = false;
+    AppState.lastFrameTime = 0;
+    clearSmoothTransitionTimer();
 }
 
 function stopCardRing() {
@@ -194,9 +240,11 @@ function stopCardRing() {
 
     updateCardPositions();
 
-    setTimeout(() => {
+    clearSmoothTransitionTimer();
+    _smoothTransitionTimer = setTimeout(() => {
         AppState.cardElements.forEach(el => {
             if (el) el.classList.remove('smooth-transition');
         });
+        _smoothTransitionTimer = null;
     }, 400);
 }

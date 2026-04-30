@@ -202,6 +202,9 @@ function initApp() {
 
         // ── 清除可能殘留的每日一抽狀態與動畫資源（使用者在 daily 結果頁按關閉後直接開手勢抽牌）──
         if (typeof cleanupDailyAnimation === 'function') cleanupDailyAnimation();
+        if (typeof cleanupGestureTransientEffects === 'function') cleanupGestureTransientEffects();
+        if (typeof stopCardRingAnimation === 'function') stopCardRingAnimation();
+        if (typeof stopMediaPipeCamera === 'function') stopMediaPipeCamera('start-gesture');
         if (AppState.isDailyMode || AppState.selectedCards.length > 0) {
             AppState.isDailyMode = false;
             AppState.selectedCards = [];
@@ -245,7 +248,7 @@ function initApp() {
 
         // 🔥 立即開始旋轉卡牌，讓使用者馬上看到效果
         AppState.gameState = 'rotating';
-        animateCardRing();
+        startCardRingAnimation();
         updateInstruction('🔄 卡牌旋轉中，正在啟動鏡頭...');
 
         // 非同步啟動/重啟 MediaPipe（不阻塞旋轉）
