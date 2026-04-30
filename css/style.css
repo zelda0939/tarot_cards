@@ -1,13 +1,9 @@
 :root {
-    --bg-dark: #07080a;
-    /* 極致深黑 */
-    --navy-blue: #111424;
-    /* 暗夜藍 */
-    --gold: #d4af37;
-    /* 經典塔羅金 */
+    --bg-dark: #07080a;           /* 極致深黑 */
+    --navy-blue: #111424;         /* 暗夜藍 */
+    --gold: #d4af37;              /* 經典塔羅金 */
     --gold-glow: rgba(212, 175, 55, 0.25);
-    --gold-light: #f9e596;
-    /* 亮金 / 香檳金 */
+    --gold-light: #f9e596;        /* 亮金 / 香檳金 */
     --text-white: #f5f5f5;
     --text-muted: #8b8e98;
     --glass-bg: rgba(17, 20, 36, 0.7);
@@ -25,8 +21,7 @@ body {
     color: var(--text-white);
     font-family: 'Montserrat', sans-serif;
     height: 100vh;
-    overflow: hidden;
-    /* 防止捲動，所有內容在一屏內 */
+    overflow: hidden;  /* 防止捲動，所有內容在一屏內 */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -34,29 +29,14 @@ body {
 
 /* 背景星光與魔幻星雲 */
 @keyframes nebula-drift {
-    0% {
-        transform: translate(0, 0) scale(1);
-    }
-
-    50% {
-        transform: translate(-2%, -2%) scale(1.05);
-    }
-
-    100% {
-        transform: translate(0, 0) scale(1);
-    }
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-2%, -2%) scale(1.05); }
+    100% { transform: translate(0, 0) scale(1); }
 }
 
 @keyframes magic-pulse {
-
-    0%,
-    100% {
-        opacity: 0.3;
-    }
-
-    50% {
-        opacity: 0.7;
-    }
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.7; }
 }
 
 #stars-container {
@@ -66,48 +46,17 @@ body {
     width: 100%;
     height: 100%;
     z-index: -1;
-    /* 高畫質魔法祭壇背景圖，預設為手機版 cover 模式 */
-    background: url('../assets/images/mystic_altar_bg.png') no-repeat center bottom;
-    background-size: cover;
-    background-color: #050608;
+    /* 魔幻深邃星雲漸層底色 (紫、湛藍、深黑) */
+    background: radial-gradient(ellipse at center bottom, #2b1055 0%, #150a21 45%, #050608 100%);
     overflow: hidden;
-}
-
-@media (min-width: 768px) {
-    #stars-container {
-        /* 電腦版：避免 cover 導致圖片被裁切過多 (看不到星雲)。
-           改為高度 100vh 維持完整比例，並用漸層將兩側融合進深邃黑底 */
-        background:
-            linear-gradient(to right, #050608 0%, rgba(5, 6, 8, 0) 25%, rgba(5, 6, 8, 0) 75%, #050608 100%),
-            url('../assets/images/mystic_altar_bg.png') no-repeat center bottom;
-        background-size: 100% 100%, auto 100vh;
-        background-color: #050608;
-    }
-}
-
-/* 電腦版背景遮罩：避免底部過亮圖案影響文字與 UI 閱讀 */
-#stars-container::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    /* 預設：只有頂部微弱漸層，讓頂部文字更清晰 */
-    background: linear-gradient(to bottom, rgba(5, 6, 8, 0.4) 0%, transparent 40%);
-    pointer-events: none;
-    z-index: 1;
 }
 
 /* 疊加星雲光暈層 */
 #stars-container::before {
     content: '';
     position: absolute;
-    top: -20%;
-    left: -20%;
-    right: -20%;
-    bottom: -20%;
-    background:
+    top: -20%; left: -20%; right: -20%; bottom: -20%;
+    background: 
         radial-gradient(circle at 25% 25%, rgba(138, 43, 226, 0.15) 0%, transparent 40%),
         radial-gradient(circle at 75% 75%, rgba(212, 175, 55, 0.12) 0%, transparent 50%),
         radial-gradient(circle at 50% 60%, rgba(30, 144, 255, 0.08) 0%, transparent 60%);
@@ -115,8 +64,6 @@ body {
     pointer-events: none;
     z-index: 1;
 }
-
-
 
 .star {
     position: absolute;
@@ -130,18 +77,8 @@ body {
 }
 
 @keyframes twinkle {
-
-    0%,
-    100% {
-        opacity: 0.2;
-        transform: scale(0.8);
-    }
-
-    50% {
-        opacity: 1;
-        transform: scale(1.3);
-        box-shadow: 0 0 6px 1px rgba(212, 175, 55, 0.8);
-    }
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.3); box-shadow: 0 0 6px 1px rgba(212, 175, 55, 0.8); }
 }
 
 /* Header 樣式 — 緊湊版 */
@@ -174,8 +111,7 @@ main {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    min-height: 0;
-    /* 允許 flex 縮小 */
+    min-height: 0; /* 允許 flex 縮小 */
     overflow: hidden;
 }
 
@@ -220,16 +156,6 @@ main {
     border: 1px solid rgba(212, 175, 55, 0.25);
     border-radius: 10px;
     flex-shrink: 0;
-    transition: all 0.3s ease;
-}
-
-@media (min-width: 768px) {
-    .question-panel {
-        background: rgba(10, 12, 20, 0.75);
-        /* 電腦版加深背景色，提高文字與亮部背景的對比 */
-        backdrop-filter: blur(6px);
-        border: 1px solid rgba(212, 175, 55, 0.35);
-    }
 }
 
 .question-panel.centered-mode {
@@ -386,13 +312,8 @@ main {
 }
 
 @keyframes spin {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(360deg);
-    }
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* 工具類別 */
@@ -443,10 +364,8 @@ main {
     /* 以場景中央為基準，由 JS 動態設定 transform */
     left: 50%;
     top: 50%;
-    margin-left: -60px;
-    /* width / 2 */
-    margin-top: -95px;
-    /* height / 2 */
+    margin-left: -60px;  /* width / 2 */
+    margin-top: -95px;   /* height / 2 */
     transform-style: preserve-3d;
     /* 旋轉時不使用 transition，避免與 RAF 逐幀更新衝突造成卡頓 */
     transition: none;
@@ -456,7 +375,7 @@ main {
 /* 停止時的平滑 snap 過渡 — 由 JS 動態加入/移除 */
 .tarot-card.smooth-transition {
     transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-        opacity 0.35s ease;
+                opacity 0.35s ease;
 }
 
 /* 焦點卡牌（正前方最大張）的高亮效果 */
@@ -470,7 +389,7 @@ main {
     position: fixed !important;
     z-index: 9999;
     transition: transform 0.75s cubic-bezier(0.23, 1, 0.32, 1),
-        opacity 0.75s ease;
+                opacity 0.75s ease;
     margin: 0 !important;
     opacity: 1 !important;
     will-change: transform;
@@ -491,7 +410,7 @@ main {
     flex-shrink: 0;
 }
 
-#selected-cards-container>.subtitle {
+#selected-cards-container > .subtitle {
     font-size: 0.75rem;
     margin-bottom: 0.3rem;
 }
@@ -589,7 +508,7 @@ main {
     transform-style: preserve-3d;
     transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.7);
     border: 1.5px solid rgba(212, 175, 55, 0.35);
 }
 
@@ -599,8 +518,7 @@ main {
     z-index: 10;
 }
 
-.card-front,
-.card-back {
+.card-front, .card-back {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -707,8 +625,7 @@ main {
 }
 
 .reading-modal-content {
-    max-width: 900px;
-    /* 為了容納三欄式排版，加寬 Modal */
+    max-width: 900px; /* 為了容納三欄式排版，加寬 Modal */
 }
 
 /* ═══════════════════════════════
@@ -763,7 +680,7 @@ main {
     background: rgba(212, 175, 55, 0.03);
     border: 1px solid rgba(212, 175, 55, 0.3);
     border-radius: 12px;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
     position: relative;
 }
 
@@ -786,7 +703,7 @@ main {
     font-size: 0.95rem;
     line-height: 1.7;
     color: var(--text-white);
-    text-shadow: 0 0 2px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 0 2px rgba(255,255,255,0.2);
     min-height: 60px;
 }
 
@@ -875,7 +792,7 @@ main {
     color: var(--text-white);
     line-height: 1.5;
     margin-bottom: 0.4rem;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0,0,0,0.3);
     padding: 0.5rem;
     border-radius: 4px;
 }
@@ -884,7 +801,7 @@ main {
     font-size: 0.85rem;
     color: rgba(200, 160, 160, 0.9);
     line-height: 1.5;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0,0,0,0.3);
     padding: 0.5rem;
     border-radius: 4px;
 }
@@ -1164,14 +1081,14 @@ footer {
     transition: all 0.2s;
 }
 
-.history-select-all-label:hover input~.custom-checkbox,
-.history-checkbox-label:hover input~.custom-checkbox {
+.history-select-all-label:hover input ~ .custom-checkbox,
+.history-checkbox-label:hover input ~ .custom-checkbox {
     border-color: var(--gold);
     background-color: rgba(212, 175, 55, 0.1);
 }
 
-.history-select-all-label input:checked~.custom-checkbox,
-.history-checkbox-label input:checked~.custom-checkbox {
+.history-select-all-label input:checked ~ .custom-checkbox,
+.history-checkbox-label input:checked ~ .custom-checkbox {
     background-color: rgba(212, 175, 55, 0.8);
     border-color: var(--gold);
 }
@@ -1189,8 +1106,8 @@ footer {
     transform: rotate(45deg);
 }
 
-.history-select-all-label input:checked~.custom-checkbox:after,
-.history-checkbox-label input:checked~.custom-checkbox:after {
+.history-select-all-label input:checked ~ .custom-checkbox:after,
+.history-checkbox-label input:checked ~ .custom-checkbox:after {
     display: block;
 }
 
@@ -1482,7 +1399,7 @@ footer {
         padding: 0.2rem 0 0.3rem;
     }
 
-    #selected-cards-container>.subtitle {
+    #selected-cards-container > .subtitle {
         font-size: 0.65rem;
         margin-bottom: 0.2rem;
     }
@@ -1665,13 +1582,8 @@ footer {
 }
 
 @keyframes overlayFadeIn {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 #loading-overlay.fade-out {
@@ -1679,13 +1591,8 @@ footer {
 }
 
 @keyframes overlayFadeOut {
-    from {
-        opacity: 1;
-    }
-
-    to {
-        opacity: 0;
-    }
+    from { opacity: 1; }
+    to   { opacity: 0; }
 }
 
 .loading-overlay-bg {
@@ -1781,13 +1688,8 @@ footer {
 }
 
 @keyframes rotateRing {
-    from {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
 }
 
 /* 中央發光核心 */
@@ -1821,17 +1723,8 @@ footer {
 }
 
 @keyframes glowPulse {
-
-    0%,
-    100% {
-        opacity: 0.6;
-        transform: scale(0.9);
-    }
-
-    50% {
-        opacity: 1;
-        transform: scale(1.15);
-    }
+    0%, 100% { opacity: 0.6; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.15); }
 }
 
 /* 已選卡牌縮圖行 */
@@ -1868,15 +1761,8 @@ footer {
 }
 
 @keyframes cardFloat {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-8px);
-    }
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
 }
 
 /* 文字提示 — 呼吸燈 */
@@ -1890,15 +1776,8 @@ footer {
 }
 
 @keyframes breathe {
-
-    0%,
-    100% {
-        opacity: 0.5;
-    }
-
-    50% {
-        opacity: 1;
-    }
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 
 /* 省略號動畫 */
@@ -1923,18 +1802,8 @@ footer {
 }
 
 @keyframes dotBounce {
-
-    0%,
-    80%,
-    100% {
-        opacity: 0.2;
-        transform: translateY(0);
-    }
-
-    40% {
-        opacity: 1;
-        transform: translateY(-6px);
-    }
+    0%, 80%, 100% { opacity: 0.2; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-6px); }
 }
 
 /* 響應式 — 小螢幕等待畫面 */
@@ -1944,20 +1813,9 @@ footer {
         height: 160px;
     }
 
-    .ring-outer {
-        width: 160px;
-        height: 160px;
-    }
-
-    .ring-middle {
-        width: 115px;
-        height: 115px;
-    }
-
-    .ring-inner {
-        width: 72px;
-        height: 72px;
-    }
+    .ring-outer { width: 160px; height: 160px; }
+    .ring-middle { width: 115px; height: 115px; }
+    .ring-inner { width: 72px; height: 72px; }
 
     .loading-text {
         font-size: 0.8rem;
@@ -1986,7 +1844,6 @@ footer {
     border-color: rgba(255, 215, 100, 0.5);
     box-shadow: 0 0 15px rgba(230, 190, 80, 0.3);
 }
-
 .daily-btn:hover {
     background: linear-gradient(135deg, rgba(255, 215, 100, 0.5), rgba(200, 140, 40, 0.5));
     box-shadow: 0 0 25px rgba(255, 215, 100, 0.6);
@@ -1995,10 +1852,7 @@ footer {
 /* ─── Overlay 主容器 ─── */
 #daily-animation-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     background: radial-gradient(ellipse at center, #0a0d1e 0%, #020308 60%, #000 100%);
     z-index: 15000;
     display: flex;
@@ -2010,13 +1864,11 @@ footer {
     perspective: 1800px;
     overflow: hidden;
 }
-
 #daily-animation-overlay.hidden {
     /* 使用 display:none 確保所有內部 CSS infinite 動畫完全停止，
        避免 opacity:0 時仍持續消耗 GPU 合成層 */
     display: none;
 }
-
 #daily-animation-overlay.show {
     opacity: 1;
     pointer-events: auto;
@@ -2025,10 +1877,8 @@ footer {
 /* ─── Canvas 粒子層 ─── */
 #daily-particle-canvas {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     z-index: 0;
     pointer-events: none;
 }
@@ -2036,45 +1886,37 @@ footer {
 /* ─── 星雲背景 ─── */
 .daily-nebula {
     position: absolute;
-    width: 160vmin;
-    height: 160vmin;
+    width: 160vmin; height: 160vmin;
     border-radius: 50%;
     background: radial-gradient(circle,
-            rgba(90, 50, 180, 0.12) 0%,
-            rgba(60, 20, 140, 0.08) 30%,
-            rgba(20, 10, 80, 0.04) 60%,
-            transparent 80%);
+        rgba(90, 50, 180, 0.12) 0%,
+        rgba(60, 20, 140, 0.08) 30%,
+        rgba(20, 10, 80, 0.04) 60%,
+        transparent 80%
+    );
     filter: blur(40px);
     opacity: 0;
     transition: opacity 2.5s ease-in-out;
     animation: nebulaBreath 8s ease-in-out infinite;
     z-index: 0;
 }
-
 #daily-animation-overlay.show .daily-nebula {
     opacity: 1;
 }
-
 @keyframes nebulaBreath {
-
-    0%,
-    100% {
-        transform: scale(1) rotate(0deg);
-    }
-
-    50% {
-        transform: scale(1.08) rotate(3deg);
-    }
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.08) rotate(3deg); }
 }
 
 /* ─── 公轉光芒（雙層） ─── */
 .daily-sunburst {
     position: absolute;
-    width: 200vmin;
-    height: 200vmin;
-    background: repeating-conic-gradient(from 0deg,
-            rgba(255, 215, 100, 0.06) 0deg 8deg,
-            transparent 8deg 16deg);
+    width: 200vmin; height: 200vmin;
+    background: repeating-conic-gradient(
+        from 0deg,
+        rgba(255, 215, 100, 0.06) 0deg 8deg,
+        transparent 8deg 16deg
+    );
     border-radius: 50%;
     animation: rotateSunburst 25s linear infinite;
     mix-blend-mode: screen;
@@ -2082,14 +1924,14 @@ footer {
     transition: opacity 2s ease-in-out;
     z-index: 0;
 }
-
 .daily-sunburst-inner {
     position: absolute;
-    width: 140vmin;
-    height: 140vmin;
-    background: repeating-conic-gradient(from 15deg,
-            rgba(180, 140, 255, 0.04) 0deg 6deg,
-            transparent 6deg 12deg);
+    width: 140vmin; height: 140vmin;
+    background: repeating-conic-gradient(
+        from 15deg,
+        rgba(180, 140, 255, 0.04) 0deg 6deg,
+        transparent 6deg 12deg
+    );
     border-radius: 50%;
     animation: rotateSunburst 18s linear infinite reverse;
     mix-blend-mode: screen;
@@ -2097,20 +1939,13 @@ footer {
     transition: opacity 2.5s ease-in-out 0.5s;
     z-index: 0;
 }
-
 #daily-animation-overlay.show .daily-sunburst,
 #daily-animation-overlay.show .daily-sunburst-inner {
     opacity: 1;
 }
-
 @keyframes rotateSunburst {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* ─── 魔法陣(SVG旋轉) ─── */
@@ -2121,48 +1956,34 @@ footer {
     transition: opacity 1.5s ease-in-out;
     pointer-events: none;
 }
-
 .daily-magic-circle svg {
-    width: 420px;
-    height: 420px;
-    filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.5)) drop-shadow(0 0 40px rgba(180, 140, 255, 0.3));
+    width: 420px; height: 420px;
+    filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.5))
+            drop-shadow(0 0 40px rgba(180, 140, 255, 0.3));
 }
-
 .daily-magic-circle-outer {
     animation: magicCircleSpin 20s linear infinite;
 }
-
 .daily-magic-circle-inner {
     position: absolute;
-    top: 50%;
-    left: 50%;
+    top: 50%; left: 50%;
     transform: translate(-50%, -50%);
 }
-
 .daily-magic-circle-inner svg {
-    width: 280px;
-    height: 280px;
+    width: 280px; height: 280px;
     animation: magicCircleSpin 12s linear infinite reverse;
     filter: drop-shadow(0 0 12px rgba(249, 229, 150, 0.4));
 }
-
 #daily-animation-overlay.show .daily-magic-circle {
     opacity: 1;
 }
-
 #daily-animation-overlay.stage-flip .daily-magic-circle {
     opacity: 0;
     transition: opacity 0.8s ease-out;
 }
-
 @keyframes magicCircleSpin {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* ─── 浮遊符文 ─── */
@@ -2175,58 +1996,25 @@ footer {
     opacity: 0;
     z-index: 1;
 }
-
 #daily-animation-overlay.show .daily-rune {
     animation: runeFloat 4s ease-in-out infinite, runeFadeIn 2s ease-out forwards;
 }
-
 #daily-animation-overlay.stage-flip .daily-rune {
     animation: runeExplode 0.8s ease-out forwards;
 }
-
 @keyframes runeFadeIn {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-
-    100% {
-        opacity: 0.7;
-        transform: scale(1);
-    }
+    0% { opacity: 0; transform: scale(0.3); }
+    100% { opacity: 0.7; transform: scale(1); }
 }
-
 @keyframes runeFloat {
-
-    0%,
-    100% {
-        transform: translateY(0) rotate(0deg);
-    }
-
-    25% {
-        transform: translateY(-12px) rotate(5deg);
-    }
-
-    75% {
-        transform: translateY(8px) rotate(-3deg);
-    }
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-12px) rotate(5deg); }
+    75% { transform: translateY(8px) rotate(-3deg); }
 }
-
 @keyframes runeExplode {
-    0% {
-        opacity: 0.7;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 1;
-        transform: scale(1.5);
-    }
-
-    100% {
-        opacity: 0;
-        transform: scale(0) rotate(180deg);
-    }
+    0% { opacity: 0.7; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.5); }
+    100% { opacity: 0; transform: scale(0) rotate(180deg); }
 }
 
 /* ─── 扇形牌陣 (Deck Fan) ─── */
@@ -2258,7 +2046,6 @@ footer {
     transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
     /* --i: 卡牌索引, --mid: 中間位置（由 JS 設定） */
 }
-
 .daily-deck-card img {
     width: 100%;
     height: 100%;
@@ -2269,15 +2056,12 @@ footer {
 #daily-animation-overlay.stage-deck .daily-deck-fan {
     opacity: 1;
 }
-
 #daily-animation-overlay.stage-deck .daily-deck-card {
     opacity: 1;
     /* 以 --mid 為中心，每張牌相隔 4deg 扇形展開 */
     transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-20px);
-    transform-origin: center 420px;
-    /* 旋轉支點在下方遠處，製造密集扇形 */
-    transition-delay: calc(var(--i) * 0.04s);
-    /* 交錯動畫，更快更密 */
+    transform-origin: center 420px; /* 旋轉支點在下方遠處，製造密集扇形 */
+    transition-delay: calc(var(--i) * 0.04s); /* 交錯動畫，更快更密 */
 }
 
 /* 選中牌 — JS 在掃描光掃到後才動態加入 .chosen，觸發閃光動畫 */
@@ -2286,20 +2070,17 @@ footer {
     animation: cardChosenGlow 0.6s ease-out forwards;
     transform-origin: center 420px;
 }
-
 @keyframes cardChosenGlow {
     0% {
         border-color: rgba(212, 175, 55, 0.3);
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
         transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-20px);
     }
-
     40% {
         border-color: rgba(255, 255, 200, 1);
         box-shadow: 0 0 40px rgba(255, 215, 100, 0.9), 0 0 80px rgba(255, 215, 100, 0.5), 0 0 120px rgba(255, 215, 100, 0.3);
         transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-40px) scale(1.1);
     }
-
     100% {
         border-color: rgba(255, 215, 100, 0.8);
         box-shadow: 0 0 30px rgba(255, 215, 100, 0.6), 0 0 60px rgba(255, 215, 100, 0.3);
@@ -2313,11 +2094,12 @@ footer {
     width: 6px;
     height: 300px;
     background: linear-gradient(180deg,
-            transparent,
-            rgba(255, 215, 100, 0.5),
-            rgba(255, 255, 200, 0.95),
-            rgba(255, 215, 100, 0.5),
-            transparent);
+        transparent,
+        rgba(255, 215, 100, 0.5),
+        rgba(255, 255, 200, 0.95),
+        rgba(255, 215, 100, 0.5),
+        transparent
+    );
     filter: blur(4px);
     opacity: 0;
     z-index: 10;
@@ -2325,7 +2107,6 @@ footer {
     transform-origin: center 420px;
     transition: opacity 0.3s;
 }
-
 #daily-animation-overlay.stage-deck .daily-scan-beam {
     opacity: 1;
 }
@@ -2337,7 +2118,6 @@ footer {
     border-color: rgba(255, 215, 100, 0.5);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 215, 100, 0.3);
 }
-
 /* 沒被掃到時沈回原位 */
 #daily-animation-overlay.stage-deck .daily-deck-card:not(.peeking):not(.chosen) {
     transition: transform 0.4s ease-in, border-color 0.3s, box-shadow 0.3s;
@@ -2347,7 +2127,6 @@ footer {
 #daily-animation-overlay.stage-draw .daily-deck-fan {
     opacity: 1;
 }
-
 #daily-animation-overlay.stage-draw .daily-deck-card,
 #daily-animation-overlay.stage-enter .daily-deck-card {
     opacity: 0;
@@ -2356,7 +2135,6 @@ footer {
     filter: blur(3px);
     transition: all 0.7s ease-in;
 }
-
 #daily-animation-overlay.stage-draw .daily-deck-card.chosen {
     opacity: 1;
     /* 保持在抽出的扇形位置，避免先跳到中間再進入後續過場 */
@@ -2374,7 +2152,6 @@ footer {
         box-shadow 0.6s ease-out;
     z-index: 5;
 }
-
 #daily-animation-overlay.stage-enter .daily-deck-card.chosen {
     /* 直接讓主卡接手，避免扇形牌本體出現短暫位移 */
     visibility: hidden;
@@ -2406,91 +2183,61 @@ footer {
     will-change: transform, opacity, filter;
     /* 非 enter 階段不要有 transition，避免初始化時閃動 */
 }
-
 #daily-animation-overlay.stage-enter .daily-card-stage {
     /* 滑到正中央並放大 */
     transform: translate(0, 0) rotate(0deg) scale(1.12);
     opacity: 1;
     filter: brightness(1);
     transition: transform 1.55s cubic-bezier(0.19, 0.9, 0.28, 1),
-        filter 1s ease-out;
+                filter 1s ease-out;
 }
-
 #daily-animation-overlay.stage-charge .daily-card-stage {
     transform: translate(0, 0) rotate(0deg) scale(1.05);
     animation: cardCharge 1.2s ease-in-out;
 }
-
 #daily-animation-overlay.stage-flip .daily-card-stage {
     transform: translate(0, 0) rotate(0deg) scale(1);
     filter: brightness(1.2);
 }
-
 @keyframes cardCharge {
-    0% {
-        filter: brightness(1);
-    }
-
-    30% {
-        filter: brightness(0.6);
-        transform: translate(0, 0) rotate(0deg) scale(0.95);
-    }
-
-    60% {
-        filter: brightness(0.4);
-        transform: translate(0, 0) rotate(0deg) scale(0.92);
-    }
-
-    100% {
-        filter: brightness(1.2);
-        transform: translate(0, 0) rotate(0deg) scale(1.05);
-    }
+    0% { filter: brightness(1); }
+    30% { filter: brightness(0.6); transform: translate(0, 0) rotate(0deg) scale(0.95); }
+    60% { filter: brightness(0.4); transform: translate(0, 0) rotate(0deg) scale(0.92); }
+    100% { filter: brightness(1.2); transform: translate(0, 0) rotate(0deg) scale(1.05); }
 }
 
 /* ─── 卡牌容器與翻轉 ─── */
 .daily-card-flip-container {
-    width: 250px;
-    height: 425px;
+    width: 250px; height: 425px;
     border-radius: 12px;
     perspective: 1800px;
     position: relative;
 }
-
 .daily-card-flipper {
     position: relative;
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     text-align: center;
     transition: transform 1.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     transform-style: preserve-3d;
 }
-
 #daily-animation-overlay.stage-flip .daily-card-flipper {
     transform: rotateY(540deg);
 }
-
-.daily-card-front,
-.daily-card-back {
+.daily-card-front, .daily-card-back {
     position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     backface-visibility: hidden;
     border-radius: 12px;
     overflow: hidden;
     border: 3px solid rgba(255, 215, 100, 0.5);
 }
-
 .daily-card-front {
     background-color: #0a0a14;
 }
-
-.daily-card-front img,
-.daily-card-back img {
-    width: 100%;
-    height: 100%;
+.daily-card-front img, .daily-card-back img {
+    width: 100%; height: 100%;
     object-fit: cover;
 }
-
 .daily-card-back {
     background-color: #080810;
     transform: rotateY(180deg);
@@ -2500,10 +2247,8 @@ footer {
 /* ─── 卡牌光暈環(Aura) ─── */
 .daily-card-aura {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 300px;
-    height: 480px;
+    top: 50%; left: 50%;
+    width: 300px; height: 480px;
     transform: translate(-50%, -50%);
     border-radius: 16px;
     pointer-events: none;
@@ -2511,7 +2256,6 @@ footer {
     opacity: 0;
     transition: opacity 0.8s ease-out;
 }
-
 #daily-animation-overlay.stage-enter .daily-card-aura {
     opacity: 1;
     animation: auraPulse 2s ease-in-out infinite;
@@ -2521,25 +2265,19 @@ footer {
         0 0 100px rgba(180, 140, 255, 0.15),
         inset 0 0 30px rgba(212, 175, 55, 0.1);
 }
-
 #daily-animation-overlay.stage-charge .daily-card-aura {
     animation: auraCharge 1.2s ease-in-out;
 }
-
 #daily-animation-overlay.stage-flip .daily-card-aura {
     animation: auraExplode 1s ease-out forwards;
 }
-
 @keyframes auraPulse {
-
-    0%,
-    100% {
+    0%, 100% {
         box-shadow:
             0 0 30px rgba(212, 175, 55, 0.3),
             0 0 60px rgba(212, 175, 55, 0.15),
             0 0 100px rgba(180, 140, 255, 0.1);
     }
-
     50% {
         box-shadow:
             0 0 50px rgba(212, 175, 55, 0.5),
@@ -2547,32 +2285,26 @@ footer {
             0 0 140px rgba(180, 140, 255, 0.2);
     }
 }
-
 @keyframes auraCharge {
     0% {
         box-shadow: 0 0 30px rgba(212, 175, 55, 0.3), 0 0 60px rgba(180, 140, 255, 0.1);
     }
-
     50% {
         box-shadow: 0 0 10px rgba(100, 50, 200, 0.6), 0 0 20px rgba(100, 50, 200, 0.3);
     }
-
     100% {
         box-shadow: 0 0 80px rgba(255, 215, 100, 0.8), 0 0 150px rgba(212, 175, 55, 0.4), 0 0 200px rgba(180, 140, 255, 0.3);
     }
 }
-
 @keyframes auraExplode {
     0% {
         box-shadow: 0 0 80px rgba(255, 215, 100, 0.8), 0 0 150px rgba(212, 175, 55, 0.4);
         transform: translate(-50%, -50%) scale(1);
     }
-
     40% {
         box-shadow: 0 0 200px rgba(255, 255, 200, 1), 0 0 400px rgba(255, 215, 100, 0.6);
         transform: translate(-50%, -50%) scale(1.4);
     }
-
     100% {
         box-shadow: 0 0 40px rgba(212, 175, 55, 0.3), 0 0 80px rgba(180, 140, 255, 0.1);
         transform: translate(-50%, -50%) scale(1.1);
@@ -2583,50 +2315,35 @@ footer {
 .daily-card-stage::after {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 120%;
-    height: 120%;
+    top: 50%; left: 50%;
+    width: 120%; height: 120%;
     transform: translate(-50%, -50%);
     background: radial-gradient(circle,
-            rgba(255, 255, 240, 0.9) 0%,
-            rgba(255, 215, 100, 0.6) 20%,
-            rgba(180, 140, 255, 0.3) 40%,
-            transparent 70%);
+        rgba(255, 255, 240, 0.9) 0%,
+        rgba(255, 215, 100, 0.6) 20%,
+        rgba(180, 140, 255, 0.3) 40%,
+        transparent 70%
+    );
     border-radius: 50%;
     opacity: 0;
     pointer-events: none;
     z-index: -1;
 }
-
 #daily-animation-overlay.stage-flip .daily-card-stage::after {
     animation: shockwave 1.8s ease-out forwards;
 }
-
 @keyframes shockwave {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.3);
-    }
-
-    15% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(4);
-    }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
+    15% { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(4); }
 }
 
 /* 第二層衝擊波 — 使用 ::before */
 .daily-card-stage::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 80%;
-    height: 80%;
+    top: 50%; left: 50%;
+    width: 80%; height: 80%;
     transform: translate(-50%, -50%);
     border: 2px solid rgba(255, 215, 100, 0.6);
     border-radius: 50%;
@@ -2634,150 +2351,83 @@ footer {
     pointer-events: none;
     z-index: -1;
 }
-
 #daily-animation-overlay.stage-flip .daily-card-stage::before {
     animation: shockwaveRing 1.5s ease-out 0.15s forwards;
 }
-
 @keyframes shockwaveRing {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.5);
-        border-width: 3px;
-    }
-
-    20% {
-        opacity: 0.8;
-    }
-
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(5);
-        border-width: 0.5px;
-    }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); border-width: 3px; }
+    20% { opacity: 0.8; }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(5); border-width: 0.5px; }
 }
 
 /* ─── 螢幕震動 ─── */
 #daily-animation-overlay.stage-flip {
     animation: screenShake 0.6s ease-out;
 }
-
 @keyframes screenShake {
-    0% {
-        transform: translate(0, 0);
-    }
-
-    10% {
-        transform: translate(-4px, 3px);
-    }
-
-    20% {
-        transform: translate(5px, -2px);
-    }
-
-    30% {
-        transform: translate(-3px, 4px);
-    }
-
-    40% {
-        transform: translate(4px, -3px);
-    }
-
-    50% {
-        transform: translate(-2px, 2px);
-    }
-
-    60% {
-        transform: translate(3px, -1px);
-    }
-
-    70% {
-        transform: translate(-1px, 2px);
-    }
-
-    80% {
-        transform: translate(2px, -1px);
-    }
-
-    100% {
-        transform: translate(0, 0);
-    }
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-4px, 3px); }
+    20% { transform: translate(5px, -2px); }
+    30% { transform: translate(-3px, 4px); }
+    40% { transform: translate(4px, -3px); }
+    50% { transform: translate(-2px, 2px); }
+    60% { transform: translate(3px, -1px); }
+    70% { transform: translate(-1px, 2px); }
+    80% { transform: translate(2px, -1px); }
+    100% { transform: translate(0, 0); }
 }
 
 /* ─── 鏡頭光暈(Lens Flare) ─── */
 .daily-lens-flare {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 600px;
-    height: 600px;
+    top: 50%; left: 50%;
+    width: 600px; height: 600px;
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 4;
     opacity: 0;
     mix-blend-mode: screen;
 }
-
 .daily-lens-flare::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100%;
-    height: 4px;
+    top: 50%; left: 50%;
+    width: 100%; height: 4px;
     transform: translate(-50%, -50%);
     background: linear-gradient(90deg,
-            transparent 0%,
-            rgba(255, 255, 200, 0) 20%,
-            rgba(255, 255, 200, 0.8) 45%,
-            rgba(255, 255, 255, 1) 50%,
-            rgba(255, 255, 200, 0.8) 55%,
-            rgba(255, 255, 200, 0) 80%,
-            transparent 100%);
+        transparent 0%,
+        rgba(255, 255, 200, 0) 20%,
+        rgba(255, 255, 200, 0.8) 45%,
+        rgba(255, 255, 255, 1) 50%,
+        rgba(255, 255, 200, 0.8) 55%,
+        rgba(255, 255, 200, 0) 80%,
+        transparent 100%
+    );
 }
-
 .daily-lens-flare::after {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 4px;
-    height: 100%;
+    top: 50%; left: 50%;
+    width: 4px; height: 100%;
     transform: translate(-50%, -50%);
     background: linear-gradient(180deg,
-            transparent 0%,
-            rgba(255, 255, 200, 0) 20%,
-            rgba(255, 255, 200, 0.6) 45%,
-            rgba(255, 255, 255, 0.8) 50%,
-            rgba(255, 255, 200, 0.6) 55%,
-            rgba(255, 255, 200, 0) 80%,
-            transparent 100%);
+        transparent 0%,
+        rgba(255, 255, 200, 0) 20%,
+        rgba(255, 255, 200, 0.6) 45%,
+        rgba(255, 255, 255, 0.8) 50%,
+        rgba(255, 255, 200, 0.6) 55%,
+        rgba(255, 255, 200, 0) 80%,
+        transparent 100%
+    );
 }
-
 #daily-animation-overlay.stage-flip .daily-lens-flare {
     animation: lensFlareReveal 2s ease-out forwards;
 }
-
 @keyframes lensFlareReveal {
-    0% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(0.2) rotate(0deg);
-    }
-
-    20% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.2) rotate(15deg);
-    }
-
-    60% {
-        opacity: 0.6;
-        transform: translate(-50%, -50%) scale(1) rotate(25deg);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(1.5) rotate(45deg);
-    }
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.2) rotate(0deg); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2) rotate(15deg); }
+    60% { opacity: 0.6; transform: translate(-50%, -50%) scale(1) rotate(25deg); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) rotate(45deg); }
 }
 
 /* ─── 揭示文字 ─── */
@@ -2799,7 +2449,6 @@ footer {
     padding: 0.8rem 2rem 0.7rem;
     min-width: 240px;
 }
-
 .daily-reveal-text .card-name-reveal {
     font-family: 'Cinzel', serif;
     font-size: 2rem;
@@ -2813,7 +2462,6 @@ footer {
     letter-spacing: 0.12rem;
     white-space: nowrap;
 }
-
 .daily-reveal-text .card-sub-reveal {
     font-family: 'Montserrat', sans-serif;
     font-size: 1rem;
@@ -2822,21 +2470,12 @@ footer {
     letter-spacing: 0.15rem;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
-
 #daily-animation-overlay.stage-reveal .daily-reveal-text {
     animation: revealTextIn 1.2s ease-out forwards;
 }
-
 @keyframes revealTextIn {
-    0% {
-        opacity: 0;
-        transform: translateX(-50%) translateY(25px) scale(0.9);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateX(-50%) translateY(0) scale(1);
-    }
+    0% { opacity: 0; transform: translateX(-50%) translateY(25px) scale(0.9); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
 }
 
 /* ─── 漂浮粒子(CSS fallback) ─── */
@@ -2862,38 +2501,30 @@ footer {
 #daily-animation-overlay.daily-perf-mobile .daily-lens-flare {
     display: none;
 }
-
 #daily-animation-overlay.daily-perf-mobile .daily-nebula {
     animation: none;
     filter: blur(24px);
 }
-
 #daily-animation-overlay.daily-perf-mobile .daily-magic-circle svg,
 #daily-animation-overlay.daily-perf-mobile .daily-magic-circle-inner svg {
     filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.28));
 }
-
 #daily-animation-overlay.daily-perf-mobile .daily-rune:nth-of-type(even) {
     display: none;
 }
-
 #daily-animation-overlay.daily-perf-mobile .daily-rune {
     text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
 }
-
 #daily-animation-overlay.daily-perf-mobile .daily-scan-beam {
     filter: blur(2px);
 }
-
 #daily-animation-overlay.daily-perf-mobile.stage-flip {
     animation: none;
 }
-
 #daily-animation-overlay.daily-perf-mobile .daily-card-stage::before,
 #daily-animation-overlay.daily-perf-mobile .daily-card-stage::after {
     display: none;
 }
-
 #daily-animation-overlay.daily-perf-mobile .daily-card-aura,
 #daily-animation-overlay.daily-perf-mobile.stage-enter .daily-card-aura,
 #daily-animation-overlay.daily-perf-mobile.stage-charge .daily-card-aura,
@@ -2901,12 +2532,10 @@ footer {
     animation: none;
     box-shadow: 0 0 24px rgba(212, 175, 55, 0.24);
 }
-
 #daily-animation-overlay.daily-perf-mobile.stage-draw .daily-deck-card,
 #daily-animation-overlay.daily-perf-mobile.stage-enter .daily-deck-card {
     filter: none;
 }
-
 #daily-animation-overlay.daily-perf-mobile .daily-reveal-text {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -2924,25 +2553,20 @@ footer {
 #daily-animation-overlay.daily-perf-lite .daily-card-aura {
     display: none !important;
 }
-
 #daily-animation-overlay.daily-perf-lite.stage-flip {
     animation: none;
 }
-
 #daily-animation-overlay.daily-perf-lite .daily-card-stage::before,
 #daily-animation-overlay.daily-perf-lite .daily-card-stage::after {
     display: none;
 }
-
 #daily-animation-overlay.daily-perf-lite .daily-deck-card {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
 }
-
 #daily-animation-overlay.daily-perf-lite.stage-draw .daily-deck-card,
 #daily-animation-overlay.daily-perf-lite.stage-enter .daily-deck-card {
     filter: none;
 }
-
 #daily-animation-overlay.daily-perf-lite .daily-reveal-text {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -2952,93 +2576,64 @@ footer {
 /* ─── 手機響應式 ─── */
 @media (max-width: 768px) {
     .daily-deck-card {
-        width: 65px;
-        height: 105px;
+        width: 65px; height: 105px;
     }
-
     #daily-animation-overlay.stage-deck .daily-deck-card {
         transform-origin: center 350px;
     }
-
     .daily-card-flip-container {
-        width: 200px;
-        height: 340px;
+        width: 200px; height: 340px;
     }
-
     .daily-card-aura {
-        width: 240px;
-        height: 390px;
+        width: 240px; height: 390px;
     }
-
     .daily-magic-circle svg {
-        width: 300px;
-        height: 300px;
+        width: 300px; height: 300px;
     }
-
     .daily-magic-circle-inner svg {
-        width: 200px;
-        height: 200px;
+        width: 200px; height: 200px;
     }
-
     .daily-reveal-text {
         padding: 0.6rem 1.5rem 0.5rem;
         min-width: 200px;
     }
-
     .daily-reveal-text .card-name-reveal {
         font-size: 1.5rem;
     }
-
     .daily-reveal-text .card-sub-reveal {
         font-size: 0.85rem;
     }
-
     .daily-lens-flare {
-        width: 400px;
-        height: 400px;
+        width: 400px; height: 400px;
     }
 }
-
 @media (max-width: 480px) {
     .daily-deck-card {
-        width: 52px;
-        height: 85px;
+        width: 52px; height: 85px;
     }
-
     #daily-animation-overlay.stage-deck .daily-deck-card {
         transform-origin: center 280px;
     }
-
     .daily-card-flip-container {
-        width: 170px;
-        height: 290px;
+        width: 170px; height: 290px;
     }
-
     .daily-card-aura {
-        width: 210px;
-        height: 340px;
+        width: 210px; height: 340px;
     }
-
     .daily-magic-circle svg {
-        width: 240px;
-        height: 240px;
+        width: 240px; height: 240px;
     }
-
     .daily-magic-circle-inner svg {
-        width: 160px;
-        height: 160px;
+        width: 160px; height: 160px;
     }
-
     .daily-reveal-text {
         padding: 0.5rem 1.2rem 0.4rem;
         min-width: 180px;
         bottom: 3%;
     }
-
     .daily-reveal-text .card-name-reveal {
         font-size: 1.2rem;
     }
-
     .daily-reveal-text .card-sub-reveal {
         font-size: 0.75rem;
     }
