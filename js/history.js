@@ -123,6 +123,22 @@ async function clearAllHistory() {
 /* ============================
    UI 互動邏輯
    ============================ */
+let selectedHistoryIds = new Set();
+
+function updateHistoryActionButtons() {
+    const deleteBtn = document.getElementById('delete-selected-history-btn');
+    const selectAllCheckbox = document.getElementById('history-select-all');
+    const allCheckboxes = document.querySelectorAll('.history-item-checkbox');
+    
+    if (deleteBtn) {
+        deleteBtn.disabled = selectedHistoryIds.size === 0;
+        deleteBtn.textContent = selectedHistoryIds.size > 0 ? `刪除所選 (${selectedHistoryIds.size})` : '刪除所選';
+    }
+    
+    if (selectAllCheckbox && allCheckboxes.length > 0) {
+        selectAllCheckbox.checked = selectedHistoryIds.size === allCheckboxes.length;
+    }
+}
 
 async function openHistoryModal() {
     const modal = document.getElementById('history-modal');
@@ -131,6 +147,12 @@ async function openHistoryModal() {
     // 初始化確保顯示列表視圖，隱藏詳細視圖
     document.getElementById('history-list-view').classList.remove('hidden');
     document.getElementById('history-detail-view').classList.add('hidden');
+    
+    // 重置多選狀態
+    selectedHistoryIds.clear();
+    const selectAllCheckbox = document.getElementById('history-select-all');
+    if (selectAllCheckbox) selectAllCheckbox.checked = false;
+    updateHistoryActionButtons();
     
     modal.classList.remove('hidden');
     await renderHistoryList();
@@ -149,10 +171,17 @@ async function renderHistoryList() {
 
     const records = await getAllHistory();
 
+    const actionsBar = document.getElementById('history-actions-bar');
+    selectedHistoryIds.clear();
+    updateHistoryActionButtons();
+
     if (records.length === 0) {
         container.innerHTML = '<div class="history-empty-msg">空空如也。您尚未留下任何占卜星軌。</div>';
+        if (actionsBar) actionsBar.classList.add('hidden');
         return;
     }
+
+    if (actionsBar) actionsBar.classList.remove('hidden');
 
     let html = '';
     records.forEach(record => {
@@ -164,10 +193,14 @@ async function renderHistoryList() {
         const previewQuestion = record.question || '一般指引 (未輸入明確提問)';
 
         html += `
-        <div class="history-item">
+        <div class="history-item" id="history-item-${record.id}">
             <div class="history-item-header">
-                <span class="history-item-date">${record.dateString}</span>
-                <button class="history-delete-single-btn" data-id="${record.id}" title="刪除此紀錄">✖</button>
+                <label class="history-checkbox-label" onclick="event.stopPropagation()">
+                    <input type="checkbox" class="history-item-checkbox" value="${record.id}">
+                    <span class="custom-checkbox"></span>
+                    <span class="history-item-date">${record.dateString}</span>
+                </label>
+                <button class="history-delete-single-btn" data-id="${record.id}" title="刪除此紀錄" onclick="event.stopPropagation()">✖</button>
             </div>
             <div class="history-item-body" onclick="showHistoryDetail(${record.id})">
                 <div class="history-item-question">${escapeHtml(previewQuestion)}</div>
@@ -191,6 +224,23 @@ async function renderHistoryList() {
                 await renderHistoryList();
             }
         };
+    });
+
+    // 綁定 Checkbox 事件
+    container.querySelectorAll('.history-item-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const id = Number(e.target.value);
+            const historyItem = document.getElementById(`history-item-${id}`);
+            
+            if (e.target.checked) {
+                selectedHistoryIds.add(id);
+                if (historyItem) historyItem.classList.add('selected');
+            } else {
+                selectedHistoryIds.delete(id);
+                if (historyItem) historyItem.classList.remove('selected');
+            }
+            updateHistoryActionButtons();
+        });
     });
 }
 
@@ -286,6 +336,46 @@ document.addEventListener('DOMContentLoaded', () => {
             const confirmed = await showConfirmDialog('清空日誌', '確定要清除所有神諭日誌嗎？這將無法復原。');
             if (confirmed) {
                 await clearAllHistory();
+                await renderHistoryList();
+            }
+        });
+    }
+    
+    // 全選 Checkbox
+    const selectAllCheckbox = document.getElementById('history-select-all');
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            const checkboxes = document.querySelectorAll('.history-item-checkbox');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = isChecked;
+                const id = Number(cb.value);
+                const historyItem = document.getElementById(`history-item-${id}`);
+                
+                if (isChecked) {
+                    selectedHistoryIds.add(id);
+                    if (historyItem) historyItem.classList.add('selected');
+                } else {
+                    selectedHistoryIds.delete(id);
+                    if (historyItem) historyItem.classList.remove('selected');
+                }
+            });
+            updateHistoryActionButtons();
+        });
+    }
+
+    // 刪除所選按鈕
+    const deleteSelectedBtn = document.getElementById('delete-selected-history-btn');
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.addEventListener('click', async () => {
+            if (selectedHistoryIds.size === 0) return;
+            
+            const confirmed = await showConfirmDialog('刪除日誌', `確定要刪除選取的 ${selectedHistoryIds.size} 筆占卜紀錄嗎？`);
+            if (confirmed) {
+                // 批次刪除
+                await Promise.all(Array.from(selectedHistoryIds).map(id => deleteHistoryRecord(id)));
+                selectedHistoryIds.clear();
                 await renderHistoryList();
             }
         });

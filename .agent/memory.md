@@ -112,4 +112,12 @@
 - **修復**：在 `js/daily.js` 的 `triggerDailyCard()` 中，呼叫 `startDailyFlow()` 前強制將 `AppState.gameState` 重置為 `'idle'`。
 - **版本控制**：升級至 **v1.7.10**。
 
+## 2026-04-30 - Feature: 占卜日誌多選刪除
+- **需求**：使用者希望能在占卜日誌中一次勾選多筆紀錄並刪除。
+- **實作**：
+  - **HTML**: 於 `#history-list-view` 頂部新增 `.history-actions-bar` 操作列（含全選、刪除所選、清空全部）。
+  - **CSS**: 實作自訂 `.custom-checkbox`，並設計 `.history-item.selected` 的高亮樣式。
+  - **JS**: `js/history.js` 引入 `selectedHistoryIds` (Set) 追蹤選取狀態；實作全選連動邏輯；透過 `Promise.all` 實現批次刪除 `deleteHistoryRecord`。
+- **版本控制**：升級至 **v1.7.11**。
+
 

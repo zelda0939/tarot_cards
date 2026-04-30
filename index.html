@@ -20,7 +20,7 @@
     <!-- MediaPipe Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="css/style.css?v=1.7.10">
+    <link rel="stylesheet" href="css/style.css?v=1.7.11">
 </head>
 
 <body>
@@ -187,11 +187,20 @@
 
                 <!-- 列表視圖 -->
                 <div id="history-list-view" class="history-list-view-container">
+                    <!-- 操作列：有紀錄時才顯示 -->
+                    <div class="history-actions-bar hidden" id="history-actions-bar">
+                        <label class="history-select-all-label">
+                            <input type="checkbox" id="history-select-all">
+                            <span class="custom-checkbox"></span>全選
+                        </label>
+                        <div class="history-action-buttons">
+                            <button id="delete-selected-history-btn" class="premium-btn history-action-btn" disabled>刪除所選</button>
+                            <button id="clear-history-btn" class="premium-btn history-action-btn history-clear-btn">清空全部</button>
+                        </div>
+                    </div>
+                    
                     <div id="history-list-container">
                         <!-- 歷史清單將動態生成於此 -->
-                    </div>
-                    <div class="history-clear-btn-container">
-                        <button id="clear-history-btn" class="premium-btn history-clear-btn">清空所有日誌</button>
                     </div>
                 </div>
 
@@ -302,19 +311,19 @@
                 class="app-version"></span></p>
     </footer>
 
-    <script src="js/version.js?v=1.7.10"></script>
-    <script src="js/tarot_dict.js?v=1.7.10"></script>
-    <script src="js/state.js?v=1.7.10"></script>
-    <script src="js/ui.js?v=1.7.10"></script>
-    <script src="js/question.js?v=1.7.10"></script>
-    <script src="js/ring.js?v=1.7.10"></script>
-    <script src="js/gesture.js?v=1.7.10"></script>
-    <script src="js/imageExport.js?v=1.7.10"></script>
-    <script src="js/history.js?v=1.7.10"></script>
-    <script src="js/analysis.js?v=1.7.10"></script>
-    <script src="js/app.js?v=1.7.10"></script>
-    <script src="js/daily.js?v=1.7.10"></script>
-    <script src="js/init.js?v=1.7.10"></script>
+    <script src="js/version.js?v=1.7.11"></script>
+    <script src="js/tarot_dict.js?v=1.7.11"></script>
+    <script src="js/state.js?v=1.7.11"></script>
+    <script src="js/ui.js?v=1.7.11"></script>
+    <script src="js/question.js?v=1.7.11"></script>
+    <script src="js/ring.js?v=1.7.11"></script>
+    <script src="js/gesture.js?v=1.7.11"></script>
+    <script src="js/imageExport.js?v=1.7.11"></script>
+    <script src="js/history.js?v=1.7.11"></script>
+    <script src="js/analysis.js?v=1.7.11"></script>
+    <script src="js/app.js?v=1.7.11"></script>
+    <script src="js/daily.js?v=1.7.11"></script>
+    <script src="js/init.js?v=1.7.11"></script>
     <script>
         // 在頁面載入時顯示目前版本號
         document.addEventListener('DOMContentLoaded', () => {
