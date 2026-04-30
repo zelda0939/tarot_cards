@@ -1472,13 +1472,27 @@ footer {
     .question-panel.centered-mode {
         width: 88vw;
         max-width: 900px;
-        top: calc(50% - 12vh);
+        top: calc(50% - 15vh);
+    }
+
+    #control-panel.centered-mode {
+        top: calc(50% + 12vh);
     }
 
     .premium-btn {
         padding: 2vh 5vw;
         font-size: 2.5vmin;
         border-width: 2px;
+    }
+
+    .header-settings-wrap {
+        top: 3vh;
+        right: 4vw;
+        gap: 3vw !important;
+    }
+
+    .header-settings-btn {
+        font-size: 5vmin;
     }
 
     .carousel-scene {
