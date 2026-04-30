@@ -127,4 +127,34 @@
   - 為原有的星星粒子加入金色微光 (`box-shadow`)，提升整體魔法氛圍。
 - **版本控制**：升級至 **v1.7.12**。
 
+## 2026-04-30 - UI Enhancement: 魔法祭壇背景 (v1.7.13)
+- **調整內容**：
+  - 在 `index.html` 底部新增 `#magic-altar-wrapper`，透過 `rotateX(75deg)` 營造平放的 3D 祭壇視角。
+  - 使用 CSS Animation 讓祭壇的圓環、六芒星 SVG (`altar-hexagram`) 與塔羅符文 (`altar-runes-container`) 進行多層次、不同速的正反轉交錯旋轉。
+  - 加入 `altar-breathe` 呼吸光暈，進一步提升沉浸感與魔法主題契合度。
+- **版本控制**：升級至 **v1.7.13**。
+
+## 2026-04-30 - UI Enhancement: 高質感 AI 魔法祭壇背景 (v1.7.14)
+- **問題**：v1.7.13 的純 CSS 幾何祭壇在電腦螢幕上拉伸變形嚴重，且視覺質感廉價。
+- **調整內容**：
+  - **清理**：移除 `index.html` 的 `#magic-altar-wrapper` 及 `css/style.css` 相關的 `.altar-*` 樣式與動畫。
+  - **導入**：使用 AI 生成高畫質神聖祭壇背景圖 (`assets/images/mystic_altar_bg.png`)。
+  - **套用**：更新 `#stars-container` 背景為該圖片，並設定 `background-size: cover; background-position: center bottom`，解決所有裝置的變形問題，大幅提升神聖與神秘氛圍。
+- **版本控制**：升級至 **v1.7.14**。
+
+## 2026-04-30 - UI Enhancement: 電腦版背景遮罩與對比度優化 (v1.7.15)
+- **問題**：導入高畫質背景後，在電腦寬螢幕上背景底部的祭壇亮度過高，導致中間的提問 UI 區塊對比度不足，影響閱讀。
+- **調整內容**：
+  - 在 `#stars-container::after` 中加入 RWD 背景遮罩。電腦版 (`min-width: 768px`) 採用深色 `radial-gradient` 壓暗中上方亮度。
+  - 加深 `.question-panel` 的背景透明度，並強化毛玻璃 (`backdrop-filter`) 效果，確保文字在高亮度背景下依然清晰。
+- **版本控制**：升級至 **v1.7.15**。
+
+## 2026-04-30 - UI Enhancement: 電腦版背景比例與亮度優化 (v1.7.16 - v1.7.17)
+- **問題**：背景圖片在電腦版使用 `cover` 時，因寬高比差異導致高度被嚴重裁切，無法顯示星雲部分。且先前為了解決裁切導致的過亮問題而加入了暗色遮罩，造成整體偏暗。
+- **調整內容**：
+  - 更新 `#stars-container` 的電腦版 CSS，將 `background-size` 改為 `100% 100%, auto 100vh`，確保圖片高度維持 `100vh` 不被裁切。
+  - 加入 `linear-gradient` 將圖片左右兩側邊緣無縫漸層融入 `#050608` 黑底，在寬螢幕上呈現完整的垂直視覺。
+  - 由於高度與比例修復，中央不再被高亮度區域佔據，因此移除了 `#stars-container::after` 的電腦版暗色漸層遮罩，恢復星雲原有的明亮與華麗感。
+- **版本控制**：升級至 **v1.7.17**。
+
 
