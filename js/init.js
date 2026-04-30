@@ -200,7 +200,8 @@ function initApp() {
         }
         AppState.userQuestion = activeQuestion;
 
-        // ── 清除可能殘留的每日一抽狀態（使用者在 daily 結果頁按關閉後直接開手勢抽牌）──
+        // ── 清除可能殘留的每日一抽狀態與動畫資源（使用者在 daily 結果頁按關閉後直接開手勢抽牌）──
+        if (typeof cleanupDailyAnimation === 'function') cleanupDailyAnimation();
         if (AppState.isDailyMode || AppState.selectedCards.length > 0) {
             AppState.isDailyMode = false;
             AppState.selectedCards = [];
@@ -262,6 +263,7 @@ function initApp() {
     const modalRestartBtn = document.getElementById('modal-restart-btn');
     if (modalRestartBtn) {
         modalRestartBtn.addEventListener('click', () => {
+            if (typeof cleanupDailyAnimation === 'function') cleanupDailyAnimation();
             document.getElementById('reading-modal').classList.add('hidden');
             resetGame();
         });

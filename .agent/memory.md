@@ -90,3 +90,19 @@
   - 修正 CSS `visibility: hidden` 解決過渡殘影，確保動畫切換無縫流暢。
 - **版本控制**：升級至 **v1.7.8**，同步更新 `sw.js` 快取與 `index.html` 資源版本。
 
+## 2026-04-30 - 效能修復：手機多次抽牌後 Lag
+- **問題**：手機上交替使用「每日一抽」和「手勢抽牌」多次後，App 越來越卡頓。
+- **根因 (6 個洩漏源)**：
+  1. `daily.js` 的 8~10 個 `setTimeout` 未被追蹤或取消，閉包持有 overlay/fanCards/particles/canvas 引用無法被 GC。
+  2. 扇形牌陣 DOM（15~19 張 `.daily-deck-card` + `.daily-scan-beam`）在動畫結束後未清理，只增不減。
+  3. CSS infinite 動畫（nebulaBreath、rotateSunburst、magicCircleSpin 等）在 overlay 隱藏後仍持續消耗 GPU（因使用 `opacity: 0` 而非 `display: none`）。
+  4. Canvas 位圖記憶體（`innerWidth × innerHeight × 4` bytes）未顯式釋放。
+  5. Wake Lock `requestWakeLock()` 在 `visibilitychange` 事件中重複請求，舊 sentinel 未釋放。
+- **修復**：
+  - 新增 `cleanupDailyAnimation()` 統一清理函式：清除所有 timer、cancelAnimationFrame、清空 deckFan DOM、Canvas width/height 歸零、重置 overlay class。
+  - 所有 setTimeout 改用 `_dailyTimers[]` 追蹤，rAF 改用模組級變數 `_dailyParticleAnimId` / `_dailyScanAnimId`。
+  - CSS 新增 `#daily-animation-overlay.hidden { display: none; }` 停止所有內部動畫。
+  - Wake Lock 新增防重複檢查 + release 事件中清空 sentinel 引用。
+  - `init.js` 在手勢抽牌和重新洗牌入口都呼叫 `cleanupDailyAnimation()`。
+- **版本控制**：升級至 **v1.7.9**。
+

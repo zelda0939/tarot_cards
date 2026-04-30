@@ -343,11 +343,16 @@ async function requestWakeLock() {
         console.warn('[聖境塔羅] 此瀏覽器不支援 Screen Wake Lock API');
         return;
     }
+    // 若現有 sentinel 仍有效，不重複請求（防止洩漏）
+    if (AppState.wakeLockSentinel) {
+        return;
+    }
     try {
         AppState.wakeLockSentinel = await navigator.wakeLock.request('screen');
         console.log('[聖境塔羅] ✅ 螢幕恆亮已啟用');
         AppState.wakeLockSentinel.addEventListener('release', () => {
             console.log('[聖境塔羅] 螢幕恆亮已釋放');
+            AppState.wakeLockSentinel = null; // 釋放後清空引用，允許下次重新請求
         });
     } catch (err) {
         console.warn('[聖境塔羅] 螢幕恆亮請求失敗:', err.message);

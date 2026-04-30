@@ -1737,6 +1737,11 @@ footer {
     perspective: 1800px;
     overflow: hidden;
 }
+#daily-animation-overlay.hidden {
+    /* 使用 display:none 確保所有內部 CSS infinite 動畫完全停止，
+       避免 opacity:0 時仍持續消耗 GPU 合成層 */
+    display: none;
+}
 #daily-animation-overlay.show {
     opacity: 1;
     pointer-events: auto;

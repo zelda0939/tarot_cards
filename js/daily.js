@@ -4,6 +4,63 @@
  */
 
 /* ============================
+   每日一抽資源追蹤與統一清理
+   防止多次抽牌後 setTimeout / rAF / DOM / Canvas 洩漏
+   ============================ */
+let _dailyTimers = [];      // 追蹤所有 setTimeout ID
+let _dailyParticleAnimId = null;
+let _dailyScanAnimId = null;
+
+/**
+ * 統一清理每日一抽動畫所有資源
+ * — 清除所有排程中的 setTimeout
+ * — 取消所有 requestAnimationFrame
+ * — 清空扇形牌陣 DOM 節點
+ * — 釋放 Canvas 位圖記憶體
+ * — 重置 overlay class 狀態
+ */
+function cleanupDailyAnimation() {
+    // 1. 清除所有排程中的 setTimeout
+    _dailyTimers.forEach(id => clearTimeout(id));
+    _dailyTimers = [];
+
+    // 2. 取消 requestAnimationFrame
+    if (_dailyParticleAnimId) {
+        cancelAnimationFrame(_dailyParticleAnimId);
+        _dailyParticleAnimId = null;
+    }
+    if (_dailyScanAnimId) {
+        cancelAnimationFrame(_dailyScanAnimId);
+        _dailyScanAnimId = null;
+    }
+
+    // 3. 清空扇形牌陣 DOM（移除動態產生的牌 + 掃描光柱）
+    const deckFan = document.getElementById('daily-deck-fan');
+    if (deckFan) deckFan.innerHTML = '';
+
+    // 4. 釋放 Canvas 位圖記憶體
+    const canvas = document.getElementById('daily-particle-canvas');
+    if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // 設定 width/height 為 0 可強制瀏覽器回收位圖記憶體
+        canvas.width = 0;
+        canvas.height = 0;
+    }
+
+    // 5. 重置 overlay class 狀態
+    const overlay = document.getElementById('daily-animation-overlay');
+    if (overlay) {
+        overlay.classList.remove(
+            'show', 'stage-deck', 'stage-draw', 'stage-enter',
+            'stage-charge', 'stage-flip', 'stage-reveal', 'stage-fadeout',
+            'daily-perf-mobile', 'daily-perf-lite'
+        );
+        overlay.classList.add('hidden');
+    }
+}
+
+/* ============================
    每日指引特效與邏輯
    ============================ */
 async function triggerDailyCard() {
@@ -25,6 +82,9 @@ async function triggerDailyCard() {
 
 function startDailyFlow(todayStr) {
     if (AppState.gameState !== 'idle' && AppState.gameState !== 'rotating') return; // 防呆，允許在初始或重新洗牌旋轉中抽取
+
+    // 先清理前一輪可能殘留的動畫資源
+    cleanupDailyAnimation();
     
     // 設定狀態
     AppState.isDailyMode = true;
@@ -136,7 +196,7 @@ function startDailyFlow(todayStr) {
 
     // ── Canvas 粒子系統初始化 ──
     const canvas = document.getElementById('daily-particle-canvas');
-    let particleAnimId = null;
+    _dailyParticleAnimId = null;
     let particles = [];
 
     if (canvas && dailyPerf.enableParticles) {
@@ -188,7 +248,7 @@ function startDailyFlow(todayStr) {
         // 繪製循環（手機降為較低幀率 + 簡化渲染）
         function drawParticles(now) {
             if ((now - lastParticleFrameTime) < dailyPerf.particleFrameInterval) {
-                particleAnimId = requestAnimationFrame(drawParticles);
+                _dailyParticleAnimId = requestAnimationFrame(drawParticles);
                 return;
             }
             lastParticleFrameTime = now;
@@ -235,10 +295,10 @@ function startDailyFlow(todayStr) {
                     ctx.fill();
                 }
             }
-            particleAnimId = requestAnimationFrame(drawParticles);
+            _dailyParticleAnimId = requestAnimationFrame(drawParticles);
         }
 
-        particleAnimId = requestAnimationFrame(drawParticles);
+        _dailyParticleAnimId = requestAnimationFrame(drawParticles);
     } else if (canvas) {
         const ctx = canvas.getContext('2d');
         if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -249,7 +309,7 @@ function startDailyFlow(todayStr) {
     let chosenIndex = 0;
     const totalFanCards = dailyPerf.fanCards;
     const midIndex = Math.floor(totalFanCards / 2);
-    let scanAnimId = null;
+    _dailyScanAnimId = null;
     const fanCards = []; // 存放所有牌 DOM 參考
 
     if (deckFan) {
@@ -337,13 +397,13 @@ function startDailyFlow(todayStr) {
                 }
             });
 
-            scanAnimId = requestAnimationFrame(updateScan);
+            _dailyScanAnimId = requestAnimationFrame(updateScan);
         }
 
         // 延遲啟動掃描
-        setTimeout(() => {
-            scanAnimId = requestAnimationFrame(updateScan);
-        }, SCAN_DELAY);
+        _dailyTimers.push(setTimeout(() => {
+            _dailyScanAnimId = requestAnimationFrame(updateScan);
+        }, SCAN_DELAY));
     }
 
     const scanTotalMs = dailyPerf.sweepPrimary + dailyPerf.sweepSecondary + dailyPerf.sweepToChosen;
@@ -451,31 +511,31 @@ function startDailyFlow(todayStr) {
     overlay.classList.remove('hidden', 'show', 'stage-deck', 'stage-draw', 'stage-enter', 'stage-charge', 'stage-flip', 'stage-reveal', 'stage-fadeout');
 
     // ── Stage 1 (50ms): 背景漸隱出現 + 魔法陣 + 符文 + 星塵 ──
-    setTimeout(() => {
+    _dailyTimers.push(setTimeout(() => {
         overlay.classList.add('show');
-    }, STAGE_SHOW_AT);
+    }, STAGE_SHOW_AT));
 
     // ── Stage 2 (800ms): 扇形牌陣展開 ──
-    setTimeout(() => {
+    _dailyTimers.push(setTimeout(() => {
         overlay.classList.add('stage-deck');
-    }, STAGE_DECK_AT);
+    }, STAGE_DECK_AT));
 
     // -- 掃描結束時間 = dailyPerf.scanDelay + (sweepPrimary + sweepSecondary + sweepToChosen) --
 
     // ── Stage 3 (5300ms): 直接從選中牌原始位置飛入，避免扇形牌先跑向中央 ──
-    setTimeout(() => {
+    _dailyTimers.push(setTimeout(() => {
         prepareDailyCardEntryStart();
         overlay.classList.remove('stage-deck', 'stage-draw');
         overlay.classList.add('stage-enter');
-    }, STAGE_DRAW_AT);
+    }, STAGE_DRAW_AT));
 
     // ── Stage 5 (8200ms): 能量蓄積 — 卡牌微縮暗化再亮起 ──
-    setTimeout(() => {
+    _dailyTimers.push(setTimeout(() => {
         overlay.classList.add('stage-charge');
-    }, STAGE_CHARGE_AT);
+    }, STAGE_CHARGE_AT));
 
     // ── Stage 6 (9500ms): 翻牌 + 衝擊波 + 螢幕震動 + 鏡頭光暈 ──
-    setTimeout(() => {
+    _dailyTimers.push(setTimeout(() => {
         overlay.classList.remove('stage-charge');
         overlay.classList.add('stage-flip');
 
@@ -502,38 +562,23 @@ function startDailyFlow(todayStr) {
                 );
             }
         }
-    }, STAGE_FLIP_AT);
+    }, STAGE_FLIP_AT));
 
     // ── Stage 7 (11500ms): 揭示牌名文字 ──
-    setTimeout(() => {
+    _dailyTimers.push(setTimeout(() => {
         overlay.classList.add('stage-reveal');
-    }, STAGE_REVEAL_AT);
+    }, STAGE_REVEAL_AT));
 
     // ── Stage 8 (14000ms): 淡出 → 進入解析畫面 ──
-    setTimeout(() => {
+    _dailyTimers.push(setTimeout(() => {
         overlay.classList.add('stage-fadeout');
 
-        // 停止所有動畫
-        if (particleAnimId) {
-            cancelAnimationFrame(particleAnimId);
-            particleAnimId = null;
-        }
-        if (scanAnimId) {
-            cancelAnimationFrame(scanAnimId);
-            scanAnimId = null;
-        }
-
         // 等淡出完成後清理並進入分析
-        setTimeout(() => {
-            overlay.classList.remove('show', 'stage-deck', 'stage-draw', 'stage-enter', 'stage-charge', 'stage-flip', 'stage-reveal', 'stage-fadeout', 'daily-perf-mobile', 'daily-perf-lite');
-            overlay.classList.add('hidden');
-            // 清空 canvas
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-            }
+        _dailyTimers.push(setTimeout(() => {
+            // 使用統一清理函式釋放所有資源
+            cleanupDailyAnimation();
             particles = [];
             showAnalysis();
-        }, STAGE_CLEANUP_DELAY);
-    }, STAGE_FADEOUT_AT);
+        }, STAGE_CLEANUP_DELAY));
+    }, STAGE_FADEOUT_AT));
 }

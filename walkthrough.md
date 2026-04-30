@@ -59,3 +59,10 @@
 - **版本號升級與快取更新**:
     - 更新 `js/version.js` 與 `sw.js` 版本號至 **1.7.8**。
     - 更新 `index.html` 中所有 CSS/JS 引入的 `?v=` 參數，確保 PWA 使用者能即時收到最新的動畫修正。
+- **效能修復：手機多次抽牌後 Lag (v1.7.9)**:
+    - 排查出 6 個記憶體洩漏源：setTimeout 閉包累積、DOM 節點殘留、CSS infinite 動畫持續消耗 GPU、Canvas 位圖未釋放、Wake Lock 重複請求。
+    - 新增 `cleanupDailyAnimation()` 統一資源釋放函式，集中管理計時器、rAF、DOM、Canvas 的生命週期。
+    - 所有 `setTimeout` 改用 `_dailyTimers[]` 追蹤，`requestAnimationFrame` 改用模組級變數 `_dailyParticleAnimId` / `_dailyScanAnimId`。
+    - CSS 新增 `#daily-animation-overlay.hidden { display: none }` 規則，確保 overlay 隱藏時內部所有 CSS 動畫完全停止。
+    - Wake Lock 新增防重複請求 + release 時自動清空 sentinel 引用。
+    - `init.js` 在手勢抽牌開始和重新洗牌按鈕中呼叫 `cleanupDailyAnimation()`。
