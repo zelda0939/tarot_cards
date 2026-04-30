@@ -85,3 +85,8 @@
 - **問題**：使用者做完「每日一抽」後按關閉（非重新洗牌），再填寫提問開啟手勢抽牌時，`AppState.selectedCards` 仍殘留 daily 的牌，導致手勢選牌從 slot-2 開始填入。
 - **根因**：`analysis.js` 的 reading modal 關閉按鈕只隱藏 modal，沒有清除 `AppState.selectedCards` 和 `isDailyMode`。
 - **修復**：在 `init.js` 的「開啟手勢抽牌」按鈕 click handler 中，開始前先檢查並清除殘留的 daily 狀態（selectedCards、usedCardIds、isDailyMode、slot UI）。
+- **每日一抽動畫優化**：
+  - 重構 `js/daily.js` 階段邏輯，新增 `prepareDailyCardEntryStart()` 實現主牌從扇形牌陣原位「接棒」起飛。
+  - 修正 CSS `visibility: hidden` 解決過渡殘影，確保動畫切換無縫流暢。
+- **版本控制**：升級至 **v1.7.8**，同步更新 `sw.js` 快取與 `index.html` 資源版本。
+
