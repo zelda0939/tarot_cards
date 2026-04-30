@@ -49,3 +49,13 @@
 - **文件與維護**:
     - 建立 [README.md](file:///g:/%E6%88%91%E7%9A%84%E9%9B%B2%E7%AB%AF%E7%A1%AC%E7%A2%9F/%E5%AE%89%E6%88%90%E5%B7%A5%E4%BD%9C%E8%B3%87%E6%96%99/%E5%90%8C%E6%AD%A5%E5%8D%80/case/tarot_cards/README.md)：完善專案結構、核心特色說明與本地環境啟動教學。
 
+## 2026-04-30
+- **每日一抽動畫過渡優化**:
+    - 重構 `js/daily.js` 動畫階段，新增 `prepareDailyCardEntryStart()` 函式精確計算選中牌與主舞台的座標差、縮放與旋轉，實現無縫銜接。
+    - 調整 `css/style.css`，在 Stage Enter 階段將扇形牌陣中的選中牌設為 `visibility: hidden`，由主卡牌直接接管位置，解決了之前動畫切換時微小跳動與殘影問題。
+- **修復每日一抽狀態殘留 Bug**:
+    - 在 `js/init.js` 的「開啟手勢抽牌」處理器中，加入強制清理 `isDailyMode` 與 `selectedCards` 的邏輯。
+    - 解決了使用者在完成每日一抽後，若未點擊「重新洗牌」而直接進行手勢抽牌時，會導致牌陣 Slot 填寫錯誤的污染問題。
+- **版本號升級與快取更新**:
+    - 更新 `js/version.js` 與 `sw.js` 版本號至 **1.7.8**。
+    - 更新 `index.html` 中所有 CSS/JS 引入的 `?v=` 參數，確保 PWA 使用者能即時收到最新的動畫修正。

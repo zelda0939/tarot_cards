@@ -2021,14 +2021,11 @@ footer {
     z-index: 5;
 }
 #daily-animation-overlay.stage-enter .daily-deck-card.chosen {
-    /* 和主卡交疊淡出，視覺上像同一張牌被「接棒」到中央 */
+    /* 直接讓主卡接手，避免扇形牌本體出現短暫位移 */
+    visibility: hidden;
     opacity: 0;
-    transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-18px) scale(0.92);
-    filter: blur(1.4px) brightness(1.15);
-    transition:
-        transform 0.52s cubic-bezier(0.33, 1, 0.68, 1) 0.06s,
-        opacity 0.48s ease-out 0.06s,
-        filter 0.48s ease-out 0.06s;
+    transform: rotate(calc((var(--i) - var(--mid)) * 4deg)) translateY(-35px) scale(1.05);
+    transition: none;
 }
 
 /* ── 牌陣消失（延遲淡出，讓主卡牌有時間對齊位置形成交疊融合）── */
@@ -2060,7 +2057,6 @@ footer {
     opacity: 1;
     filter: brightness(1);
     transition: transform 1.55s cubic-bezier(0.19, 0.9, 0.28, 1),
-                opacity 0.42s ease-out 0.03s,
                 filter 1s ease-out;
 }
 #daily-animation-overlay.stage-charge .daily-card-stage {

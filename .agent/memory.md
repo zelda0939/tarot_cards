@@ -80,3 +80,8 @@
 - **Canvas 粒子系統**：120 顆漂浮星塵 + 翻牌瞬間 150 顆爆發粒子，requestAnimationFrame 驅動。
 - **HTML 結構擴充**：`#daily-animation-overlay` 內新增 canvas、星雲、sunburst、SVG 魔法陣、符文、扇形牌陣容器（JS 動態產生牌 + 掃描光柱）、Aura、Lens Flare、揭示文字。
 - **牌名辨識修正**：毛玻璃膠囊背景 + 白色大字 + 多層金色 text-shadow，避免與卡片重疊。
+
+## 2026-04-30 - Bug Fix: 每日一抽殘留狀態汙染手勢抽牌
+- **問題**：使用者做完「每日一抽」後按關閉（非重新洗牌），再填寫提問開啟手勢抽牌時，`AppState.selectedCards` 仍殘留 daily 的牌，導致手勢選牌從 slot-2 開始填入。
+- **根因**：`analysis.js` 的 reading modal 關閉按鈕只隱藏 modal，沒有清除 `AppState.selectedCards` 和 `isDailyMode`。
+- **修復**：在 `init.js` 的「開啟手勢抽牌」按鈕 click handler 中，開始前先檢查並清除殘留的 daily 狀態（selectedCards、usedCardIds、isDailyMode、slot UI）。

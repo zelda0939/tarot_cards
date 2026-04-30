@@ -351,7 +351,7 @@ function startDailyFlow(todayStr) {
         ? {
             deckAt: 800,
             drawLag: 300,
-            enterGap: 1200,
+            enterGap: 0,
             chargeGap: 1700,
             flipGap: 1300,
             revealGap: 2000,
@@ -362,7 +362,7 @@ function startDailyFlow(todayStr) {
             ? {
                 deckAt: 620,
                 drawLag: 220,
-                enterGap: 900,
+                enterGap: 0,
                 chargeGap: 1200,
                 flipGap: 900,
                 revealGap: 1400,
@@ -372,7 +372,7 @@ function startDailyFlow(todayStr) {
             : {
                 deckAt: 520,
                 drawLag: 180,
-                enterGap: 760,
+                enterGap: 0,
                 chargeGap: 1000,
                 flipGap: 780,
                 revealGap: 1150,
@@ -390,6 +390,63 @@ function startDailyFlow(todayStr) {
     const STAGE_FADEOUT_AT = STAGE_REVEAL_AT + stagePacing.fadeGap;
     const STAGE_CLEANUP_DELAY = stagePacing.cleanupDelay;
 
+    function getChosenFanCard() {
+        if (!deckFan) return null;
+
+        const chosenCard = deckFan.querySelector('.daily-deck-card.chosen');
+        if (chosenCard) return chosenCard;
+
+        const fallbackCard = fanCards[chosenIndex];
+        if (!fallbackCard) return null;
+
+        fanCards.forEach(c => c.classList.remove('peeking'));
+        fallbackCard.classList.add('chosen');
+        return fallbackCard;
+    }
+
+    function prepareDailyCardEntryStart() {
+        const cardStage = overlay.querySelector('.daily-card-stage');
+        const chosenCard = getChosenFanCard();
+
+        if (!cardStage || !chosenCard) return false;
+
+        const chosenRect = chosenCard.getBoundingClientRect();
+        const overlayRect = overlay.getBoundingClientRect();
+
+        // 以 overlay 中心作為終點，避免上一輪殘留的 transform 影響對齊。
+        const chosenCenterX = chosenRect.left + chosenRect.width / 2;
+        const chosenCenterY = chosenRect.top + chosenRect.height / 2;
+        const stageCenterX = overlayRect.left + overlayRect.width / 2;
+        const stageCenterY = overlayRect.top + overlayRect.height / 2;
+
+        const offsetX = chosenCenterX - stageCenterX;
+        const offsetY = chosenCenterY - stageCenterY;
+
+        const flipContainer = cardStage.querySelector('.daily-card-flip-container');
+        const stageStyles = window.getComputedStyle(flipContainer || cardStage);
+        const stageWidth = Number.parseFloat(stageStyles.width) || 250;
+        const stageHeight = Number.parseFloat(stageStyles.height) || 425;
+        const rawScaleX = chosenRect.width / stageWidth;
+        const rawScaleY = chosenRect.height / stageHeight;
+        const startScale = Math.max(0.22, Math.min(0.55, (rawScaleX + rawScaleY) / 2));
+
+        const cardIndex = Number.parseFloat(chosenCard.style.getPropertyValue('--i'))
+            || Number.parseFloat(chosenCard.dataset.index || '0')
+            || 0;
+        const fanMid = Number.parseFloat(chosenCard.style.getPropertyValue('--mid'))
+            || midIndex;
+        const startRotate = (cardIndex - fanMid) * 4;
+
+        cardStage.style.setProperty('--start-x', `${offsetX}px`);
+        cardStage.style.setProperty('--start-y', `${offsetY}px`);
+        cardStage.style.setProperty('--start-scale', startScale.toFixed(4));
+        cardStage.style.setProperty('--start-rot', `${startRotate}deg`);
+
+        // 強制重排，確保下一階段從這個扇形牌位置開始 transition。
+        cardStage.offsetHeight;
+        return true;
+    }
+
     // ── 清除所有 class，重置動畫 ──
     overlay.classList.remove('hidden', 'show', 'stage-deck', 'stage-draw', 'stage-enter', 'stage-charge', 'stage-flip', 'stage-reveal', 'stage-fadeout');
 
@@ -405,59 +462,12 @@ function startDailyFlow(todayStr) {
 
     // -- 掃描結束時間 = dailyPerf.scanDelay + (sweepPrimary + sweepSecondary + sweepToChosen) --
 
-    // ── Stage 3 (5300ms): 選中牌抽出，其餘散開 ──
+    // ── Stage 3 (5300ms): 直接從選中牌原始位置飛入，避免扇形牌先跑向中央 ──
     setTimeout(() => {
-        overlay.classList.remove('stage-deck');
-        overlay.classList.add('stage-draw');
-    }, STAGE_DRAW_AT);
-
-    // ── Stage 4 (6500ms): 牌陣消失，主卡牌從抽出牌位置飛到正中央 ──
-    setTimeout(() => {
-        // ── 計算被抽出牌的實際螢幕位置 ──
-        const cardStage = overlay.querySelector('.daily-card-stage');
-        const chosenCard = deckFan ? deckFan.querySelector('.daily-deck-card.chosen') : null;
-
-        if (cardStage && chosenCard) {
-            const chosenRect = chosenCard.getBoundingClientRect();
-            const stageRect = cardStage.getBoundingClientRect();
-
-            // 計算兩者中心點的差值
-            const chosenCenterX = chosenRect.left + chosenRect.width / 2;
-            const chosenCenterY = chosenRect.top + chosenRect.height / 2;
-            const stageCenterX = stageRect.left + stageRect.width / 2;
-            const stageCenterY = stageRect.top + stageRect.height / 2;
-
-            const offsetX = chosenCenterX - stageCenterX;
-            const offsetY = chosenCenterY - stageCenterY;
-
-            // 起始縮放：依照實際 DOM 尺寸比，讓進場接棒不會忽大忽小
-            const stageWidth = stageRect.width || 250;
-            const stageHeight = stageRect.height || 425;
-            const rawScaleX = chosenRect.width / stageWidth;
-            const rawScaleY = chosenRect.height / stageHeight;
-            const startScale = Math.max(0.22, Math.min(0.55, (rawScaleX + rawScaleY) / 2));
-
-            // 起始角度：沿用扇形牌角度，避免主牌瞬間被扶正
-            const cardIndex = Number.parseFloat(chosenCard.style.getPropertyValue('--i'))
-                || Number.parseFloat(chosenCard.dataset.index || '0')
-                || 0;
-            const fanMid = Number.parseFloat(chosenCard.style.getPropertyValue('--mid'))
-                || midIndex;
-            const startRotate = (cardIndex - fanMid) * 4;
-
-            // 設定起始位置（對齊被抽出牌）
-            cardStage.style.setProperty('--start-x', `${offsetX}px`);
-            cardStage.style.setProperty('--start-y', `${offsetY}px`);
-            cardStage.style.setProperty('--start-scale', startScale.toFixed(4));
-            cardStage.style.setProperty('--start-rot', `${startRotate}deg`);
-
-            // 強制重排，確保瀏覽器已套用起始位置
-            cardStage.offsetHeight; // force reflow
-        }
-
-        overlay.classList.remove('stage-draw');
+        prepareDailyCardEntryStart();
+        overlay.classList.remove('stage-deck', 'stage-draw');
         overlay.classList.add('stage-enter');
-    }, STAGE_ENTER_AT);
+    }, STAGE_DRAW_AT);
 
     // ── Stage 5 (8200ms): 能量蓄積 — 卡牌微縮暗化再亮起 ──
     setTimeout(() => {

@@ -200,6 +200,21 @@ function initApp() {
         }
         AppState.userQuestion = activeQuestion;
 
+        // ── 清除可能殘留的每日一抽狀態（使用者在 daily 結果頁按關閉後直接開手勢抽牌）──
+        if (AppState.isDailyMode || AppState.selectedCards.length > 0) {
+            AppState.isDailyMode = false;
+            AppState.selectedCards = [];
+            AppState.usedCardIds.clear();
+            // 清空 slot UI，避免殘留牌面
+            for (let i = 1; i <= 3; i++) {
+                const slot = document.getElementById(`slot-${i}`);
+                if (slot) {
+                    slot.innerHTML = '';
+                    slot.classList.remove('filled');
+                }
+            }
+        }
+
         console.log('[聖境塔羅] 使用者點擊「開啟手勢抽牌」');
         startBtn.classList.add('hidden');
         if (controlPanel) {
