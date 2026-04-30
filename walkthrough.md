@@ -80,5 +80,8 @@
     - 在 `#stars-container` 中加入偽元素 (`::before`) 實作疊加的星雲光暈層，並搭配緩慢流動 (`nebula-drift`) 與脈動 (`magic-pulse`) 動畫。
     - 為星星粒子加入微弱的金色魔法光暈 (`box-shadow`)，並增強閃爍時的亮度變化。
     - 版本號升級至 **1.7.12**。
-
-
+- **支援 iPad Mini 6 等平板直向排版 (v1.7.19)**:
+    - 針對 iPad Mini 6 直向（螢幕寬度約 744px，高度 1133px）新增專屬 Media Query `@media (min-width: 740px) and (max-width: 820px) and (min-height: 1000px)`。
+    - 解決了原本落入 `max-width: 768px` 手機版斷點導致卡牌（`.tarot-card`）、展示區（`.carousel-scene`）高度被過度壓縮的問題。
+    - 調整了 `header` 的 padding、文字大小、以及卡牌各項尺寸（回歸接近桌面版的舒適大小），使其更契合大螢幕平板直立時的視覺體驗。
+    - 版本號升級至 **1.7.19**。
