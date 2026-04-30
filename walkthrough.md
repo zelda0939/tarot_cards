@@ -80,8 +80,8 @@
     - 在 `#stars-container` 中加入偽元素 (`::before`) 實作疊加的星雲光暈層，並搭配緩慢流動 (`nebula-drift`) 與脈動 (`magic-pulse`) 動畫。
     - 為星星粒子加入微弱的金色魔法光暈 (`box-shadow`)，並增強閃爍時的亮度變化。
     - 版本號升級至 **1.7.12**。
-- **支援 iPad Mini 6 等平板直向排版 (v1.7.19)**:
-    - 針對 iPad Mini 6 直向（螢幕寬度約 744px，高度 1133px）新增專屬 Media Query `@media (min-width: 740px) and (max-width: 820px) and (min-height: 1000px)`。
-    - 解決了原本落入 `max-width: 768px` 手機版斷點導致卡牌（`.tarot-card`）、展示區（`.carousel-scene`）高度被過度壓縮的問題。
-    - 調整了 `header` 的 padding、文字大小、以及卡牌各項尺寸（回歸接近桌面版的舒適大小），使其更契合大螢幕平板直立時的視覺體驗。
-    - 版本號升級至 **1.7.19**。
+- **支援 iPad Mini 6 等平板直向排版 (v1.7.20)**:
+    - 解決了 iPadOS 預設開啟「要求電腦版網站」導致虛擬 viewport 寬度過大（>1000px），進而讓畫面在 8.3 吋實體螢幕上縮放變得極小的問題。
+    - 將 Media Query 改為針對大螢幕直立模式 `@media (orientation: portrait) and (min-width: 600px) and (min-height: 800px)`。
+    - 全面導入 `vh`、`vw` 與 `vmin` 視窗比例單位來取代絕對的 `px` 或 `rem`。這強制讓卡牌、輸入框與標題等元素按真實螢幕比例放大，無論 Safari 捏造多大的虛擬解析度，都能完美填滿畫面。
+    - 版本號升級至 **1.7.20**。
