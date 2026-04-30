@@ -65,4 +65,9 @@
     - 所有 `setTimeout` 改用 `_dailyTimers[]` 追蹤，`requestAnimationFrame` 改用模組級變數 `_dailyParticleAnimId` / `_dailyScanAnimId`。
     - CSS 新增 `#daily-animation-overlay.hidden { display: none }` 規則，確保 overlay 隱藏時內部所有 CSS 動畫完全停止。
     - Wake Lock 新增防重複請求 + release 時自動清空 sentinel 引用。
-    - `init.js` 在手勢抽牌開始和重新洗牌按鈕中呼叫 `cleanupDailyAnimation()`。
+    - `init.js` 在手勢抽牌開始 and 重新洗牌按鈕中呼叫 `cleanupDailyAnimation()`。
+- **修復每日一抽重複觸發失效 (v1.7.10)**:
+    - 解決了每日一抽完成後 `gameState` 停留在 `'finished'`，導致再次點擊時被 `startDailyFlow()` 的防呆邏輯阻擋的問題。
+    - 在觸發流程中加入 `gameState` 重置為 `'idle'` 的邏輯，確保連續抽牌流程正常。
+    - 同步更新 `js/version.js`、`sw.js` 與 `index.html` 版本號至 **1.7.10**。
+

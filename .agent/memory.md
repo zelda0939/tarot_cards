@@ -106,3 +106,10 @@
   - `init.js` 在手勢抽牌和重新洗牌入口都呼叫 `cleanupDailyAnimation()`。
 - **版本控制**：升級至 **v1.7.9**。
 
+## 2026-04-30 - Bug Fix: 每日一抽完成後無法再次觸發
+- **問題**：使用者在完成一次每日一抽並關閉結果視窗後，再次點擊「每日一抽」並在確認對話框按確定時無反應。
+- **根因**：`startDailyFlow()` 中有 `AppState.gameState` 的防呆檢查，但每日一抽完成後狀態停留在 `'finished'`，關閉視窗時未重置，導致後續觸發被擋掉。
+- **修復**：在 `js/daily.js` 的 `triggerDailyCard()` 中，呼叫 `startDailyFlow()` 前強制將 `AppState.gameState` 重置為 `'idle'`。
+- **版本控制**：升級至 **v1.7.10**。
+
+
