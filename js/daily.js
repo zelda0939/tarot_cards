@@ -72,11 +72,17 @@ async function triggerDailyCard() {
         const msg = "您今日已經抽取過每日指引了！塔羅的意義在於一天的沉澱。\n\n如果您想回顧今日的指引，請前往「占卜日誌」。\n\n是否仍要強制重新抽取一組新的？";
         const confirmed = await showConfirmDialog('重新抽取指引', msg);
         if (confirmed) {
+            // 重置 gameState，避免前一輪的 'finished' 狀態阻擋 startDailyFlow 的防呆檢查
+            AppState.gameState = 'idle';
             startDailyFlow(todayStr); // 強制重新抽取
         }
         return;
     }
 
+    // 同理：若使用者在手勢抽牌完成後（gameState === 'finished'）直接點每日一抽，也需要重置
+    if (AppState.gameState === 'finished') {
+        AppState.gameState = 'idle';
+    }
     startDailyFlow(todayStr);
 }
 
