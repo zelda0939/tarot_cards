@@ -2148,7 +2148,10 @@ footer {
     /* 初始：全部疊在一起 */
     transform: rotate(0deg) translateY(0);
     opacity: 0;
-    transition: all 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    /* 指定具體屬性，避免 transition:all 在掃描時觸發不必要的重繪 */
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1),
+               opacity 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform, opacity;
     /* --i: 卡牌索引, --mid: 中間位置（由 JS 設定） */
 }
 .daily-deck-card img {
@@ -2211,6 +2214,7 @@ footer {
     pointer-events: none;
     transform-origin: center 420px;
     transition: opacity 0.3s;
+    will-change: transform;
 }
 #daily-animation-overlay.stage-deck .daily-scan-beam {
     opacity: 1;
@@ -2223,9 +2227,9 @@ footer {
     border-color: rgba(255, 215, 100, 0.5);
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 215, 100, 0.3);
 }
-/* 沒被掃到時沈回原位 */
+/* 沒被掃到時沈回原位，只 transition transform 避免觸發重繪 */
 #daily-animation-overlay.stage-deck .daily-deck-card:not(.peeking):not(.chosen) {
-    transition: transform 0.4s ease-in, border-color 0.3s, box-shadow 0.3s;
+    transition: transform 0.4s ease-in;
 }
 
 /* ── Stage: draw — 抽出選中牌，其他散開 ── */

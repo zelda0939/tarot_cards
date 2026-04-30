@@ -86,3 +86,8 @@
     - 全面導入 `vh`、`vw` 與 `vmin` 視窗比例單位來取代絕對的 `px` 或 `rem`。這強制讓卡牌、輸入框與標題等元素按真實螢幕比例放大，無論 Safari 捏造多大的虛擬解析度，都能完美填滿畫面。
     - **UI 微調**：針對放大後的版面，重新計算並分配 `#control-panel` 與 `.question-panel` 絕對定位的 `top` 值（改為 `50% + 12vh` 與 `50% - 15vh`），避免大尺寸元件重疊。同時針對右上角設定與日誌按鈕進行放大 (`5vmin`) 並拉開間距。
     - 版本號升級至 **1.7.21**。
+- **效能優化：每日一抽掃描動畫卡頓修復 (v1.7.22)**:
+    - **JS 層**：`updateScan()` 原本每幀（60fps）對全部 19 張牌做 `classList.add/remove('peeking')`，觸發大量 Style Recalculation。改為使用 `Set` 追蹤目前 peeking 的牌索引，只在狀態實際變更時才操作 DOM，每幀 DOM 寫入從 19 次降至 0~2 次。
+    - **CSS 層**：`.daily-deck-card` 的 `transition: all` 改為僅 transition `transform` 與 `opacity`，避免 `border-color`、`box-shadow` 等高代價屬性被隱性觸發。沈回原位的規則也從 3 條 transition 精簡為只有 `transform`。
+    - **GPU 合成**：為 `.daily-deck-card` 與 `.daily-scan-beam` 加入 `will-change: transform`，促使瀏覽器預先提升至 GPU 合成層，減少主執行緒的佈局計算。
+    - 版本號升級至 **1.7.22**。

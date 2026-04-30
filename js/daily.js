@@ -357,6 +357,9 @@ function startDailyFlow(todayStr) {
         // 掃描未啟動前先固定在中央，避免一出現就跳邊緣
         scanBeam.style.transform = 'rotate(0deg) translateY(-20px)';
 
+        // 追蹤目前哪些牌處於 peeking 狀態，避免每幀對所有牌做 classList 操作
+        const _currentlyPeeking = new Set();
+
         function updateScan(now) {
             if (!scanStartTime) scanStartTime = now;
             const elapsed = now - scanStartTime;
@@ -364,7 +367,8 @@ function startDailyFlow(todayStr) {
             if (elapsed > TOTAL_SCAN) {
                 // ── 掃描結束：選中牌亮起 ──
                 scanBeam.style.opacity = '0';
-                fanCards.forEach(c => c.classList.remove('peeking'));
+                _currentlyPeeking.forEach(idx => fanCards[idx].classList.remove('peeking'));
+                _currentlyPeeking.clear();
                 const chosenCard = fanCards[chosenIndex];
                 if (chosenCard) chosenCard.classList.add('chosen');
                 return; // 停止 rAF
@@ -393,15 +397,25 @@ function startDailyFlow(todayStr) {
             const beamAngle = (scanPos - midIndex) * 4;
             scanBeam.style.transform = `rotate(${beamAngle}deg) translateY(-20px)`;
 
-            // ── 掃到的牌上浮（peek）──
-            fanCards.forEach((card, i) => {
-                const dist = Math.abs(i - scanPos);
-                if (dist < 1.2) {
-                    card.classList.add('peeking');
-                } else {
-                    card.classList.remove('peeking');
+            // ── 掃到的牌上浮（peek）— 只在狀態變更時才操作 DOM ──
+            const newPeeking = new Set();
+            for (let i = 0; i < fanCards.length; i++) {
+                if (Math.abs(i - scanPos) < 1.2) newPeeking.add(i);
+            }
+            // 移除不再 peeking 的牌
+            for (const idx of _currentlyPeeking) {
+                if (!newPeeking.has(idx)) {
+                    fanCards[idx].classList.remove('peeking');
                 }
-            });
+            }
+            // 加入新 peeking 的牌
+            for (const idx of newPeeking) {
+                if (!_currentlyPeeking.has(idx)) {
+                    fanCards[idx].classList.add('peeking');
+                }
+            }
+            _currentlyPeeking.clear();
+            newPeeking.forEach(v => _currentlyPeeking.add(v));
 
             _dailyScanAnimId = requestAnimationFrame(updateScan);
         }
