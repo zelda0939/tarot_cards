@@ -142,37 +142,42 @@ function refillCardSlot(slotIndex) {
 function updateCardPositions() {
     const anglePerCard = 360 / AppState.numberOfCards;
     const ellipseVerticalRadius = AppState.spreadRadius * 0.4;
+    const spreadR = AppState.spreadRadius;
+    const DEG_TO_RAD = Math.PI / 180;
+    const halfAngle = anglePerCard / 2;
+    const elements = AppState.cardElements;
+    const rotation = AppState.currentRotation;
 
-    AppState.cardElements.forEach((el, i) => {
-        if (!el || el.classList.contains('flying')) return;
+    for (let i = 0, len = elements.length; i < len; i++) {
+        const el = elements[i];
+        if (!el || el.classList.contains('flying')) continue;
 
-        let cardAngle = i * anglePerCard + AppState.currentRotation;
+        let cardAngle = i * anglePerCard + rotation;
         cardAngle = ((cardAngle % 360) + 540) % 360 - 180;
-        const absAngle = Math.abs(cardAngle);
-        const rad = cardAngle * Math.PI / 180;
+        const rad = cardAngle * DEG_TO_RAD;
+        const cosVal = Math.cos(rad);
 
-        const tx = Math.sin(rad) * AppState.spreadRadius;
-        const ty = (Math.cos(rad) - 1) * ellipseVerticalRadius;
-        const tz = (Math.cos(rad) - 1) * 150;
-        const scale = 0.55 + (Math.cos(rad) + 1) * 0.3;
-        const opacity = 0.2 + (Math.cos(rad) + 1) * 0.4;
-        const zIndex = Math.round(50 + Math.cos(rad) * 50);
+        const tx = Math.sin(rad) * spreadR;
+        const ty = (cosVal - 1) * ellipseVerticalRadius;
+        const tz = (cosVal - 1) * 150;
+        const scale = 0.55 + (cosVal + 1) * 0.3;
 
-        el.style.transform = `translateX(${tx}px) translateY(${ty}px) translateZ(${tz}px) scale(${scale})`;
-        el.style.opacity = String(opacity.toFixed(3));
-        el.style.zIndex = String(zIndex);
+        const s = el.style;
+        s.transform = `translateX(${tx}px) translateY(${ty}px) translateZ(${tz}px) scale(${scale})`;
+        s.opacity = 0.2 + (cosVal + 1) * 0.4;
+        s.zIndex = 50 + (cosVal * 50 + 0.5) | 0;
 
-        const isActive = (absAngle < anglePerCard / 2);
+        const isActive = (Math.abs(cardAngle) < halfAngle);
         if (isActive !== (el.dataset.isActive === 'true')) {
             el.dataset.isActive = isActive ? 'true' : 'false';
-            el.style.pointerEvents = isActive ? 'auto' : 'none';
+            s.pointerEvents = isActive ? 'auto' : 'none';
             if (isActive) {
                 el.classList.add('focus', 'active');
             } else {
                 el.classList.remove('focus', 'active');
             }
         }
-    });
+    }
 }
 
 function scheduleRingAnimationFrame() {

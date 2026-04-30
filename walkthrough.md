@@ -96,3 +96,8 @@
     - **攝影機同步控制**：新增 `mediaPipeStarting` 狀態旗標與 `_mediaPipeSessionId` 會話 ID 機制。解決了快速連點或切換模式時，多個攝影機實體同時競爭啟動導致的 JS 報錯或畫面閃爍問題。
     - **模組化優化**：將原本散落在各處的動畫開關統一為 `startCardRingAnimation` 與 `stopCardRingAnimation` 介面，並在 `AppState` 中精確追蹤 `ringAnimationRunning` 狀態。
     - 版本號升級至 **1.7.23**。
+- **效能優化：手機卡牌環旋轉卡頓修復 (v1.7.24)**:
+    - **MediaPipe 跳幀**：手機端 `onFrame` 回呼改為每 2 幀才送辨識 1 次（`_mpFrameSkip = 2`），將手勢辨識的 WASM 運算量減半，釋放主執行緒給卡牌環 rAF 動畫。
+    - **`updateCardPositions()` 最佳化**：快取 `Math.cos(rad)` 結果避免重複計算、以 `el.style` 局部引用減少屬性查找、移除 `toFixed(3)` 字串轉換，改為直接賦值數值。用 `for` 取代 `forEach` 避免閉包開銷。
+    - **手機版 box-shadow 簡化**：在 `@media (max-width: 768px)` 內，將 `.focus .card-inner` 的雙層 `box-shadow` 簡化為單層 `0 0 20px`，減少焦點卡牌切換時的 paint 開銷。
+    - 版本號升級至 **1.7.24**。

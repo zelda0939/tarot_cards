@@ -71,10 +71,15 @@ function initMediaPipe() {
     }
 
     let isProcessingFrame = false;
+    // 手機上每隔一幀才送辨識，降低 CPU 與卡牌環 rAF 的競爭
+    let _mpFrameCount = 0;
+    const _mpFrameSkip = isMobile ? 2 : 1; // 手機跳幀：每 2 幀才辨識 1 次
 
     AppState.mpCamera = new Camera(videoElement, {
         onFrame: async () => {
             if (AppState.isDailyMode || AppState.gameState === 'finished') return;
+            _mpFrameCount++;
+            if (_mpFrameCount % _mpFrameSkip !== 0) return; // 跳幀
             if (AppState.mpHands && !isProcessingFrame) {
                 isProcessingFrame = true;
                 try {

@@ -1432,6 +1432,14 @@ footer {
         font-size: 0.6rem;
         padding: 0.2rem;
     }
+
+    /* 手機效能：簡化焦點卡牌光暈，減少旋轉時的 paint 開銷 */
+    .tarot-card.focus .card-inner {
+        box-shadow: 0 0 20px var(--gold);
+    }
+    .tarot-card.active .card-inner {
+        box-shadow: 0 0 15px var(--gold);
+    }
 }
 
 /* 響應式 — 針對大型直向螢幕 (iPad 直向 Desktop Mode 或旋轉螢幕) 放大排版比例 */
