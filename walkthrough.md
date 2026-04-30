@@ -101,3 +101,13 @@
     - **`updateCardPositions()` 最佳化**：快取 `Math.cos(rad)` 結果避免重複計算、以 `el.style` 局部引用減少屬性查找、移除 `toFixed(3)` 字串轉換，改為直接賦值數值。用 `for` 取代 `forEach` 避免閉包開銷。
     - **手機版 box-shadow 簡化**：在 `@media (max-width: 768px)` 內，將 `.focus .card-inner` 的雙層 `box-shadow` 簡化為單層 `0 0 20px`，減少焦點卡牌切換時的 paint 開銷。
     - 版本號升級至 **1.7.24**。
+- **效能優化：手機卡牌環旋轉卡頓深度修復 (v1.7.25)**：
+    - **批次 DOM 寫入**：`updateCardPositions()` 改用單次 `el.style.cssText` 批次寫入 `transform` + `opacity` + `z-index`，取代原本 3 次分開的屬性設定（`el.style.transform` / `.opacity` / `.zIndex`），大幅減少 Style Recalculation 次數。
+    - **浮點精度控制**：數值用 `toFixed()` 限制小數位數，避免高精度浮點數差異導致瀏覽器判定為「新值」而觸發不必要的 style recalc。
+    - **背景動畫暫停機制**：新增 `_setBackgroundAnimPaused()` 函式，在手機端旋轉卡牌時暫停 `#stars-container` 的星光閃爍、星雲漂移、脈動等 CSS 動畫（`animation-play-state: paused`），並在 `::before` 偽元素上直接 `display: none`，釋放 GPU 合成層給卡牌環使用。
+    - **CSS `contain` 隔離**：`.tarot-card` 新增 `contain: layout style`，防止卡牌 `transform` 變更觸發父容器的 layout 連鎖計算。
+    - **移除常駐 `will-change`**：`.tarot-card` 上的 `will-change: transform, opacity` 改為僅在 `.smooth-transition`（停止 snap）時才啟用，避免 8-10 張卡牌同時佔用 GPU 合成層造成記憶體壓力。
+    - **焦點光暈改用 outline**：手機端 `.focus .card-inner` 和 `.active .card-inner` 從 `box-shadow` 改為 `outline`，outline 不影響 layout 也不觸發 paint layer，是最輕量的視覺高亮方式。
+    - **MediaPipe 跳幀加倍**：手機端從每 2 幀辨識 1 次改為每 3 幀辨識 1 次，進一步降低 WASM 推論與卡牌環 rAF 的主執行緒競爭。
+    - **桌面端焦點光暈簡化**：`.focus .card-inner` 從雙層 `box-shadow`（30px + 60px）改為單層 20px，全平台統一降低 paint 成本。
+    - 版本號升級至 **1.7.25**。

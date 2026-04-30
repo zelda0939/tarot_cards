@@ -98,6 +98,9 @@ function generateCardRing() {
         AppState.cardElements[i] = cardEl;
     }
 
+    // 進入旋轉模式時暫停背景動畫以釋放 GPU 資源
+    _setBackgroundAnimPaused(true);
+
     updateCardPositions();
 }
 
@@ -139,16 +142,25 @@ function refillCardSlot(slotIndex) {
     updateCardPositions();
 }
 
+/**
+ * 效能關鍵路徑：每幀呼叫一次，需極致精簡
+ * 優化策略：
+ * 1. 預先計算常數，避免每張卡重複算
+ * 2. 用單一 cssText 批次寫入 transform/opacity/zIndex，減少 style recalc
+ * 3. 只在 active 狀態真正改變時才操作 classList（最昂貴的 DOM API）
+ */
 function updateCardPositions() {
-    const anglePerCard = 360 / AppState.numberOfCards;
+    const numberOfCards = AppState.numberOfCards;
+    const anglePerCard = 360 / numberOfCards;
     const ellipseVerticalRadius = AppState.spreadRadius * 0.4;
     const spreadR = AppState.spreadRadius;
     const DEG_TO_RAD = Math.PI / 180;
     const halfAngle = anglePerCard / 2;
     const elements = AppState.cardElements;
     const rotation = AppState.currentRotation;
+    const len = elements.length;
 
-    for (let i = 0, len = elements.length; i < len; i++) {
+    for (let i = 0; i < len; i++) {
         const el = elements[i];
         if (!el || el.classList.contains('flying')) continue;
 
@@ -161,16 +173,17 @@ function updateCardPositions() {
         const ty = (cosVal - 1) * ellipseVerticalRadius;
         const tz = (cosVal - 1) * 150;
         const scale = 0.55 + (cosVal + 1) * 0.3;
+        const opacity = 0.2 + (cosVal + 1) * 0.4;
+        const zIdx = 50 + (cosVal * 50 + 0.5) | 0;
 
-        const s = el.style;
-        s.transform = `translateX(${tx}px) translateY(${ty}px) translateZ(${tz}px) scale(${scale})`;
-        s.opacity = 0.2 + (cosVal + 1) * 0.4;
-        s.zIndex = 50 + (cosVal * 50 + 0.5) | 0;
+        // 保留已被隱藏的卡牌的 visibility（飛入 slot 動畫期間原卡位需維持隱藏）
+        const vis = el.style.visibility === 'hidden' ? ';visibility:hidden' : '';
+        // 批次設定 transform + opacity + zIndex（單次 style write 替代 3 次分開的 property 設定）
+        el.style.cssText = `transform:translateX(${tx.toFixed(1)}px) translateY(${ty.toFixed(1)}px) translateZ(${tz.toFixed(1)}px) scale(${scale.toFixed(3)});opacity:${opacity.toFixed(2)};z-index:${zIdx}${vis}`;
 
         const isActive = (Math.abs(cardAngle) < halfAngle);
         if (isActive !== (el.dataset.isActive === 'true')) {
             el.dataset.isActive = isActive ? 'true' : 'false';
-            s.pointerEvents = isActive ? 'auto' : 'none';
             if (isActive) {
                 el.classList.add('focus', 'active');
             } else {
@@ -214,6 +227,9 @@ function animateCardRing(timestamp) {
 function startCardRingAnimation() {
     if (AppState.ringAnimationRunning) return;
 
+    // 暫停背景動畫以釋放 GPU 資源給卡牌環旋轉
+    _setBackgroundAnimPaused(true);
+
     AppState.ringAnimationRunning = true;
     AppState.lastFrameTime = 0;
     scheduleRingAnimationFrame();
@@ -226,6 +242,9 @@ function stopCardRingAnimation() {
     AppState.ringAnimationRunning = false;
     AppState.lastFrameTime = 0;
     clearSmoothTransitionTimer();
+
+    // 恢復背景動畫
+    _setBackgroundAnimPaused(false);
 }
 
 function stopCardRing() {
@@ -252,4 +271,23 @@ function stopCardRing() {
         });
         _smoothTransitionTimer = null;
     }, 400);
+}
+
+/**
+ * 控制背景星光與星雲動畫的暫停/恢復
+ * 手機旋轉卡牌時暫停，釋放 GPU 合成層給卡牌環
+ * @param {boolean} paused - true 暫停 / false 恢復
+ */
+function _setBackgroundAnimPaused(paused) {
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) return; // 桌面端性能足夠，不需暫停
+
+    const starsContainer = document.getElementById('stars-container');
+    if (starsContainer) {
+        if (paused) {
+            starsContainer.classList.add('anim-paused');
+        } else {
+            starsContainer.classList.remove('anim-paused');
+        }
+    }
 }

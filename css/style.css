@@ -65,6 +65,15 @@ body {
     z-index: 1;
 }
 
+/* 旋轉卡牌時暫停背景動畫，釋放 GPU 合成層 */
+#stars-container.anim-paused,
+#stars-container.anim-paused::before {
+    animation-play-state: paused !important;
+}
+#stars-container.anim-paused .star {
+    animation-play-state: paused !important;
+}
+
 .star {
     position: absolute;
     background: #fff;
@@ -369,19 +378,21 @@ main {
     transform-style: preserve-3d;
     /* 旋轉時不使用 transition，避免與 RAF 逐幀更新衝突造成卡頓 */
     transition: none;
-    will-change: transform, opacity;
+    /* contain: layout style 隔離 layout 計算，避免卡牌 transform 變更觸發父容器重排 */
+    contain: layout style;
 }
 
 /* 停止時的平滑 snap 過渡 — 由 JS 動態加入/移除 */
 .tarot-card.smooth-transition {
     transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94),
                 opacity 0.35s ease;
+    will-change: transform, opacity;
 }
 
 /* 焦點卡牌（正前方最大張）的高亮效果 */
 .tarot-card.focus .card-inner {
     border-color: var(--gold);
-    box-shadow: 0 0 30px var(--gold), 0 0 60px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 20px var(--gold);
 }
 
 /* 卡牌飛入 slot 的過場動畫狀態 — 掛在 body 上，使用 transform 走 GPU 合成層 */
@@ -1433,12 +1444,21 @@ footer {
         padding: 0.2rem;
     }
 
-    /* 手機效能：簡化焦點卡牌光暈，減少旋轉時的 paint 開銷 */
+    /* 手機效能：焦點卡牌改用 outline 取代 box-shadow，大幅降低 paint 成本 */
     .tarot-card.focus .card-inner {
-        box-shadow: 0 0 20px var(--gold);
+        box-shadow: none;
+        outline: 2px solid var(--gold);
+        outline-offset: -2px;
     }
     .tarot-card.active .card-inner {
-        box-shadow: 0 0 15px var(--gold);
+        box-shadow: none;
+        outline: 2px solid var(--gold);
+        outline-offset: -2px;
+    }
+
+    /* 手機端在卡牌旋轉時隱藏星雲偽元素，減少一個 GPU compositing layer */
+    #stars-container.anim-paused::before {
+        display: none;
     }
 }
 

@@ -133,3 +133,18 @@
   - 修正了原本會被誤判為手機版斷點而過度壓縮 UI 的問題。
   - 調整 header 間距、卡牌尺寸與 carousel 展示區高度，使其在大螢幕上比例更為協調。
 - **版本控制**：升級至 **v1.7.19**。
+
+## 2026-04-30 - 效能深度優化：手機卡牌環旋轉 Lag (v1.7.25)
+- **問題**：手機上手勢抽牌的卡牌環旋轉仍有掉幀感，經過上次 v1.7.24 優化後改善有限。
+- **根因分析（6 個效能瓶頸）**：
+  1. `updateCardPositions()` 每幀對每張卡做 3 次分開的 style 屬性寫入（`.transform` / `.opacity` / `.zIndex`），觸發多次 Style Recalculation。
+  2. 背景 `#stars-container` 的 50 顆星星各有 `twinkle` 動畫，加上 `::before` 偽元素的 `nebula-drift` + `magic-pulse` 動畫，持續佔用 GPU 合成層。
+  3. `.tarot-card` 常駐 `will-change: transform, opacity` 使 8-10 張卡牌同時佔用獨立 GPU 層，造成記憶體壓力。
+  4. `.focus .card-inner` 的雙層 `box-shadow` 在焦點卡牌切換時觸發昂貴的 paint 重繪。
+  5. MediaPipe 每 2 幀辨識 1 次仍佔用過多主執行緒時間。
+  6. 缺少 CSS `contain` 隔離，卡牌 transform 變更觸發父容器 layout 計算。
+- **修復方案**：
+  - `ring.js`：`updateCardPositions()` 改用 `el.style.cssText` 單次批量寫入；新增 `_setBackgroundAnimPaused()` 暫停/恢復背景動畫。
+  - `style.css`：`.tarot-card` 加 `contain: layout style`；移除常駐 `will-change`（改至 `.smooth-transition`）；新增 `.anim-paused` 規則；手機端焦點光暈從 `box-shadow` 改為 `outline`。
+  - `gesture.js`：手機端跳幀從 2 改為 3。
+- **版本控制**：升級至 **v1.7.25**。
