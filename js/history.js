@@ -254,31 +254,42 @@ async function showHistoryDetail(id) {
     document.getElementById('history-detail-view').classList.remove('hidden');
 
     const detailContainer = document.getElementById('history-detail-content');
-    
-    const positions = ['第1張', '第2張', '第3張'];
+
+    // 根據 spreadMode 決定牌位名稱
+    const isCelticCross = record.spreadMode === 'celtic-cross';
+    let positions;
+    if (isCelticCross && typeof CELTIC_CROSS_POSITIONS !== 'undefined') {
+        positions = CELTIC_CROSS_POSITIONS.map(p => `${p.id}. ${p.name}`);
+    } else if (record.cards.length === 1) {
+        positions = ['今日指引'];
+    } else {
+        positions = ['第1張', '第2張', '第3張'];
+    }
     let cardsHtml = '';
     
-    // 生成三張卡牌的 HTML（與 analysis.js showAnalysis 一致的結構）
-    record.cards.forEach((card, idx) => {
-        const posture = card.isReversed ? '逆位' : '正位';
-        const imgUrl = `assets/images/${card.name_short}.jpg`;
-        const imgReversedClass = card.isReversed ? ' reversed-img' : '';
-        const meaningLabel = card.isReversed ? '▽ 逆位' : '▲ 正位';
-        const meaningClass = card.isReversed ? 'analysis-meaning-rev' : 'analysis-meaning';
+    // 聖十字模式只顯示佈局圖，不生成逐牌解析卡片
+    if (!isCelticCross) {
+        record.cards.forEach((card, idx) => {
+            const posture = card.isReversed ? '逆位' : '正位';
+            const imgUrl = `assets/images/${card.name_short}.jpg`;
+            const imgReversedClass = card.isReversed ? ' reversed-img' : '';
+            const meaningLabel = card.isReversed ? '▽ 逆位' : '▲ 正位';
+            const meaningClass = card.isReversed ? 'analysis-meaning-rev' : 'analysis-meaning';
 
-        cardsHtml += `
-        <div class="analysis-card">
-            <div class="analysis-position">${positions[idx]}</div>
-            <div class="analysis-card-img">
-                <img src="${imgUrl}" alt="${card.name}" class="${imgReversedClass}">
-            </div>
-            <div class="analysis-header">
-                <div class="analysis-symbol">${card.symbol || '✦'}</div>
-                <div class="analysis-name">${card.name} <span class="analysis-posture-tag">[${posture}]</span></div>
-            </div>
-            <div class="${meaningClass}"><strong>${meaningLabel}：</strong><br>${card.meaning}</div>
-        </div>`;
-    });
+            cardsHtml += `
+            <div class="analysis-card">
+                <div class="analysis-position">${positions[idx]}</div>
+                <div class="analysis-card-img">
+                    <img src="${imgUrl}" alt="${card.name}" class="${imgReversedClass}">
+                </div>
+                <div class="analysis-header">
+                    <div class="analysis-symbol">${card.symbol || '✦'}</div>
+                    <div class="analysis-name">${card.name} <span class="analysis-posture-tag">[${posture}]</span></div>
+                </div>
+                <div class="${meaningClass}"><strong>${meaningLabel}：</strong><br>${card.meaning}</div>
+            </div>`;
+        });
+    }
 
     // 組合整體視圖
     const safeQuestion = escapeHtml(record.question || '一般指引');
@@ -299,7 +310,10 @@ async function showHistoryDetail(id) {
             </div>
         </div>
         
-        <div class="cards-analysis-container mb-2">
+        <div class="cards-analysis-container${isCelticCross ? ' celtic-cross-analysis' : ''} mb-2">
+            ${isCelticCross && typeof buildCelticCrossLayoutHTML === 'function'
+                ? buildCelticCrossLayoutHTML(record.cards)
+                : ''}
             ${cardsHtml}
         </div>
         

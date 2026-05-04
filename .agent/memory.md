@@ -148,3 +148,74 @@
   - `style.css`：`.tarot-card` 加 `contain: layout style`；移除常駐 `will-change`（改至 `.smooth-transition`）；新增 `.anim-paused` 規則；手機端焦點光暈從 `box-shadow` 改為 `outline`。
   - `gesture.js`：手機端跳幀從 2 改為 3。
 - **版本控制**：升級至 **v1.7.25**。
+
+## 2026-05-04 - 聖十字牌陣（Celtic Cross）v1.8.0
+- **功能概述**：新增專業 10 張牌「聖十字牌陣」功能，提供深度占卜體驗。
+- **UI 設計**：
+  - 採用方案 A 卡片式牌陣選擇器（兩張可點選的小卡片：三張牌 / 聖十字）
+  - 預設為「三張牌」模式，使用者主動切換
+  - 聖十字模式隱藏「開啟手勢抽牌」按鈕，顯示「🔮 一鍵展牌」按鈕
+- **CSS Grid 佈局**：
+  - 十字區（5 列 × 5 行 Grid）+ 權杖區（右側由下往上 4 張）
+  - 第 2 張牌（挑戰）使用 `transform: rotate(90deg)` 實現專業橫置效果
+  - 中心堆疊區（牌 1 和牌 2 重疊）使用 `position: absolute` 實現
+  - 獨立 CSS 檔案 `css/celtic-cross.css` 避免主 CSS 過長
+- **一鍵展牌動畫**：
+  - 新增 `celtic-cross.js` 模組
+  - 10 張牌依序飛入（每張間隔 600ms），先顯示牌背再翻面
+  - 粒子系統 + 魔法陣 SVG 旋轉背景
+  - 動畫結束後自動填入靜態 slot 並啟動 AI 解析
+- **AI Prompt**：
+  - 聖十字專用 System Prompt 定義了 10 個牌位語意
+  - 輸出結構分四段：核心牌陣解析 / 意識與潛意識對話 / 外在影響與內在態度 / 最終指引
+  - 總字數約 700~900 字
+- **圖片匯出**：
+  - 10 張牌改為 2 行 × 5 張排版，使用較小的卡牌圖片（160×272px）
+  - 每張牌標注 CELTIC_CROSS_POSITIONS 牌位名稱
+- **狀態管理**：
+  - `AppState.spreadMode`: 'three-card' | 'celtic-cross'
+  - `CELTIC_CROSS_POSITIONS`: 10 個牌位定義常數
+  - `history.js` 紀錄 `spreadMode` 用於區分歷史牌陣類型
+- **新增/修改檔案**：
+  - 新增：`js/celtic-cross.js`, `css/celtic-cross.css`
+  - 修改：`state.js`, `index.html`, `init.js`, `app.js`, `analysis.js`, `history.js`, `imageExport.js`, `version.js`
+- **版本控制**：升級至 **v1.8.0**。
+
+### 聖十字牌陣 — 佈局圖與顯示策略調整
+- **佈局圖展示**：
+  - 新增 `buildCelticCrossLayoutHTML(cards)` 共用函式（在 `celtic-cross.js`），產生聖十字 Grid 預覽 HTML
+  - 用於：星辰指引 Modal（`analysis.js`）、占卜日誌（`history.js`）、圖片匯出（`imageExport.js` canvas 繪製）
+- **逐牌解析隱藏**：
+  - 聖十字模式下**不顯示** 10 張牌各自的描述與解說
+  - 只保留佈局圖 + AI 綜合神諭文字
+  - CSS: `.cards-analysis-container.celtic-cross-analysis .analysis-card { display: none; }`
+  - JS: `history.js` 和 `imageExport.js` 跳過逐牌 HTML/canvas 繪製
+- **右側權杖區間距修正**：
+  - 問題：row 1→2 和 row 4→5 的 `::after` 標籤被下一張牌遮蓋
+  - 解法：`.celtic-cross-layout` 和 `.cc-layout-grid` 設定 `row-gap` > `bottom: -18px` 的偏移量
+  - 桌面 `row-gap: 28px`，平板 `22px`，手機 `20px`
+- **動畫提示文字重疊修正**：
+  - 問題：聖十字展牌動畫時，上方卡牌會與提示文字重疊
+  - 解法：將 `.cc-anim-status` 改為「漂浮徽章 (Pill Badge)」樣式，給予深色半透明背景 (`rgba(6, 11, 28, 0.85)`)、`backdrop-filter` 模糊效果以及 `z-index: 10000`。確保即使在小螢幕上發生物理位置重疊，文字依然能清晰地浮在牌陣最上層，且不影響視覺美觀。
+- **三張牌選擇器間距修正**：
+  - `.spread-option` gap 從 12px → 16px
+  - `.spread-option-icon` 改為 `min-width: 36px` 避免重疊
+- **按鈕 Hover 顏色修正**：
+  - 問題：「一鍵展牌」與「每日一抽」按鈕在 hover 時文字繼承預設 `.premium-btn` 變成黑色，無法閱讀
+  - 解法：在 `.celtic-btn:hover` 與 `.daily-btn:hover` 中加入 `color: rgba(255,255,255,0.95);` 確保維持亮色文字
+- **手機版 Loading 畫面聖十字卡牌顯示不全修正**：
+  - 問題：聖十字 10 張牌在 "星辰正在為您編織命運的軌跡" 載入畫面時，由於使用單行 Flex 排版且卡片過大，導致超過螢幕寬度被截斷。
+- **聖十字牌陣佈局重構 (4-Row Grid)**：
+  - 問題：使用者希望佈局符合標準賽爾特十字範例圖（3為上方理想、4為下方基礎、5為左側過去、6為右側未來），且右側權杖區的第 8 張與第 9 張間距過大。
+  - 解法：
+    1. **語義定義修正**：在 `state.js` 更新 3~6 的 `CELTIC_CROSS_POSITIONS` 定義以對應範例圖。
+    2. **Grid 佈局重構**：將原本的 5-row 修改為 **4-row 佈局** (`grid-template-rows: repeat(4, auto)`)。
+    3. **跨列置中對齊**：左、中、右（Card 5、1&2、6）皆設定 `grid-row: 2 / span 2` 跨兩列並垂直置中，而權杖區 (Card 10~7) 則平均分配於 4 列中。這能完美解決 Card 8 與 9 之間被中央牌撐開的間距問題。
+    4. **緊湊間距與防重疊**：為解決橫向旋轉的第 2 張牌在物理流中僅佔據原本直立寬度，導致左右兩側牌視覺上過於靠近甚至重疊的問題，強制設定了 `.cc-pos-center` 等同於旋轉後的寬度。
+    5. **完美十字等距與垂直對齊**：徹底捨棄 `column-gap`，改採 `auto 50px auto 50px auto 40px auto` 精確定義 **Spacer 欄位**，並搭配 `row-gap: 8px`，精算後讓「上下牌到中央的垂直距離」與「左右牌到中央的水平距離」視覺上完全一致。同時加上 `justify-items: center` 強制讓置於同一欄（Col 3）的第 3、4 張牌與中央第 1 張牌呈現完美的鉛垂線對齊。
+    6. **文字標籤遮擋修正**：針對右側權杖區卡牌的「提示文字 (例如：最終結果、希望與恐懼)」因為超出 `bottom: -18px` 而被下方卡牌遮擋的問題，透過將 `row-gap` 放大至容納文字的高度（例如桌面版 `24px`），並同步按比例放大 Spacer 欄位，確保在解決文字遮擋的同時，完美維持十字的等距視覺。
+    7. **全域視圖同步與動態標籤**：將上述 4-Row 的完美等距佈局完整移植到「星辰的指引（占卜日誌預覽）」與「圖片匯出 (Canvas渲染)」邏輯中。同時移除了所有寫死的牌位名稱（如：過去、近未來），全面改用 `CELTIC_CROSS_POSITIONS` 動態帶入，確保前端佈局、匯出圖片、AI 提詞三方的定義永遠保持唯一且一致。
+    8. **圖片匯出細節微調**：
+        - 針對匯出圖片中「權杖區 (Staff) 與十字區的右側牌 (Card 6) 過於靠近」的問題，將 `pillarOffset` (權杖柱間距) 增加至 `180`，並確保整體佈局自動置中。
+        - 針對「第 1 張牌與橫放的第 2 張牌」在 Canvas 中由於座標重疊導致文字標籤 (1.現況 / 2.挑戰) 重疊的問題，將第 2 張牌的文字移至右側空隙 (`pos.x + 16`) 並改為靠左對齊，完美復刻網頁版面感。
+        - 為了與前端 UI 預覽圖保持完全一致，將卡牌名稱的樣式改為星辰指引中的沉靜灰色 (`#8b8e98`, 400 粗細)，並移除星芒符號，同時保留下方亮金色 (`#f9e596`, 500 粗細) 的牌位提示文字，大幅提升聖十字匯出圖的整體質感。

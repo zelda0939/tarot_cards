@@ -119,6 +119,7 @@ function initApp() {
     if (questionPanel) {
         questionPanel.classList.add('centered-mode');
     }
+    document.body.classList.add('centered-start');
 
     // 綁定設定按鈕 (API Key + 模型選擇)
     const settingsBtn = document.getElementById('settings-btn');
@@ -181,6 +182,37 @@ function initApp() {
         });
     }
 
+    // 牌陣選擇器事件綁定
+    const spreadOptions = document.querySelectorAll('.spread-option');
+    const startGestureBtn = document.getElementById('start-gesture-btn');
+    const celticCrossBtn = document.getElementById('celtic-cross-btn');
+
+    spreadOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+            spreadOptions.forEach(o => o.classList.remove('selected'));
+            opt.classList.add('selected');
+            AppState.spreadMode = opt.dataset.spread;
+
+            // 切換按鈕顯隱
+            if (AppState.spreadMode === 'celtic-cross') {
+                if (startGestureBtn) startGestureBtn.classList.add('hidden');
+                if (celticCrossBtn) celticCrossBtn.classList.remove('hidden');
+            } else {
+                if (startGestureBtn) startGestureBtn.classList.remove('hidden');
+                if (celticCrossBtn) celticCrossBtn.classList.add('hidden');
+            }
+        });
+    });
+
+    // 聖十字一鍵展牌按鈕
+    if (celticCrossBtn) {
+        celticCrossBtn.addEventListener('click', async () => {
+            if (typeof triggerCelticCross === 'function') {
+                await triggerCelticCross();
+            }
+        });
+    }
+
     const dailyBtn = document.getElementById('daily-card-btn');
     if (dailyBtn) {
         dailyBtn.addEventListener('click', triggerDailyCard);
@@ -199,6 +231,7 @@ function initApp() {
             return;
         }
         AppState.userQuestion = activeQuestion;
+        document.body.classList.remove('centered-start');
 
         // ── 清除可能殘留的每日一抽狀態與動畫資源（使用者在 daily 結果頁按關閉後直接開手勢抽牌）──
         if (typeof cleanupDailyAnimation === 'function') cleanupDailyAnimation();

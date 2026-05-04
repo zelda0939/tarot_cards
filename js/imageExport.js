@@ -97,19 +97,24 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     const questionLines = wrapCanvasText(measureCtx, safeQuestion, contentWidth - 96);
     measureCtx.font = "400 37px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
     const rawGuidanceLines = wrapCanvasText(measureCtx, safeGuidance, contentWidth - 96);
-    const maxGuidanceLines = 40;
-    const guidanceLines = rawGuidanceLines.slice(0, maxGuidanceLines);
-    if (rawGuidanceLines.length > maxGuidanceLines && guidanceLines.length > 0) {
-        guidanceLines[guidanceLines.length - 1] += '…';
-    }
+    const guidanceLines = rawGuidanceLines;
 
     let cardsBoxHeight = 0;
-    const cardImgWidth = 230;
-    const cardImgHeight = 391;
-    const cardGap = 66;
-    const meaningLineHeight = 36;
+    const isCelticCross = AppState.spreadMode === 'celtic-cross' && cards && cards.length === 10;
+    const cardImgWidth = isCelticCross ? 160 : 230;
+    const cardImgHeight = isCelticCross ? 272 : 391;
+    const cardGap = isCelticCross ? 30 : 66;
+    const meaningLineHeight = isCelticCross ? 28 : 36;
     let cardImages = [];
+    let meaningsLinesArr = [];
     const isSingleCard = cards && cards.length === 1;
+    const celticMiniW = 100;
+    const celticMiniH = 152;
+    const celticMiniGap = 16;
+    const celticRowSpacing = celticMiniH + 60; // 加大垂直間距，留出兩行文字的空間
+    const celticTopPadding = 130;
+    const celticLabelGap = 22;
+    const celticBottomPadding = 70;
 
     if (cards && cards.length) {
         cardImages = await Promise.all(cards.map(card => waitImageLoad(`assets/images/${card.name_short}.jpg`)));
@@ -125,7 +130,11 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
 
         const cardAreaHeader = 70 + 31 + 30;
         const cardBlockHeight = 40 + 20 + cardImgHeight + 30 + 30 + 16 + (maxMeaningLines * meaningLineHeight) + 40;
-        cardsBoxHeight = cardAreaHeader + cardBlockHeight;
+        if (isCelticCross) {
+            cardsBoxHeight = celticTopPadding + (celticRowSpacing * 4) + celticMiniH + celticLabelGap + celticBottomPadding;
+        } else {
+            cardsBoxHeight = cardAreaHeader + cardBlockHeight;
+        }
     }
 
     const questionLineHeight = 62;
@@ -140,7 +149,7 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     const footerHeight = 118;
     const cardsSectionTotalSpace = cardsBoxHeight > 0 ? cardsBoxHeight + betweenSections : 0;
     const totalHeight = headerHeight + questionBoxHeight + betweenSections + cardsSectionTotalSpace + guidanceBoxHeight + footerHeight + padding;
-    const height = Math.min(4500, Math.max(1500, Math.ceil(totalHeight)));
+    const height = Math.max(1500, Math.ceil(totalHeight));
 
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -223,72 +232,189 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
         ctx.textAlign = 'left';
         ctx.fillStyle = '#f6d77a';
         ctx.font = "600 31px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
-        ctx.fillText('所選卡牌', questionBoxX + 46, currentSectionY + 62);
+        ctx.fillText(isCelticCross ? '聖十字牌陣佈局' : '所選卡牌', questionBoxX + 46, currentSectionY + 62);
 
-        cards.forEach((card, idx) => {
-            // 單卡模式置中
-            const cx = isSingleCard
-                ? (width / 2 - cardImgWidth / 2)
-                : (questionBoxX + 46 + idx * (cardImgWidth + cardGap));
-                
-            let childY = currentSectionY + 130;
+        // ===== 聖十字模式：先畫牌陣佈局圖 =====
+        let ccGridEndY = currentSectionY + 100;
+        if (isCelticCross) {
+            const miniW = celticMiniW, miniH = celticMiniH; // 小牌尺寸
+            const miniGap = celticMiniGap;
+            
+            // 四列高度
+            const rowSpacing = celticRowSpacing; // 含標籤空間
+            const row1Y = currentSectionY + celticTopPadding + miniH / 2;
+            const row2Y = row1Y + rowSpacing;
+            const row3Y = row2Y + rowSpacing;
+            const row4Y = row3Y + rowSpacing;
+            const centerRowY = (row2Y + row3Y) / 2; // 中間跨越兩列
 
-            ctx.textAlign = 'center';
-            ctx.fillStyle = 'rgba(212, 175, 55, 0.12)';
-            drawRoundedRect(ctx, cx + cardImgWidth / 2 - 60, childY - 28, 120, 40, 20);
-            ctx.fill();
-            ctx.fillStyle = '#f8e8a8';
-            ctx.font = "500 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
-            const posLabel = isSingleCard ? '今日指引' : `第 ${idx + 1} 張`;
-            ctx.fillText(posLabel, cx + cardImgWidth / 2, childY);
+            // 水平與垂直等距計算
+            const vDist = 1.5 * rowSpacing; // 垂直中心距離
+            const colSpacing = vDist; // 完美等距
+            const pillarOffset = 180; // 權杖柱與右側牌的距離（加大以防重疊）
+            
+            // 為了讓整體視覺置中，計算佈局總寬度
+            // 最左側 = gridCenterX - colSpacing
+            // 最右側 = gridCenterX + colSpacing + pillarOffset
+            // 總寬度 = 2 * colSpacing + pillarOffset
+            const layoutWidth = 2 * colSpacing + pillarOffset;
+            const gridCenterX = (width - layoutWidth) / 2 + colSpacing;
+            const pillarX = gridCenterX + colSpacing + pillarOffset;
 
-            childY += 36;
+            const positions = [
+                { x: gridCenterX, y: centerRowY, label: `1.${CELTIC_CROSS_POSITIONS[0].name}`, rotated: false, idx: 0 },
+                { x: gridCenterX, y: centerRowY, label: `2.${CELTIC_CROSS_POSITIONS[1].name}`, rotated: true, idx: 1 },
+                { x: gridCenterX, y: row1Y, label: `3.${CELTIC_CROSS_POSITIONS[2].name}`, rotated: false, idx: 2 },
+                { x: gridCenterX, y: row4Y, label: `4.${CELTIC_CROSS_POSITIONS[3].name}`, rotated: false, idx: 3 },
+                { x: gridCenterX - colSpacing, y: centerRowY, label: `5.${CELTIC_CROSS_POSITIONS[4].name}`, rotated: false, idx: 4 },
+                { x: gridCenterX + colSpacing, y: centerRowY, label: `6.${CELTIC_CROSS_POSITIONS[5].name}`, rotated: false, idx: 5 },
+                { x: pillarX, y: row4Y, label: `7.${CELTIC_CROSS_POSITIONS[6].name}`, rotated: false, idx: 6 },
+                { x: pillarX, y: row3Y, label: `8.${CELTIC_CROSS_POSITIONS[7].name}`, rotated: false, idx: 7 },
+                { x: pillarX, y: row2Y, label: `9.${CELTIC_CROSS_POSITIONS[8].name}`, rotated: false, idx: 8 },
+                { x: pillarX, y: row1Y, label: `10.${CELTIC_CROSS_POSITIONS[9].name}`, rotated: false, idx: 9 },
+            ];
 
-            const img = cardImages[idx];
-            if (img) {
-                if (card.isReversed) {
+            // 先畫牌 1，再畫其他牌（牌 2 最後畫以覆蓋在上面）
+            const drawOrder = [0, 2, 3, 4, 5, 6, 7, 8, 9, 1]; // 牌 2 最後
+            for (const drawIdx of drawOrder) {
+                const pos = positions[drawIdx];
+                const card = cards[pos.idx];
+                const img = cardImages[pos.idx];
+                if (!img) continue;
+
+                const cx = pos.x - miniW / 2;
+                const cy = pos.y - miniH / 2;
+
+                if (pos.rotated) {
+                    // 牌 2 橫置
                     ctx.save();
-                    ctx.translate(cx + cardImgWidth / 2, childY + cardImgHeight / 2);
-                    ctx.rotate(Math.PI);
-                    ctx.drawImage(img, -cardImgWidth / 2, -cardImgHeight / 2, cardImgWidth, cardImgHeight);
+                    ctx.translate(pos.x, pos.y);
+                    ctx.rotate(Math.PI / 2);
+                    if (card.isReversed) {
+                        ctx.save();
+                        ctx.rotate(Math.PI);
+                        ctx.drawImage(img, -miniW / 2, -miniH / 2, miniW, miniH);
+                        ctx.restore();
+                    } else {
+                        ctx.drawImage(img, -miniW / 2, -miniH / 2, miniW, miniH);
+                    }
+                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeRect(-miniW / 2, -miniH / 2, miniW, miniH);
                     ctx.restore();
                 } else {
-                    ctx.drawImage(img, cx, childY, cardImgWidth, cardImgHeight);
+                    if (card.isReversed) {
+                        ctx.save();
+                        ctx.translate(pos.x, pos.y);
+                        ctx.rotate(Math.PI);
+                        ctx.drawImage(img, -miniW / 2, -miniH / 2, miniW, miniH);
+                        ctx.restore();
+                    } else {
+                        ctx.drawImage(img, cx, cy, miniW, miniH);
+                    }
+                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.5)';
+                    ctx.lineWidth = 1.5;
+                    ctx.strokeRect(cx, cy, miniW, miniH);
                 }
 
-                ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(cx, childY, cardImgWidth, cardImgHeight);
-            }
-
-            childY += cardImgHeight + 36;
-
-            const posture = card.isReversed ? '逆位' : '正位';
-            ctx.textAlign = 'center';
-            ctx.fillStyle = '#f6d77a';
-            ctx.font = "700 26px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
-            ctx.fillText(`${card.symbol || '✦'} ${card.name} [${posture}]`, cx + cardImgWidth / 2, childY);
-
-            childY += 40;
-
-            ctx.fillStyle = '#eaf1ff';
-            ctx.font = "400 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
-            const lines = meaningsLinesArr[idx];
-            
-            if (isSingleCard) {
+                // 繪製卡牌名稱與牌位標籤
+                let textX = pos.x;
+                let textY = pos.y + miniH / 2 + 20;
                 ctx.textAlign = 'center';
-                lines.forEach(line => {
-                    ctx.fillText(line || ' ', width / 2, childY);
-                    childY += meaningLineHeight;
-                });
-            } else {
-                ctx.textAlign = 'left';
-                lines.forEach(line => {
-                    ctx.fillText(line || ' ', cx, childY);
-                    childY += meaningLineHeight;
-                });
+                
+                // 第 2 張牌（挑戰）橫向放置，將文字改放到卡牌右邊的空隙
+                if (pos.idx === 1) { 
+                    textX = pos.x + miniH / 2 + 16; 
+                    textY = pos.y - 4; // 垂直置中偏上
+                    ctx.textAlign = 'left';
+                }
+                
+                // 先畫卡牌名稱與正逆 (例如：愚者 [逆位] -> 改為灰色)
+                const posture = card.isReversed ? ' [逆位]' : ''; 
+                ctx.fillStyle = '#8b8e98'; // 星辰指引中的 text-muted
+                ctx.font = "400 14px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+                ctx.fillText(`${card.name}${posture}`, textX, textY);
+                
+                // 再畫牌位提示文字 (例如：1.現況 -> 金黃色)
+                ctx.fillStyle = 'rgba(249, 229, 150, 0.85)'; // 星辰指引中的 gold-light
+                ctx.font = "500 15px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+                ctx.fillText(pos.label, textX, textY + 20);
             }
-        });
+
+            // 計算佈局圖佔用的高度（預留兩行文字的空間）
+            const lowestY = row4Y + miniH / 2 + 60;
+            ccGridEndY = lowestY + 40;
+        }
+
+
+        // 聖十字模式：只顯示佈局圖，不繪製逐牌解析
+        if (!isCelticCross) {
+            cards.forEach((card, idx) => {
+                // 單卡模式置中
+                const cx = isSingleCard
+                    ? (width / 2 - cardImgWidth / 2)
+                    : (questionBoxX + 46 + idx * (cardImgWidth + cardGap));
+                let childY = currentSectionY + 130;
+
+                // 牌位標籤
+                ctx.textAlign = 'center';
+                ctx.fillStyle = 'rgba(212, 175, 55, 0.12)';
+                const labelWidth = 120;
+                drawRoundedRect(ctx, cx + cardImgWidth / 2 - labelWidth / 2, childY - 28, labelWidth, 40, 20);
+                ctx.fill();
+                ctx.fillStyle = '#f8e8a8';
+                ctx.font = "500 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+                const posLabel = isSingleCard ? '今日指引' : `第 ${idx + 1} 張`;
+                ctx.fillText(posLabel, cx + cardImgWidth / 2, childY);
+
+                childY += 36;
+
+                const img = cardImages[idx];
+                if (img) {
+                    if (card.isReversed) {
+                        ctx.save();
+                        ctx.translate(cx + cardImgWidth / 2, childY + cardImgHeight / 2);
+                        ctx.rotate(Math.PI);
+                        ctx.drawImage(img, -cardImgWidth / 2, -cardImgHeight / 2, cardImgWidth, cardImgHeight);
+                        ctx.restore();
+                    } else {
+                        ctx.drawImage(img, cx, childY, cardImgWidth, cardImgHeight);
+                    }
+
+                    ctx.strokeStyle = 'rgba(212, 175, 55, 0.6)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(cx, childY, cardImgWidth, cardImgHeight);
+                }
+
+                childY += cardImgHeight + 36;
+
+                const posture = card.isReversed ? '逆位' : '正位';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#f6d77a';
+                ctx.font = "700 26px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+                ctx.fillText(`${card.symbol || '✦'} ${card.name} [${posture}]`, cx + cardImgWidth / 2, childY);
+
+                childY += 40;
+
+                ctx.fillStyle = '#eaf1ff';
+                ctx.font = "400 24px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+                const lines = meaningsLinesArr[idx];
+                
+                if (isSingleCard) {
+                    ctx.textAlign = 'center';
+                    lines.forEach(line => {
+                        ctx.fillText(line || ' ', width / 2, childY);
+                        childY += meaningLineHeight;
+                    });
+                } else {
+                    ctx.textAlign = 'left';
+                    lines.forEach(line => {
+                        ctx.fillText(line || ' ', cx, childY);
+                        childY += meaningLineHeight;
+                    });
+                }
+            });
+        }
 
         currentSectionY += cardsBoxHeight + betweenSections;
     }

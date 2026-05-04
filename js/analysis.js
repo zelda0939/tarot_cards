@@ -33,7 +33,23 @@ function showAnalysis() {
     showLoadingOverlay();
 
     container.innerHTML = '';
-    const positions = AppState.isDailyMode ? ['今日運勢'] : ['第1張', '第2張', '第3張'];
+    let positions;
+    const isCelticCross = AppState.spreadMode === 'celtic-cross';
+
+    if (AppState.isDailyMode) {
+        positions = ['今日運勢'];
+    } else if (isCelticCross) {
+        positions = CELTIC_CROSS_POSITIONS.map(p => `${p.id}. ${p.name}`);
+    } else {
+        positions = ['第1張', '第2張', '第3張'];
+    }
+
+    // 聖十字模式的分析容器加上專屬 class
+    if (isCelticCross) {
+        container.classList.add('celtic-cross-analysis');
+    } else {
+        container.classList.remove('celtic-cross-analysis');
+    }
     let html = '';
     const cardNamesForPrompt = [];
 
@@ -66,6 +82,11 @@ function showAnalysis() {
         cardNamesForPrompt.push(`${positions[idx]}是「${card.name}」的【${posture}】（代表意義：${activeMeaning}）`);
     });
 
+    // 聖十字模式：在卡牌逐張解析之前插入牌陣佈局圖
+    if (isCelticCross && typeof buildCelticCrossLayoutHTML === 'function') {
+        html = buildCelticCrossLayoutHTML(AppState.selectedCards) + html;
+    }
+
     container.innerHTML = html;
 
     const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
@@ -95,6 +116,7 @@ function showAnalysis() {
                     if (typeof saveHistoryRecord === 'function') {
                         saveHistoryRecord({
                             question: getActiveQuestionText(),
+                            spreadMode: AppState.spreadMode || 'three-card',
                             cards: AppState.selectedCards.map(c => ({
                                 id: c.id,
                                 name: c.name,
@@ -212,6 +234,43 @@ ${normalizedQuestion}
 
 【綜合運勢解析】
 ...`;
+    }
+
+    // 聖十字牌陣模式
+    if (AppState.spreadMode === 'celtic-cross' && !AppState.isDailyMode) {
+        const posDefs = CELTIC_CROSS_POSITIONS.map(p => `${p.id}. ${p.name}（${p.en}）— ${p.desc}`).join('\n');
+        systemPrompt = `你是一位充滿智慧、語氣溫柔且帶有神祕感的高階塔羅占卜師。
+這是使用者的「聖十字牌陣」（Celtic Cross）深度占卜。共有 10 張牌，各有特定位置意義。
+
+【十牌位定義】
+${posDefs}
+
+【嚴格規則】
+- 不要打招呼、不要自我介紹
+- 直接輸出內容，使用繁體中文（台灣用語）
+- 依序輸出四個區塊：【✦ 核心牌陣解析 ✦】、【✧ 理想與基礎的對話 ✧】、【⚡ 外在影響與內在態度 ⚡】、【❉ 最終指引 ❉】
+- 強調牌與牌之間的關聯，不要逐張分開解讀
+- 語氣保持溫柔、神祕、有智慧感
+- 總字數約 700~900 字`;
+
+        userPrompt = `使用者提問：
+${normalizedQuestion}
+
+聖十字牌陣（10 張）：
+${cardsLog.join('\n')}
+
+請依照以下格式輸出：
+【✦ 核心牌陣解析 ✦】
+分析十字區的核心訊息（牌 1、2、5、6 的相互關係，探討過去、現在、未來的發展）...
+
+【✧ 理想與基礎的對話 ✧】
+比較牌 3（${CELTIC_CROSS_POSITIONS[2].name}）與牌 4（${CELTIC_CROSS_POSITIONS[3].name}）的潛在能量，探討目標與現實基礎的關係...
+
+【⚡ 外在影響與內在態度 ⚡】
+分析權杖區（牌 7~9）如何影響最終結果...
+
+【❉ 最終指引 ❉】
+結合牌 10（${CELTIC_CROSS_POSITIONS[9].name}）給出整體指引...`;
     }
 
     try {

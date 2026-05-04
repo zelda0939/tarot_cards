@@ -87,6 +87,7 @@ async function triggerDailyCard() {
 }
 
 function startDailyFlow(todayStr) {
+    document.body.classList.remove('centered-start');
     if (AppState.gameState !== 'idle' && AppState.gameState !== 'rotating') return; // 防呆，允許在初始或重新洗牌旋轉中抽取
 
     // 先清理前一輪可能殘留的動畫資源

@@ -41,6 +41,12 @@ function showLoadingOverlay() {
 
     if (cardsRow) {
         cardsRow.innerHTML = '';
+        if (AppState.selectedCards.length > 3) {
+            cardsRow.classList.add('celtic-cross-loading');
+        } else {
+            cardsRow.classList.remove('celtic-cross-loading');
+        }
+        
         AppState.selectedCards.forEach(card => {
             const imgRotate = card.isReversed ? 'transform: rotate(180deg);' : '';
             const thumb = document.createElement('div');

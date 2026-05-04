@@ -20,7 +20,8 @@
     <!-- MediaPipe Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="css/style.css?v=1.7.25">
+    <link rel="stylesheet" href="css/style.css?v=1.8.3">
+    <link rel="stylesheet" href="css/celtic-cross.css?v=1.8.3">
 </head>
 
 <body>
@@ -75,9 +76,27 @@
 
         <!-- 控制按鈕 — 放在最上方，開啟手勢抽牌 / 重新抽牌 -->
         <section id="control-panel">
+            <!-- 牌陣選擇器 -->
+            <div id="spread-selector" class="spread-selector">
+                <div class="spread-option selected" data-spread="three-card" id="spread-opt-three">
+                    <div class="spread-option-icon">✦✦✦</div>
+                    <div class="spread-option-info">
+                        <span class="spread-option-name">三張牌</span>
+                        <span class="spread-option-desc">快速指引</span>
+                    </div>
+                </div>
+                <div class="spread-option" data-spread="celtic-cross" id="spread-opt-celtic">
+                    <div class="spread-option-icon">✝</div>
+                    <div class="spread-option-info">
+                        <span class="spread-option-name">聖十字</span>
+                        <span class="spread-option-desc">深度剖析 · 10 牌</span>
+                    </div>
+                </div>
+            </div>
             <div class="control-panel-buttons">
                 <button id="daily-card-btn" class="premium-btn daily-btn">✨ 每日一抽</button>
                 <button id="start-gesture-btn" class="premium-btn active">開啟手勢抽牌</button>
+                <button id="celtic-cross-btn" class="premium-btn celtic-btn hidden">🔮 一鍵展牌</button>
             </div>
             <button id="restart-btn" class="premium-btn hidden">✦ 重新抽牌</button>
         </section>
@@ -123,6 +142,45 @@
                 <div class="slot" id="slot-3"></div>
             </div>
         </section>
+
+        <!-- 聖十字牌陣 10 牌位佈局 -->
+        <section id="celtic-cross-container" class="hidden">
+            <h3 class="subtitle">聖十字牌陣</h3>
+            <div id="celtic-cross-layout" class="celtic-cross-layout">
+                <!-- 十字區 -->
+                <div class="cc-slot cc-pos-5" id="cc-slot-5" data-pos="意識"></div>
+                <div class="cc-slot cc-pos-3" id="cc-slot-3" data-pos="過去"></div>
+                <div class="cc-slot cc-pos-center" id="cc-slot-center">
+                    <div class="cc-slot cc-pos-1" id="cc-slot-1" data-pos="現況"></div>
+                    <div class="cc-slot cc-pos-2 cc-rotated" id="cc-slot-2" data-pos="挑戰"></div>
+                </div>
+                <div class="cc-slot cc-pos-4" id="cc-slot-4" data-pos="近未來"></div>
+                <div class="cc-slot cc-pos-6" id="cc-slot-6" data-pos="潛意識"></div>
+                <!-- 權杖區（右側由下往上） -->
+                <div class="cc-slot cc-pos-10" id="cc-slot-10" data-pos="最終結果"></div>
+                <div class="cc-slot cc-pos-9" id="cc-slot-9" data-pos="希望與恐懼"></div>
+                <div class="cc-slot cc-pos-8" id="cc-slot-8" data-pos="外在環境"></div>
+                <div class="cc-slot cc-pos-7" id="cc-slot-7" data-pos="自我態度"></div>
+            </div>
+        </section>
+
+        <!-- 聖十字牌陣一鍵展牌動畫容器 -->
+        <div id="celtic-cross-animation-overlay" class="cc-anim-overlay hidden">
+            <canvas id="cc-particle-canvas"></canvas>
+            <div class="cc-anim-magic-circle">
+                <svg class="cc-magic-svg" viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="210" cy="210" r="200" stroke="rgba(212,175,55,0.4)" stroke-width="1.5"/>
+                    <circle cx="210" cy="210" r="190" stroke="rgba(212,175,55,0.2)" stroke-width="0.8" stroke-dasharray="6 4"/>
+                    <polygon points="210,20 260,150 400,150 285,230 325,370 210,290 95,370 135,230 20,150 160,150"
+                             stroke="rgba(249,229,150,0.45)" stroke-width="1.2" fill="none"/>
+                    <circle cx="210" cy="210" r="170" stroke="rgba(180,140,255,0.2)" stroke-width="0.6" stroke-dasharray="2 8"/>
+                </svg>
+            </div>
+            <div class="cc-anim-card-stage" id="cc-anim-card-stage">
+                <!-- 10 張牌的動畫元素由 JS 動態產生 -->
+            </div>
+            <div class="cc-anim-status" id="cc-anim-status">準備展牌...</div>
+        </div>
 
         <!-- 精美等待畫面 Overlay -->
         <section id="loading-overlay" class="hidden">
@@ -311,19 +369,20 @@
                 class="app-version"></span></p>
     </footer>
 
-    <script src="js/version.js?v=1.7.25"></script>
-    <script src="js/tarot_dict.js?v=1.7.25"></script>
-    <script src="js/state.js?v=1.7.25"></script>
-    <script src="js/ui.js?v=1.7.25"></script>
-    <script src="js/question.js?v=1.7.25"></script>
-    <script src="js/ring.js?v=1.7.25"></script>
-    <script src="js/gesture.js?v=1.7.25"></script>
-    <script src="js/imageExport.js?v=1.7.25"></script>
-    <script src="js/history.js?v=1.7.25"></script>
-    <script src="js/analysis.js?v=1.7.25"></script>
-    <script src="js/app.js?v=1.7.25"></script>
-    <script src="js/daily.js?v=1.7.25"></script>
-    <script src="js/init.js?v=1.7.25"></script>
+    <script src="js/version.js?v=1.8.3"></script>
+    <script src="js/tarot_dict.js?v=1.8.3"></script>
+    <script src="js/state.js?v=1.8.3"></script>
+    <script src="js/ui.js?v=1.8.3"></script>
+    <script src="js/question.js?v=1.8.3"></script>
+    <script src="js/ring.js?v=1.8.3"></script>
+    <script src="js/gesture.js?v=1.8.3"></script>
+    <script src="js/imageExport.js?v=1.8.3"></script>
+    <script src="js/history.js?v=1.8.3"></script>
+    <script src="js/analysis.js?v=1.8.3"></script>
+    <script src="js/app.js?v=1.8.3"></script>
+    <script src="js/daily.js?v=1.8.3"></script>
+    <script src="js/celtic-cross.js?v=1.8.3"></script>
+    <script src="js/init.js?v=1.8.3"></script>
     <script>
         // 在頁面載入時顯示目前版本號
         document.addEventListener('DOMContentLoaded', () => {

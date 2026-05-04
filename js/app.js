@@ -145,7 +145,8 @@ function cleanupGestureTransientEffects() {
 }
 
 function confirmSelection() {
-    if (AppState.selectedCards.length >= 3) return;
+    const maxCards = AppState.spreadMode === 'celtic-cross' ? 10 : 3;
+    if (AppState.selectedCards.length >= maxCards) return;
 
     const activeQuestion = getActiveQuestionText();
     if (!activeQuestion) {
@@ -180,7 +181,10 @@ function confirmSelection() {
     scheduleGestureTimer(() => {
         AppState.selectedCards.push(card);
         const slotIndex = AppState.selectedCards.length;
-        const slot = document.getElementById(`slot-${slotIndex}`);
+        const slotId = AppState.spreadMode === 'celtic-cross'
+            ? `cc-slot-${slotIndex}`
+            : `slot-${slotIndex}`;
+        const slot = document.getElementById(slotId);
         if (!slot) return;
 
         // 取得卡牌目前的視覺座標（包含 3D perspective 投影後的位置）
@@ -269,7 +273,7 @@ function confirmSelection() {
             // 補牌：在原位置放上新的卡片
             refillCardSlot(refillIndex);
 
-            if (AppState.selectedCards.length === 3) {
+            if (AppState.selectedCards.length === maxCards) {
                 AppState.gameState = 'finished';
                 // 選完三張牌後關閉攝影機偵測，節省資源
                 if (typeof stopMediaPipeCamera === 'function') stopMediaPipeCamera('reading-complete');
@@ -329,7 +333,7 @@ function resetGame() {
     AppState.ringCardData = [];
     AppState.cardElements = [];
 
-    // 重置 slot UI
+    // 重置 slot UI（三張牌 + 聖十字）
     for (let i = 1; i <= 3; i++) {
         const slot = document.getElementById(`slot-${i}`);
         if (slot) {
@@ -337,6 +341,13 @@ function resetGame() {
             slot.classList.remove('filled');
         }
     }
+    if (typeof clearCelticCrossSlots === 'function') clearCelticCrossSlots();
+    if (typeof cleanupCelticCrossAnimation === 'function') cleanupCelticCrossAnimation();
+    document.body.classList.remove('celtic-cross-active');
+
+    // 隱藏聖十字容器
+    const ccContainer = document.getElementById('celtic-cross-container');
+    if (ccContainer) ccContainer.classList.add('hidden');
 
     // 隱藏重新抽牌按鈕
     const restartBtn = document.getElementById('restart-btn');

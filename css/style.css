@@ -176,6 +176,50 @@ main {
     z-index: 101;
 }
 
+body.centered-start main {
+    justify-content: center;
+    gap: 0.9rem;
+    overflow: visible;
+    padding-bottom: clamp(1rem, 6vh, 4rem);
+}
+
+body.centered-start #question-panel.centered-mode,
+body.centered-start #control-panel.centered-mode {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+}
+
+body.centered-start #question-panel.centered-mode {
+    order: 1;
+    width: min(92vw, 900px);
+    margin: 0;
+    z-index: 2;
+}
+
+body.centered-start #control-panel.centered-mode {
+    order: 2;
+    width: min(92vw, 900px);
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    z-index: 1;
+}
+
+body.centered-start #gesture-instruction {
+    order: 3;
+}
+
+body.centered-start #tarot-board {
+    order: 4;
+    flex: 0 0 auto;
+    width: 0;
+    height: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
 .question-panel-head {
     display: flex;
     align-items: center;
@@ -1006,6 +1050,11 @@ footer {
 
 .analysis-card-img img {
     width: 140px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    object-fit: contain;
     border-radius: 6px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
     border: 1px solid var(--gold-glow);
@@ -1864,8 +1913,16 @@ footer {
 .loading-cards-row {
     display: flex;
     justify-content: center;
+    flex-wrap: wrap;
     gap: 1.2rem;
     margin-top: 0.5rem;
+    max-width: 90vw;
+}
+
+/* 聖十字模式的縮圖排版 (10張) */
+.loading-cards-row.celtic-cross-loading {
+    gap: 0.6rem;
+    max-width: 280px;
 }
 
 .loading-card-thumb {
@@ -1877,6 +1934,13 @@ footer {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.15);
     animation: cardFloat 3s ease-in-out infinite;
     background: #0a0a0f;
+}
+
+.loading-cards-row.celtic-cross-loading .loading-card-thumb {
+    width: 45px;
+    height: 70px;
+    border-radius: 4px;
+    animation: none; /* 卡片較多時取消浮動動畫以節省效能與避免畫面雜亂 */
 }
 
 .loading-card-thumb:nth-child(2) {
@@ -1980,6 +2044,7 @@ footer {
 .daily-btn:hover {
     background: linear-gradient(135deg, rgba(255, 215, 100, 0.5), rgba(200, 140, 40, 0.5));
     box-shadow: 0 0 25px rgba(255, 215, 100, 0.6);
+    color: rgba(255, 255, 255, 0.95);
 }
 
 /* ─── Overlay 主容器 ─── */
