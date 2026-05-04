@@ -240,8 +240,8 @@
 /* 聖十字響應式 */
 @media (max-width: 768px) {
     .spread-selector { gap: 8px; max-width: 340px; }
-    .spread-option { padding: 9px 12px; gap: 8px; }
-    .spread-option-icon { font-size: 1.1rem; width: 32px; }
+    .spread-option { padding: 9px 12px; gap: 12px; }
+    .spread-option-icon { font-size: 1.1rem; min-width: 45px; }
     .spread-option-name { font-size: 0.82rem; }
     .celtic-cross-layout { grid-template-columns: auto 52px auto 52px auto 30px auto; gap: 0; row-gap: 16px; max-width: 480px; padding: 8px; }
     .cc-slot { width: 60px; height: 90px; }
