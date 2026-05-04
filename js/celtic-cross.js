@@ -348,16 +348,20 @@ function clearCelticCrossSlots() {
 function buildCelticCrossLayoutHTML(cards) {
     if (!cards || cards.length < 10) return '';
 
-    function cardMiniHTML(card, posIdx) {
-        const pos = CELTIC_CROSS_POSITIONS[posIdx];
+    function cardMiniHTML(card, posIdx, options = {}) {
         const isReversed = card.isReversed;
         const reversedClass = isReversed ? 'cc-lp-reversed' : '';
         const posture = isReversed ? '(逆)' : '';
+        const imageOnlyClass = options.imageOnly ? ' cc-layout-card--image-only' : '';
         return `
-            <div class="cc-layout-card ${reversedClass}">
+            <div class="cc-layout-card ${reversedClass}${imageOnlyClass}">
                 <img src="assets/images/${card.name_short}.jpg" alt="${card.name}" class="cc-layout-card-img${isReversed ? ' reversed-img' : ''}">
-                <div class="cc-layout-card-name">${card.name}${posture}</div>
+                ${options.imageOnly ? '' : `<div class="cc-layout-card-name">${card.name}${posture}</div>`}
             </div>`;
+    }
+
+    function cardCaptionText(card) {
+        return `${card.name}${card.isReversed ? '(逆)' : ''}`;
     }
 
     return `
@@ -371,11 +375,23 @@ function buildCelticCrossLayoutHTML(cards) {
                 ${cardMiniHTML(cards[4], 4)}
             </div>
             <div class="cc-lp cc-lp-center">
-                <div class="cc-lp-stack-1" data-pos="1.${CELTIC_CROSS_POSITIONS[0].name}">
-                    ${cardMiniHTML(cards[0], 0)}
+                <div class="cc-lp-cross-stack">
+                    <div class="cc-lp-stack-1" data-pos="1.${CELTIC_CROSS_POSITIONS[0].name}">
+                        ${cardMiniHTML(cards[0], 0, { imageOnly: true })}
+                    </div>
+                    <div class="cc-lp-stack-2 cc-lp-rotated" data-pos="2.${CELTIC_CROSS_POSITIONS[1].name}">
+                        ${cardMiniHTML(cards[1], 1, { imageOnly: true })}
+                    </div>
                 </div>
-                <div class="cc-lp-stack-2 cc-lp-rotated" data-pos="2.${CELTIC_CROSS_POSITIONS[1].name}">
-                    ${cardMiniHTML(cards[1], 1)}
+                <div class="cc-lp-center-captions">
+                    <div class="cc-lp-center-caption">
+                        <span class="cc-lp-center-card-name">${cardCaptionText(cards[0])}</span>
+                        <span class="cc-lp-center-pos">1.${CELTIC_CROSS_POSITIONS[0].name}</span>
+                    </div>
+                    <div class="cc-lp-center-caption">
+                        <span class="cc-lp-center-card-name">${cardCaptionText(cards[1])}</span>
+                        <span class="cc-lp-center-pos">2.${CELTIC_CROSS_POSITIONS[1].name}</span>
+                    </div>
                 </div>
             </div>
             <div class="cc-lp cc-lp-6" data-pos="6.${CELTIC_CROSS_POSITIONS[5].name}">
@@ -399,4 +415,3 @@ function buildCelticCrossLayoutHTML(cards) {
         </div>
     </div>`;
 }
-

@@ -186,8 +186,8 @@
     font-family: 'Cinzel', serif; font-weight: 600;
 }
 .cc-layout-grid {
-    display: grid; grid-template-columns: auto 40px auto 40px auto 30px auto; grid-template-rows: repeat(4, auto);
-    gap: 0; row-gap: 16px; justify-content: center; align-items: center; justify-items: center; max-width: 480px; margin: 10px auto;
+    display: grid; grid-template-columns: auto 46px auto 46px auto 34px auto; grid-template-rows: repeat(4, auto);
+    gap: 0; row-gap: 20px; justify-content: center; align-items: center; justify-items: center; max-width: 500px; margin: 10px auto;
 }
 .cc-lp { position: relative; }
 .cc-lp::after {
@@ -198,23 +198,39 @@
 .cc-lp-5 { grid-column: 1; grid-row: 2 / span 2; align-self: center; }
 .cc-lp-center {
     grid-column: 3; grid-row: 2 / span 2; position: relative; align-self: center;
-    display: flex; justify-content: center; align-items: center;
-    width: 82px !important; height: 82px !important;
+    display: flex; flex-direction: column; justify-content: flex-start; align-items: center;
+    width: 118px !important; height: 142px !important;
 }
 .cc-lp-center::after { display: none; }
+.cc-lp-cross-stack {
+    position: relative; z-index: 1; flex: 0 0 82px;
+    width: 82px; height: 82px; display: flex; justify-content: center; align-items: center;
+}
 .cc-lp-stack-1 { position: relative; z-index: 1; }
 .cc-lp-stack-1::after {
-    content: attr(data-pos); position: absolute; bottom: -14px; left: 50%; transform: translateX(-50%);
-    font-size: 0.5rem; color: var(--gold-light); white-space: nowrap; opacity: 0.7;
+    display: none;
 }
 .cc-lp-stack-2 {
     position: absolute; z-index: 2; top: 50%; left: 50%;
     transform: translate(-50%, -50%) rotate(90deg);
 }
 .cc-lp-stack-2::after {
-    content: attr(data-pos); position: absolute; bottom: -14px; left: 50%;
-    transform: translateX(-50%) rotate(-90deg);
-    font-size: 0.5rem; color: var(--gold-light); white-space: nowrap; opacity: 0.7;
+    display: none;
+}
+.cc-lp-center-captions {
+    position: relative; z-index: 3; width: 128px; margin-top: 5px;
+    display: flex; flex-direction: column; gap: 2px; pointer-events: none;
+}
+.cc-lp-center-caption {
+    min-width: 0; display: flex; justify-content: center; align-items: baseline; gap: 5px;
+    font-size: 0.5rem; line-height: 1.1; white-space: nowrap;
+}
+.cc-lp-center-card-name {
+    min-width: 0; overflow: hidden; text-overflow: ellipsis;
+    color: var(--text-muted);
+}
+.cc-lp-center-pos {
+    flex-shrink: 0; color: var(--gold-light); opacity: 0.86;
 }
 .cc-lp-6 { grid-column: 5; grid-row: 2 / span 2; align-self: center; }
 .cc-lp-4 { grid-column: 3; grid-row: 4; }
@@ -236,6 +252,7 @@
     text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     max-width: 58px;
 }
+.cc-layout-card--image-only { width: 58px; }
 .cc-lp-rotated .cc-layout-card-img { width: 54px; height: 82px; }
 
 /* 聖十字響應式 */
@@ -253,11 +270,15 @@
     .cc-anim-card-stage { grid-template-columns: auto 52px auto 52px auto 30px auto; gap: 0; row-gap: 16px; max-width: 480px; }
     .cc-magic-svg { width: 340px; height: 340px; }
     .cc-anim-status { top: 6%; font-size: 0.85rem; padding: 6px 18px; }
-    .cc-layout-grid { grid-template-columns: auto 20px auto 20px auto 14px auto; gap: 0; row-gap: 12px; max-width: 340px; }
+    .cc-layout-grid { grid-template-columns: auto 24px auto 24px auto 18px auto; gap: 0; row-gap: 16px; max-width: 370px; }
     .cc-layout-card { width: 42px; }
     .cc-layout-card-img { width: 38px; height: 58px; }
     .cc-lp-rotated .cc-layout-card-img { width: 38px; height: 58px; }
-    .cc-lp-center { width: 50px !important; height: 64px !important; }
+    .cc-layout-card--image-only { width: 42px; }
+    .cc-lp-center { width: 86px !important; height: 106px !important; }
+    .cc-lp-cross-stack { width: 58px; height: 58px; flex-basis: 58px; }
+    .cc-lp-center-captions { width: 100px; margin-top: 4px; gap: 1px; }
+    .cc-lp-center-caption { font-size: 0.4rem; gap: 4px; }
     .cc-lp::after { font-size: 0.4rem; bottom: -12px; }
     .cc-lp-stack-1::after, .cc-lp-stack-2::after { font-size: 0.4rem; bottom: -12px; }
     .cc-layout-card-name { font-size: 0.38rem; max-width: 42px; }
@@ -272,14 +293,29 @@
     .cc-anim-pos-center { width: 66px !important; height: 66px !important; }
     .cc-anim-card-stage { grid-template-columns: auto 44px auto 44px auto 20px auto; gap: 0; row-gap: 14px; max-width: 360px; }
     .cc-anim-status { top: 4%; font-size: 0.8rem; padding: 5px 16px; }
-    .cc-layout-grid { grid-template-columns: auto 14px auto 14px auto 10px auto; gap: 0; row-gap: 10px; max-width: 300px; }
-    .cc-layout-card { width: 36px; }
-    .cc-layout-card-img { width: 32px; height: 50px; }
-    .cc-lp-rotated .cc-layout-card-img { width: 32px; height: 50px; }
-    .cc-lp-center { width: 42px !important; height: 56px !important; }
-    .cc-lp::after { font-size: 0.36rem; bottom: -10px; }
-    .cc-lp-stack-1::after, .cc-lp-stack-2::after { font-size: 0.36rem; bottom: -10px; }
-    .cc-layout-card-name { font-size: 0.34rem; max-width: 36px; }
+    
+    /* 星辰指引 / 占卜日誌 預覽圖等比放大，並自適應 Modal 可用內距 */
+    .cc-layout-preview {
+        width: 100%;
+        max-width: 100%;
+        margin: 0 0 1.2rem 0;
+        padding: 4vw 2vw;
+        box-sizing: border-box;
+        overflow-x: visible; /* 允許長文字微幅超出，避免被容器裁切 */
+    }
+    .cc-layout-grid { grid-template-columns: auto 6vw auto 6vw auto 3vw auto; gap: 0; row-gap: 4vw; max-width: 100%; margin: 10px auto; }
+    .cc-layout-card { width: 11vw; }
+    .cc-layout-card-img { width: 10vw; height: 15.5vw; }
+    .cc-lp-rotated .cc-layout-card-img { width: 10vw; height: 15.5vw; }
+    .cc-layout-card--image-only { width: 11vw; }
+    .cc-lp-center { width: 24vw !important; height: auto !important; margin-top: 1.5vw; }
+    .cc-lp-cross-stack { width: 16vw; height: 16vw; flex-basis: 16vw; }
+    .cc-lp-center-captions { width: 24vw; margin-top: 1vw; gap: 0.4vw; }
+    .cc-lp-center-caption { font-size: 2vw; gap: 1vw; line-height: 1.08; }
+    .cc-lp::after { font-size: 2.2vw; bottom: -3vw; }
+    .cc-lp-stack-1::after { font-size: 2.2vw; bottom: -3vw; }
+    .cc-layout-card-name { font-size: 2.1vw; max-width: 18vw; margin-top: 1vw; overflow: visible; white-space: nowrap; }
+    .cc-lp-stack-2::after { display: none; }
 }
 body.celtic-cross-active { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; }
 body.celtic-cross-active main { overflow: visible; overflow-x: hidden; }

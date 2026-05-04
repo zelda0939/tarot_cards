@@ -108,13 +108,13 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     let cardImages = [];
     let meaningsLinesArr = [];
     const isSingleCard = cards && cards.length === 1;
-    const celticMiniW = 100;
-    const celticMiniH = 152;
-    const celticMiniGap = 16;
-    const celticRowSpacing = celticMiniH + 60; // 加大垂直間距，留出兩行文字的空間
-    const celticTopPadding = 130;
-    const celticLabelGap = 22;
-    const celticBottomPadding = 70;
+    const celticMiniW = 86;
+    const celticMiniH = 130;
+    const celticMiniGap = 14;
+    const celticRowSpacing = celticMiniH + 46; // 加大垂直間距，留出兩行文字的空間
+    const celticTopPadding = 110;
+    const celticLabelGap = 18;
+    const celticBottomPadding = 60;
 
     if (cards && cards.length) {
         cardImages = await Promise.all(cards.map(card => waitImageLoad(`assets/images/${card.name_short}.jpg`)));
@@ -251,7 +251,7 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
             // 水平與垂直等距計算
             const vDist = 1.5 * rowSpacing; // 垂直中心距離
             const colSpacing = vDist; // 完美等距
-            const pillarOffset = 180; // 權杖柱與右側牌的距離（加大以防重疊）
+            const pillarOffset = 140; // 權杖柱與右側牌的距離（已配合卡牌縮小比例調降）
             
             // 為了讓整體視覺置中，計算佈局總寬度
             // 最左側 = gridCenterX - colSpacing
