@@ -71,24 +71,27 @@ function initMediaPipe() {
     }
 
     let isProcessingFrame = false;
-    // 手機上每隔兩幀才送辨識，降低 CPU 與卡牌環 rAF 的競爭
+    // 手機上每隔多幀才送辨識，降低 CPU 與卡牌環 rAF 的競爭
     let _mpFrameCount = 0;
-    const _mpFrameSkip = isMobile ? 3 : 1; // 手機跳幀：每 3 幀才辨識 1 次
+    const _mpFrameSkip = isMobile ? 5 : 2; // 手機跳幀：每 5 幀辨識 1 次，桌機 2 幀
 
     AppState.mpCamera = new Camera(videoElement, {
-        onFrame: async () => {
+        onFrame: () => {
             if (AppState.isDailyMode || AppState.gameState === 'finished') return;
             _mpFrameCount++;
             if (_mpFrameCount % _mpFrameSkip !== 0) return; // 跳幀
             if (AppState.mpHands && !isProcessingFrame) {
                 isProcessingFrame = true;
-                try {
-                    await AppState.mpHands.send({ image: videoElement });
-                } catch (e) {
-                    console.error('[MediaPipe] 偵測錯誤:', e);
-                } finally {
-                    isProcessingFrame = false;
-                }
+                // 利用 setTimeout 讓出主執行緒，確保卡牌動畫(rAF)不會被送入模型的過程阻塞
+                setTimeout(async () => {
+                    try {
+                        await AppState.mpHands.send({ image: videoElement });
+                    } catch (e) {
+                        console.error('[MediaPipe] 偵測錯誤:', e);
+                    } finally {
+                        isProcessingFrame = false;
+                    }
+                }, 0);
             }
         },
         facingMode: 'user',

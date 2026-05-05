@@ -21,6 +21,9 @@
 - [2026-04-15] 新增 AI 模式選項：設定中加入下拉選單，支援 Gemini 3 Flash 與 Gemma 4 31B 兩種模型，透過- **資料儲存**：
   - AI API Key、模型偏好存於 `localStorage` (不傳輸至伺服器)。
   - 歷史占卜日誌儲存於瀏覽器內建 `IndexedDB` (`CelestialTarotDB`)，支援大量數據存儲。'gemini_model') 動態切換 API endpoint。提示詞 modal 會顯示目前使用模型名稱。
+- **針對手機版手勢操作卡頓問題 (2026-05-05)**：
+  - **問題與決策**：手機版啟動攝影機並使用 MediaPipe 時，高頻率的影像推論會霸佔 Main Thread，導致卡牌輪 rAF 動畫卡住。
+  - **解法**：在 `gesture.js` 中將手機跳幀數調高至 `5`，且使用 `setTimeout(..., 0)` 強制讓出主執行緒。同時在 CSS 中針對 `@media (max-width: 768px)` 全域移除 `.modal-content` 等元件的 `backdrop-filter: blur` 以拯救 GPU Paint 效能。
 - [2026-04-15] PWA 支援：新增 manifest.json(含名稱、圖片、色調)、sw.js(Cache-First Service Worker)、icons 目錄(SVG 格式 192/512 圖片)。index.html 加入 PWA meta 標籤與 SW 註冊。支援桌面端與行動端安裝。
 - [2026-04-15] 預設模型改為 gemma-4-31b-it：所有 fallback 都從 gemini-3-flash-preview 改為 gemma-4-31b-it，select 預設選項調為 Gemma 4 31B。
 - [2026-04-15] API Key 取得教學：在設定 Modal 的 API Key 輸入框下方新增 Google AI Studio 連結位置、詳細教學語。

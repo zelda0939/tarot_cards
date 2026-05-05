@@ -136,3 +136,10 @@
 - **版本更新至 v1.8.11**:
     - 持續進行小規模 Bug 修復與 UI 微調。
     - 統一所有模組的版本號與資源快取。
+
+## 2026-05-05
+- **效能優化：手機端手勢辨識與渲染效能**:
+    - 在 `js/gesture.js` 增加 MediaPipe 送入推論的跳幀數（手機 5 幀，桌機 2 幀）。
+    - 將 MediaPipe 推論 `AppState.mpHands.send()` 包裝在 `setTimeout(..., 0)` 中，強制讓出主執行緒，避免阻塞卡牌旋轉 (`requestAnimationFrame`)。
+    - 在 `css/style.css` 與 `css/celtic-cross.css` 中，針對手機版全域移除極其耗費 GPU 的毛玻璃效果 (`backdrop-filter`)，改用較深底色補償。
+    - 縮減手機端卡牌翻轉時的極限高光 (`box-shadow`)，降低 Paint 成本。
