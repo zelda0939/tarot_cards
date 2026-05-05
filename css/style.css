@@ -223,10 +223,9 @@ main {
 }
 
 body.centered-start main {
-    justify-content: flex-start; /* 讓內容靠上對齊，不再強制居中 */
-    gap: 0.6rem;
+    justify-content: center;
+    gap: 0.9rem;
     overflow: visible;
-    padding-top: 1rem; /* 增加上方留白 */
     padding-bottom: clamp(1rem, 6vh, 4rem);
 }
 
@@ -238,20 +237,20 @@ body.centered-start #control-panel.centered-mode {
     transform: none;
 }
 
-body.centered-start #control-panel.centered-mode {
-    order: 1; /* 讓按鈕在提問框上面，靠近最上面的牌陣選擇器 */
-    width: min(92vw, 900px);
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    z-index: 1;
-}
-
 body.centered-start #question-panel.centered-mode {
-    order: 2; /* 提問框在按鈕下方 */
+    order: 1;
     width: min(92vw, 900px);
     margin: 0;
     z-index: 2;
+}
+
+body.centered-start #control-panel.centered-mode {
+    order: 2;
+    width: min(92vw, 900px);
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    z-index: 1;
 }
 
 body.centered-start #gesture-instruction {
@@ -1421,6 +1420,7 @@ footer {
     #control-panel {
         padding: 0.3rem 0;
         flex-wrap: wrap; /* 允許換行 */
+        gap: 0.5rem; /* 縮小換行後的上下間距，讓按鈕更靠近牌陣選擇器 */
     }
     
     .control-panel-buttons {
