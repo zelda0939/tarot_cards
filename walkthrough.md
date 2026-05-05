@@ -154,5 +154,5 @@
     - 強化 **按鈕實體按壓回饋** (`.premium-btn:active`)，加入 `transform: scale(0.96)` 與內陰影。
     - 強化 **輸入框聚焦光暈** (`#user-question-input:focus`)，改為深色背景與金色的內外雙層發光。
 - **修復攝影機啟動瞬間卡牌環卡頓問題**:
-    - **根本原因**：MediaPipe `Hands` API 初次載入 WASM 模型與 WebGL Context 時屬於同步阻塞運算，導致即便使用 `setTimeout` 仍會在此刻霸佔主執行緒。
-    - **修復方式**：將 `initMediaPipe` 改為 async 函數，並利用 `await AppState.mpHands.initialize()` 預先載入模型。同時修改 `js/init.js` 與 `js/app.js`，將 `startCardRingAnimation()` 的呼叫延後，確保在攝影機與模型皆初始化完成後才開始旋轉卡牌。這會將硬體的同步載入時間轉化為流暢的「正在載入鏡頭...」提示，解決了旋轉中途卡死的體驗問題。
+    - **根本原因**：MediaPipe `Hands` API 除了初次載入 WASM 模型外，在**第一次送入影像進行推論時**（`mpHands.send()`），會進行 WebGL Shader 的即時編譯（JIT Compile），這是一個數百毫秒的同步阻塞運算，導致原本的 `setTimeout` 也無法阻止主執行緒被霸佔。
+    - **修復方式**：將 `initMediaPipe` 改為 async 函數，將 `resolve` 的時機點從 `mpCamera.start().then()` 移至 `onFrame` 內**第一張影像成功推論後**。這樣能確保首幀的 Shader 編譯與暖機完全結束後，才結束「正在啟動星辰視覺鏡頭...」的等待狀態並開始旋轉卡牌環。這徹底消滅了旋轉中途卡死的體驗問題。

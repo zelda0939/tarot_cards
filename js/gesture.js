@@ -78,50 +78,61 @@ async function initMediaPipe() {
         return false;
     }
 
-    let isProcessingFrame = false;
-    // 手機上每隔多幀才送辨識，降低 CPU 與卡牌環 rAF 的競爭
-    let _mpFrameCount = 0;
-    const _mpFrameSkip = isMobile ? 5 : 2; // 手機跳幀：每 5 幀辨識 1 次，桌機 2 幀
-
-    AppState.mpCamera = new Camera(videoElement, {
-        onFrame: () => {
-            if (AppState.isDailyMode || AppState.gameState === 'finished') return;
-            _mpFrameCount++;
-            if (_mpFrameCount % _mpFrameSkip !== 0) return; // 跳幀
-            if (AppState.mpHands && !isProcessingFrame) {
-                isProcessingFrame = true;
-                // 利用 setTimeout 讓出主執行緒，確保卡牌動畫(rAF)不會被送入模型的過程阻塞
-                setTimeout(async () => {
-                    try {
-                        await AppState.mpHands.send({ image: videoElement });
-                    } catch (e) {
-                        console.error('[MediaPipe] 偵測錯誤:', e);
-                    } finally {
-                        isProcessingFrame = false;
-                    }
-                }, 0);
-            }
-        },
-        facingMode: 'user',
-        width: isMobile ? 320 : 640,
-        height: isMobile ? 240 : 480
-    });
-
     return new Promise((resolve) => {
         AppState.mediaPipeStarting = true;
         const sessionId = ++_mediaPipeSessionId;
+        
+        let firstFrameResolved = false;
+        let isProcessingFrame = false;
+        // 手機上每隔多幀才送辨識，降低 CPU 與卡牌環 rAF 的競爭
+        let _mpFrameCount = 0;
+        const _mpFrameSkip = isMobile ? 5 : 2;
+
+        AppState.mpCamera = new Camera(videoElement, {
+            onFrame: () => {
+                if (AppState.isDailyMode || AppState.gameState === 'finished') return;
+                _mpFrameCount++;
+                
+                // 在暖機完成前，我們不跳幀，盡快抓取第一張畫面給模型！
+                if (firstFrameResolved && _mpFrameCount % _mpFrameSkip !== 0) return; 
+
+                if (AppState.mpHands && !isProcessingFrame) {
+                    isProcessingFrame = true;
+                    // 利用 setTimeout 讓出主執行緒，確保卡牌動畫(rAF)不會被阻塞
+                    setTimeout(async () => {
+                        try {
+                            await AppState.mpHands.send({ image: videoElement });
+                            
+                            // 🔥 關鍵修復：第一張影像成功推論後（WebGL Shader 編譯完成），才結束等待狀態並開始旋轉！
+                            if (!firstFrameResolved && sessionId === _mediaPipeSessionId) {
+                                firstFrameResolved = true;
+                                console.log('[聖境塔羅] ✅ 鏡頭開啟與視覺模型暖機完成！');
+                                AppState.mediaPipeInitialized = true;
+                                AppState.mediaPipeRunning = true;
+                                AppState.mediaPipeStarting = false;
+                                resolve(true);
+                            }
+                        } catch (e) {
+                            console.error('[MediaPipe] 偵測錯誤:', e);
+                        } finally {
+                            isProcessingFrame = false;
+                        }
+                    }, 0);
+                }
+            },
+            facingMode: 'user',
+            width: isMobile ? 320 : 640,
+            height: isMobile ? 240 : 480
+        });
+
         AppState.mpCamera.start()
             .then(() => {
                 if (sessionId !== _mediaPipeSessionId) {
                     resolve(false);
                     return;
                 }
-                console.log('[聖境塔羅] ✅ 鏡頭啟動成功！');
-                AppState.mediaPipeInitialized = true;
-                AppState.mediaPipeRunning = true;
-                AppState.mediaPipeStarting = false;
-                updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
-                resolve(true);
+                console.log('[聖境塔羅] 📷 鏡頭已開啟，等待模型首幀暖機...');
+                // 不要在這裡 resolve，等待 onFrame 第一張推論完成
             })
             .catch((err) => {
                 if (sessionId !== _mediaPipeSessionId) {
