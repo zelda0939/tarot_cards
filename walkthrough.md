@@ -160,3 +160,6 @@
     - 將 `index.html` 中的 `#restart-btn` 移入 `.control-panel-buttons` 容器內，使其能與「每日一抽」按鈕共用 `flex-wrap` 達到完美並排顯示。
     - 修改 `css/style.css` 裡的 `#control-panel`，在手機版縮小 `gap: 0.5rem`，使得進入卡牌環畫面後，每日一抽按鈕與提問框能整體往上緊密靠攏牌陣選擇器。
     - **修正**：移除了之前錯誤修改 `body.centered-start main` 的樣式，確保「一開始的初始畫面」依然完美維持在畫面的正中央，僅針對卡牌環模式進行排版緊湊化。
+- **修復初始畫面載入閃爍 (FOUC)**:
+    - **根本原因**：控制初始畫面置中的 CSS 類別 (`centered-start`, `centered-mode`) 原本是透過 `js/init.js` 在網頁載入後才動態添加。這導致瀏覽器第一次繪製 (First Paint) 時元素在畫面上方，幾毫秒後才跳到中間，形成不舒服的視覺閃爍。
+    - **修復方式**：將 `class="centered-start"` 與 `class="centered-mode"` 直接靜態寫入 `index.html` 的 `<body>`, `#control-panel`, `#question-panel` 標籤中。讓瀏覽器在第一幀就直接渲染置中佈局，徹底消除載入時的閃爍感。
