@@ -20,8 +20,8 @@
     <!-- MediaPipe Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="css/style.css?v=1.8.11">
-    <link rel="stylesheet" href="css/celtic-cross.css?v=1.8.11">
+    <link rel="stylesheet" href="css/style.css?v=1.8.12">
+    <link rel="stylesheet" href="css/celtic-cross.css?v=1.8.12">
 </head>
 
 <body>
@@ -168,12 +168,91 @@
         <div id="celtic-cross-animation-overlay" class="cc-anim-overlay hidden">
             <canvas id="cc-particle-canvas"></canvas>
             <div class="cc-anim-magic-circle">
-                <svg class="cc-magic-svg" viewBox="0 0 420 420" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="210" cy="210" r="200" stroke="rgba(212,175,55,0.4)" stroke-width="1.5"/>
-                    <circle cx="210" cy="210" r="190" stroke="rgba(212,175,55,0.2)" stroke-width="0.8" stroke-dasharray="6 4"/>
-                    <polygon points="210,20 260,150 400,150 285,230 325,370 210,290 95,370 135,230 20,150 160,150"
-                             stroke="rgba(249,229,150,0.45)" stroke-width="1.2" fill="none"/>
-                    <circle cx="210" cy="210" r="170" stroke="rgba(180,140,255,0.2)" stroke-width="0.6" stroke-dasharray="2 8"/>
+                <svg class="cc-magic-svg" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- 強烈原生 SVG 發光濾鏡 -->
+                        <filter id="magic-glow" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="3" result="blur1" />
+                            <feGaussianBlur stdDeviation="8" result="blur2" />
+                            <feGaussianBlur stdDeviation="15" result="blur3" />
+                            <feMerge>
+                                <feMergeNode in="blur3" />
+                                <feMergeNode in="blur2" />
+                                <feMergeNode in="blur1" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                        <!-- 經典塔羅金漸層 -->
+                        <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f9e596" />
+                            <stop offset="50%" stop-color="#d4af37" />
+                            <stop offset="100%" stop-color="#8A6327" />
+                        </linearGradient>
+                        <!-- 月光星雲漸層 (低調高雅) -->
+                        <linearGradient id="moonlight-grad" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#f5f5f5" />
+                            <stop offset="50%" stop-color="#b48cff" />
+                            <stop offset="100%" stop-color="#4B0082" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- 擴散光暈 (Shockwave) -->
+                    <circle class="cc-magic-ripple" cx="300" cy="300" r="60" stroke="url(#gold-grad)" stroke-width="4" opacity="0" filter="url(#magic-glow)"/>
+
+                    <!-- 3D 星盤外圈 (Gyro Outer) -->
+                    <g class="cc-gyro-outer" filter="url(#magic-glow)">
+                        <!-- 外圈星軌點 -->
+                        <circle class="cc-draw-line" cx="300" cy="300" r="280" stroke="url(#gold-grad)" stroke-width="2" stroke-dasharray="2 12" stroke-linecap="round"/>
+                        <!-- 主圓環 -->
+                        <circle class="cc-draw-line" cx="300" cy="300" r="260" stroke="url(#gold-grad)" stroke-width="1.5" opacity="0.4"/>
+                        <!-- 軌道刻度 -->
+                        <circle cx="300" cy="300" r="250" stroke="url(#moonlight-grad)" stroke-width="3" stroke-dasharray="50 20 8 20" opacity="0.6"/>
+                        
+                        <!-- 東西南北裝飾羅盤指針 -->
+                        <path class="cc-draw-line" d="M300 10 L310 40 L300 50 L290 40 Z" fill="url(#gold-grad)"/>
+                        <path class="cc-draw-line" d="M300 590 L310 560 L300 550 L290 560 Z" fill="url(#gold-grad)"/>
+                        <path class="cc-draw-line" d="M10 300 L40 290 L50 300 L40 310 Z" fill="url(#gold-grad)"/>
+                        <path class="cc-draw-line" d="M590 300 L560 290 L550 300 L560 310 Z" fill="url(#gold-grad)"/>
+                    </g>
+
+                    <!-- 3D 符文與複雜幾何圈 (Gyro Middle) -->
+                    <g class="cc-gyro-middle" filter="url(#magic-glow)">
+                        <circle class="cc-draw-line" cx="300" cy="300" r="220" stroke="url(#gold-grad)" stroke-width="1" opacity="0.3"/>
+                        
+                        <!-- 神秘十二角星芒 -->
+                        <path class="cc-draw-line" d="M300 80 L350 250 L520 300 L350 350 L300 520 L250 350 L80 300 L250 250 Z" stroke="url(#moonlight-grad)" stroke-width="1.2" fill="none" opacity="0.8"/>
+                        <!-- 交錯的方陣 -->
+                        <rect class="cc-draw-line" x="160" y="160" width="280" height="280" stroke="url(#gold-grad)" stroke-width="1" fill="none" transform="rotate(15 300 300)" opacity="0.4"/>
+                        <rect class="cc-draw-line" x="160" y="160" width="280" height="280" stroke="url(#gold-grad)" stroke-width="1" fill="none" transform="rotate(75 300 300)" opacity="0.4"/>
+                        
+                        <circle cx="300" cy="300" r="170" stroke="rgba(212,175,55,0.5)" stroke-width="1" stroke-dasharray="4 8 1 8"/>
+                    </g>
+
+                    <!-- 3D 內核星體與軌道 (Gyro Inner) -->
+                    <g class="cc-gyro-inner" filter="url(#magic-glow)">
+                        <circle class="cc-draw-line" cx="300" cy="300" r="130" stroke="url(#gold-grad)" stroke-width="1.5" opacity="0.6"/>
+                        <circle cx="300" cy="300" r="115" stroke="url(#moonlight-grad)" stroke-width="1" stroke-dasharray="15 6 3 6" opacity="0.7"/>
+                        
+                        <!-- 雙正方形交疊 (八角星基底) -->
+                        <rect class="cc-draw-line" x="208" y="208" width="184" height="184" stroke="url(#moonlight-grad)" stroke-width="1.5" fill="none" transform="rotate(0 300 300)" opacity="0.8"/>
+                        <rect class="cc-draw-line" x="208" y="208" width="184" height="184" stroke="url(#moonlight-grad)" stroke-width="1.5" fill="none" transform="rotate(45 300 300)" opacity="0.8"/>
+                        
+                        <!-- 軌道上的發光行星 -->
+                        <circle cx="300" cy="170" r="5" fill="#f9e596"/>
+                        <circle cx="300" cy="430" r="5" fill="#f9e596"/>
+                        <circle cx="170" cy="300" r="4" fill="#b48cff"/>
+                        <circle cx="430" cy="300" r="4" fill="#b48cff"/>
+                    </g>
+                    
+                    <!-- 極致核心發光點 (Gyro Core) -->
+                    <g class="cc-gyro-core">
+                        <circle class="cc-draw-line" cx="300" cy="300" r="70" stroke="url(#gold-grad)" stroke-width="1.5" stroke-dasharray="5 5" opacity="0.7"/>
+                        <polygon class="cc-draw-line" points="300,240 352,330 248,330" stroke="url(#moonlight-grad)" stroke-width="2" fill="none"/>
+                        <polygon class="cc-draw-line" points="300,360 248,270 352,270" stroke="url(#moonlight-grad)" stroke-width="2" fill="none"/>
+                        <!-- 核心靈魂光源 -->
+                        <circle cx="300" cy="300" r="20" fill="url(#gold-grad)" filter="url(#magic-glow)" opacity="0.8"/>
+                        <circle cx="300" cy="300" r="8" fill="#FFF"/>
+                    </g>
                 </svg>
             </div>
             <div class="cc-anim-card-stage" id="cc-anim-card-stage">
@@ -369,20 +448,20 @@
                 class="app-version"></span></p>
     </footer>
 
-    <script src="js/version.js?v=1.8.11"></script>
-    <script src="js/tarot_dict.js?v=1.8.11"></script>
-    <script src="js/state.js?v=1.8.11"></script>
-    <script src="js/ui.js?v=1.8.11"></script>
-    <script src="js/question.js?v=1.8.11"></script>
-    <script src="js/ring.js?v=1.8.11"></script>
-    <script src="js/gesture.js?v=1.8.11"></script>
-    <script src="js/imageExport.js?v=1.8.11"></script>
-    <script src="js/history.js?v=1.8.11"></script>
-    <script src="js/analysis.js?v=1.8.11"></script>
-    <script src="js/app.js?v=1.8.11"></script>
-    <script src="js/daily.js?v=1.8.11"></script>
-    <script src="js/celtic-cross.js?v=1.8.11"></script>
-    <script src="js/init.js?v=1.8.11"></script>
+    <script src="js/version.js?v=1.8.12"></script>
+    <script src="js/tarot_dict.js?v=1.8.12"></script>
+    <script src="js/state.js?v=1.8.12"></script>
+    <script src="js/ui.js?v=1.8.12"></script>
+    <script src="js/question.js?v=1.8.12"></script>
+    <script src="js/ring.js?v=1.8.12"></script>
+    <script src="js/gesture.js?v=1.8.12"></script>
+    <script src="js/imageExport.js?v=1.8.12"></script>
+    <script src="js/history.js?v=1.8.12"></script>
+    <script src="js/analysis.js?v=1.8.12"></script>
+    <script src="js/app.js?v=1.8.12"></script>
+    <script src="js/daily.js?v=1.8.12"></script>
+    <script src="js/celtic-cross.js?v=1.8.12"></script>
+    <script src="js/init.js?v=1.8.12"></script>
     <script>
         // 在頁面載入時顯示目前版本號
         document.addEventListener('DOMContentLoaded', () => {
