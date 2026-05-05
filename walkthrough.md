@@ -157,6 +157,6 @@
     - **根本原因**：MediaPipe `Hands` API 除了初次載入 WASM 模型外，在**第一次送入影像進行推論時**（`mpHands.send()`），會進行 WebGL Shader 的即時編譯（JIT Compile），這是一個數百毫秒的同步阻塞運算，導致原本的 `setTimeout` 也無法阻止主執行緒被霸佔。
     - **修復方式**：將 `initMediaPipe` 改為 async 函數，將 `resolve` 的時機點從 `mpCamera.start().then()` 移至 `onFrame` 內**第一張影像成功推論後**。這樣能確保首幀的 Shader 編譯與暖機完全結束後，才結束「正在啟動星辰視覺鏡頭...」的等待狀態並開始旋轉卡牌環。這徹底消滅了旋轉中途卡死的體驗問題。
 - **優化手機端手勢抽牌與解牌排版**:
-    - 將 `index.html` 中的 `#restart-btn` 移入 `.control-panel-buttons` 容器內，使其能與「每日一抽」按鈕共用 `flex-wrap` 達到並排顯示。
-    - 修改 `css/style.css` 裡的 `body.centered-start main` 與 `css/celtic-cross.css` 裡的 `body.celtic-cross-active main`，將對齊方式從置中改為靠上 (`justify-content: flex-start`) 並加上 `padding-top`。
-    - 利用 CSS `order` 屬性，確保在抽牌與解牌階段，上方按鈕群永遠緊跟在牌陣選擇器下方，而提問輸入框緊接在其後。這解決了畫面元件過於分散或相互擠壓的問題，讓視覺重心更集中且穩定。
+    - 將 `index.html` 中的 `#restart-btn` 移入 `.control-panel-buttons` 容器內，使其能與「每日一抽」按鈕共用 `flex-wrap` 達到完美並排顯示。
+    - 修改 `css/style.css` 裡的 `#control-panel`，在手機版縮小 `gap: 0.5rem`，使得進入卡牌環畫面後，每日一抽按鈕與提問框能整體往上緊密靠攏牌陣選擇器。
+    - **修正**：移除了之前錯誤修改 `body.centered-start main` 的樣式，確保「一開始的初始畫面」依然完美維持在畫面的正中央，僅針對卡牌環模式進行排版緊湊化。
