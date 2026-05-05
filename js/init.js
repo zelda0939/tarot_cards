@@ -279,13 +279,17 @@ function initApp() {
         // 生成 3D 卡牌環
         generateCardRing();
 
-        // 🔥 立即開始旋轉卡牌，讓使用者馬上看到效果
-        AppState.gameState = 'rotating';
-        startCardRingAnimation();
-        updateInstruction('🔄 卡牌旋轉中，正在啟動鏡頭...');
+        updateInstruction('🔮 正在啟動星辰視覺鏡頭...');
 
-        // 非同步啟動/重啟 MediaPipe（不阻塞旋轉）
-        initMediaPipe();
+        // 確保非同步初始化（含模型預載與相機啟動）完成後再開始旋轉
+        const isCameraReady = await initMediaPipe();
+
+        if (isCameraReady) {
+            // 🔥 鏡頭準備好後，開始旋轉卡牌
+            AppState.gameState = 'rotating';
+            startCardRingAnimation();
+            updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
+        }
     });
 
     // 重新抽牌按鈕

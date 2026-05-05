@@ -27,18 +27,18 @@ function stopMediaPipeCamera(reason = 'manual-stop') {
     AppState.mediaPipeStarting = false;
 }
 
-function initMediaPipe() {
+async function initMediaPipe() {
     const videoElement = document.getElementById('videoElement');
 
     if (typeof Hands === 'undefined') {
         console.error('[聖境塔羅] MediaPipe Hands 未載入！');
         updateInstruction('❌ MediaPipe 載入失敗，請確認網路連線');
-        return;
+        return false;
     }
 
     if (AppState.mediaPipeRunning || AppState.mediaPipeStarting) {
         updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
-        return;
+        return true;
     }
 
     if (AppState.mpCamera) {
@@ -48,6 +48,7 @@ function initMediaPipe() {
     const isMobile = window.innerWidth <= 768;
 
     if (!AppState.mpHands) {
+        updateInstruction('🔮 正在載入星辰視覺模型...');
         AppState.mpHands = new Hands({
             locateFile: (file) => {
                 return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
@@ -62,12 +63,19 @@ function initMediaPipe() {
         });
 
         AppState.mpHands.onResults(onHandResults);
+        
+        // 預先載入模型，避免第一幀送入時才同步載入霸佔主執行緒
+        try {
+            await AppState.mpHands.initialize();
+        } catch (e) {
+            console.warn('[MediaPipe] 模型預載入失敗:', e);
+        }
     }
 
     if (typeof Camera === 'undefined') {
         console.error('[聖境塔羅] MediaPipe Camera 未載入！');
         updateInstruction('❌ Camera 工具載入失敗');
-        return;
+        return false;
     }
 
     let isProcessingFrame = false;
@@ -99,26 +107,36 @@ function initMediaPipe() {
         height: isMobile ? 240 : 480
     });
 
-    AppState.mediaPipeStarting = true;
-    const sessionId = ++_mediaPipeSessionId;
-    AppState.mpCamera.start()
-        .then(() => {
-            if (sessionId !== _mediaPipeSessionId) return;
-            console.log('[聖境塔羅] ✅ 鏡頭啟動成功！');
-            AppState.mediaPipeInitialized = true;
-            AppState.mediaPipeRunning = true;
-            AppState.mediaPipeStarting = false;
-            updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
-        })
-        .catch((err) => {
-            if (sessionId !== _mediaPipeSessionId) return;
-            console.error('[聖境塔羅] ❌ 鏡頭啟動失敗:', err);
-            AppState.mediaPipeInitialized = false;
-            AppState.mediaPipeRunning = false;
-            AppState.mediaPipeStarting = false;
-            AppState.mpCamera = null;
-            updateInstruction('❌ 無法啟動鏡頭，請允許瀏覽器存取攝影機權限後重新整理');
-        });
+    return new Promise((resolve) => {
+        AppState.mediaPipeStarting = true;
+        const sessionId = ++_mediaPipeSessionId;
+        AppState.mpCamera.start()
+            .then(() => {
+                if (sessionId !== _mediaPipeSessionId) {
+                    resolve(false);
+                    return;
+                }
+                console.log('[聖境塔羅] ✅ 鏡頭啟動成功！');
+                AppState.mediaPipeInitialized = true;
+                AppState.mediaPipeRunning = true;
+                AppState.mediaPipeStarting = false;
+                updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
+                resolve(true);
+            })
+            .catch((err) => {
+                if (sessionId !== _mediaPipeSessionId) {
+                    resolve(false);
+                    return;
+                }
+                console.error('[聖境塔羅] ❌ 鏡頭啟動失敗:', err);
+                AppState.mediaPipeInitialized = false;
+                AppState.mediaPipeRunning = false;
+                AppState.mediaPipeStarting = false;
+                AppState.mpCamera = null;
+                updateInstruction('❌ 無法啟動鏡頭，請允許瀏覽器存取攝影機權限後重新整理');
+                resolve(false);
+            });
+    });
 }
 
 function onHandResults(results) {

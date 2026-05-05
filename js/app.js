@@ -305,7 +305,7 @@ function confirmSelection() {
 /* ============================
    重新抽牌 — 重置所有狀態
    ============================ */
-function resetGame() {
+async function resetGame() {
     console.log('[聖境塔羅] 🔄 重新抽牌');
 
     if (typeof cleanupDailyAnimation === 'function') cleanupDailyAnimation();
@@ -360,12 +360,17 @@ function resetGame() {
     // 重新生成卡牌環
     generateCardRing();
 
-    // 重新啟動旋轉
-    AppState.gameState = 'rotating';
-    startCardRingAnimation();
+    updateInstruction('🔮 正在重啟星辰視覺鏡頭...');
 
     // 重新啟動 MediaPipe 攝像頭
-    initMediaPipe();
+    const isCameraReady = await initMediaPipe();
+
+    if (isCameraReady) {
+        // 重新啟動旋轉
+        AppState.gameState = 'rotating';
+        startCardRingAnimation();
+        updateInstruction('🔄 轉動中... 請【握拳 ✊】停留');
+    }
 }
 
 /* ============================

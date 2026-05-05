@@ -153,3 +153,6 @@
     - 新增 **極微弱魔法雜訊紋理** (`body::after` + SVG Base64)，打破純粹的數位平滑，增添魔法與實體感。
     - 強化 **按鈕實體按壓回饋** (`.premium-btn:active`)，加入 `transform: scale(0.96)` 與內陰影。
     - 強化 **輸入框聚焦光暈** (`#user-question-input:focus`)，改為深色背景與金色的內外雙層發光。
+- **修復攝影機啟動瞬間卡牌環卡頓問題**:
+    - **根本原因**：MediaPipe `Hands` API 初次載入 WASM 模型與 WebGL Context 時屬於同步阻塞運算，導致即便使用 `setTimeout` 仍會在此刻霸佔主執行緒。
+    - **修復方式**：將 `initMediaPipe` 改為 async 函數，並利用 `await AppState.mpHands.initialize()` 預先載入模型。同時修改 `js/init.js` 與 `js/app.js`，將 `startCardRingAnimation()` 的呼叫延後，確保在攝影機與模型皆初始化完成後才開始旋轉卡牌。這會將硬體的同步載入時間轉化為流暢的「正在載入鏡頭...」提示，解決了旋轉中途卡死的體驗問題。
