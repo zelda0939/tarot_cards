@@ -1365,6 +1365,12 @@ footer {
 
     #control-panel {
         padding: 0.3rem 0;
+        flex-wrap: wrap; /* 允許換行 */
+    }
+    
+    .control-panel-buttons {
+        flex-wrap: wrap;
+        width: 100%;
     }
 
     .question-panel {
@@ -1645,6 +1651,10 @@ footer {
 
     #control-panel {
         padding: 0.2rem 0;
+        flex-wrap: wrap;
+    }
+    .control-panel-buttons {
+        flex-wrap: wrap;
     }
 
     .question-panel {
