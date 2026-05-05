@@ -146,3 +146,10 @@
 - **修復手機端上方按鈕排版擠壓變形**:
     - 在 `css/style.css` 中為手機版的 `#control-panel` 與 `.control-panel-buttons` 加上 `flex-wrap: wrap`。
     - 解決進入手勢抽牌與解牌階段後，按鈕區因為加入「重新抽牌」按鈕導致空間不足而變形成直立細長條的問題。
+- **前端美感深度優化 (Frontend Design)**:
+    - 導入 `frontend-design` 技能的審美標準，進行細節質感升級。
+    - 新增 **專屬金色文字反白** (`::selection`)，取代瀏覽器預設藍色。
+    - 新增 **沉浸式細緻金色捲軸** (`::-webkit-scrollbar`)，提升 Modal 與日誌滾動質感。
+    - 新增 **極微弱魔法雜訊紋理** (`body::after` + SVG Base64)，打破純粹的數位平滑，增添魔法與實體感。
+    - 強化 **按鈕實體按壓回饋** (`.premium-btn:active`)，加入 `transform: scale(0.96)` 與內陰影。
+    - 強化 **輸入框聚焦光暈** (`#user-question-input:focus`)，改為深色背景與金色的內外雙層發光。

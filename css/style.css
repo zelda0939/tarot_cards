@@ -16,6 +16,40 @@
     box-sizing: border-box;
 }
 
+/* ═══════════════════════════════
+   前端美感深度優化 (Frontend Design)
+   ═══════════════════════════════ */
+
+/* 1. 專屬金色文字反白 */
+::selection {
+    background: rgba(212, 175, 55, 0.35);
+    color: var(--text-white);
+    text-shadow: 0 0 5px rgba(212, 175, 55, 0.8);
+}
+::-moz-selection {
+    background: rgba(212, 175, 55, 0.35);
+    color: var(--text-white);
+    text-shadow: 0 0 5px rgba(212, 175, 55, 0.8);
+}
+
+/* 2. 沉浸式細緻金色捲軸 */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(212, 175, 55, 0.3);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(212, 175, 55, 0.6);
+}
+
 body {
     background-color: var(--bg-dark);
     color: var(--text-white);
@@ -25,6 +59,18 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative; /* 給雜訊紋理定位使用 */
+}
+
+/* 3. 極微弱魔法雜訊紋理 (增加實體紙張與神祕感，避免純數位的平滑) */
+body::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none; /* 絕對不能阻擋點擊 */
+    opacity: 0.035; /* 極微弱的透明度 */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
 
 /* 背景星光與魔幻星雲 */
@@ -292,7 +338,9 @@ body.centered-start #tarot-board {
 #user-question-input:focus {
     outline: none;
     border-color: var(--gold);
-    box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.15);
+    /* 5. 強化輸入框的聚焦光暈 (內外發光) */
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.25), inset 0 0 10px rgba(212, 175, 55, 0.1);
+    background: rgba(0, 0, 0, 0.6);
 }
 
 .question-panel-hint {
@@ -339,6 +387,12 @@ body.centered-start #tarot-board {
 
 .premium-btn.active {
     box-shadow: 0 0 10px var(--gold-glow);
+}
+
+/* 4. 按鈕實體按壓回饋 */
+.premium-btn:active:not(:disabled) {
+    transform: scale(0.96);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .premium-btn:disabled {
