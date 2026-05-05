@@ -20,8 +20,8 @@
     <!-- MediaPipe Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="css/style.css?v=1.8.12">
-    <link rel="stylesheet" href="css/celtic-cross.css?v=1.8.12">
+    <link rel="stylesheet" href="css/style.css?v=1.8.13">
+    <link rel="stylesheet" href="css/celtic-cross.css?v=1.8.13">
 </head>
 
 <body>
@@ -170,11 +170,11 @@
             <div class="cc-anim-magic-circle">
                 <svg class="cc-magic-svg" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
-                        <!-- 強烈原生 SVG 發光濾鏡 -->
+                        <!-- 桌機版：強烈原生 SVG 發光濾鏡 (3層模糊) -->
                         <filter id="magic-glow" x="-50%" y="-50%" width="200%" height="200%">
-                            <feGaussianBlur stdDeviation="3" result="blur1" />
-                            <feGaussianBlur stdDeviation="8" result="blur2" />
-                            <feGaussianBlur stdDeviation="15" result="blur3" />
+                            <feGaussianBlur stdDeviation="2" result="blur1" />
+                            <feGaussianBlur stdDeviation="6" result="blur2" />
+                            <feGaussianBlur stdDeviation="12" result="blur3" />
                             <feMerge>
                                 <feMergeNode in="blur3" />
                                 <feMergeNode in="blur2" />
@@ -182,6 +182,15 @@
                                 <feMergeNode in="SourceGraphic" />
                             </feMerge>
                         </filter>
+                        <!-- 手機版：輕量級發光濾鏡 (僅1層模糊，大幅降低 GPU 負載) -->
+                        <filter id="magic-glow-lite" x="-50%" y="-50%" width="200%" height="200%">
+                            <feGaussianBlur stdDeviation="4" result="blur1" />
+                            <feMerge>
+                                <feMergeNode in="blur1" />
+                                <feMergeNode in="SourceGraphic" />
+                            </feMerge>
+                        </filter>
+                        
                         <!-- 經典塔羅金漸層 -->
                         <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="#f9e596" />
@@ -197,10 +206,10 @@
                     </defs>
 
                     <!-- 擴散光暈 (Shockwave) -->
-                    <circle class="cc-magic-ripple" cx="300" cy="300" r="60" stroke="url(#gold-grad)" stroke-width="4" opacity="0" filter="url(#magic-glow)"/>
+                    <circle class="cc-magic-ripple cc-glow-target" cx="300" cy="300" r="60" stroke="url(#gold-grad)" stroke-width="4" opacity="0"/>
 
                     <!-- 3D 星盤外圈 (Gyro Outer) -->
-                    <g class="cc-gyro-outer" filter="url(#magic-glow)">
+                    <g class="cc-gyro-outer cc-glow-target">
                         <!-- 外圈星軌點 -->
                         <circle class="cc-draw-line" cx="300" cy="300" r="280" stroke="url(#gold-grad)" stroke-width="2" stroke-dasharray="2 12" stroke-linecap="round"/>
                         <!-- 主圓環 -->
@@ -216,7 +225,7 @@
                     </g>
 
                     <!-- 3D 符文與複雜幾何圈 (Gyro Middle) -->
-                    <g class="cc-gyro-middle" filter="url(#magic-glow)">
+                    <g class="cc-gyro-middle cc-glow-target">
                         <circle class="cc-draw-line" cx="300" cy="300" r="220" stroke="url(#gold-grad)" stroke-width="1" opacity="0.3"/>
                         
                         <!-- 神秘十二角星芒 -->
@@ -229,7 +238,7 @@
                     </g>
 
                     <!-- 3D 內核星體與軌道 (Gyro Inner) -->
-                    <g class="cc-gyro-inner" filter="url(#magic-glow)">
+                    <g class="cc-gyro-inner cc-glow-target">
                         <circle class="cc-draw-line" cx="300" cy="300" r="130" stroke="url(#gold-grad)" stroke-width="1.5" opacity="0.6"/>
                         <circle cx="300" cy="300" r="115" stroke="url(#moonlight-grad)" stroke-width="1" stroke-dasharray="15 6 3 6" opacity="0.7"/>
                         
@@ -250,7 +259,7 @@
                         <polygon class="cc-draw-line" points="300,240 352,330 248,330" stroke="url(#moonlight-grad)" stroke-width="2" fill="none"/>
                         <polygon class="cc-draw-line" points="300,360 248,270 352,270" stroke="url(#moonlight-grad)" stroke-width="2" fill="none"/>
                         <!-- 核心靈魂光源 -->
-                        <circle cx="300" cy="300" r="20" fill="url(#gold-grad)" filter="url(#magic-glow)" opacity="0.8"/>
+                        <circle class="cc-glow-target" cx="300" cy="300" r="20" fill="url(#gold-grad)" opacity="0.8"/>
                         <circle cx="300" cy="300" r="8" fill="#FFF"/>
                     </g>
                 </svg>
@@ -448,20 +457,20 @@
                 class="app-version"></span></p>
     </footer>
 
-    <script src="js/version.js?v=1.8.12"></script>
-    <script src="js/tarot_dict.js?v=1.8.12"></script>
-    <script src="js/state.js?v=1.8.12"></script>
-    <script src="js/ui.js?v=1.8.12"></script>
-    <script src="js/question.js?v=1.8.12"></script>
-    <script src="js/ring.js?v=1.8.12"></script>
-    <script src="js/gesture.js?v=1.8.12"></script>
-    <script src="js/imageExport.js?v=1.8.12"></script>
-    <script src="js/history.js?v=1.8.12"></script>
-    <script src="js/analysis.js?v=1.8.12"></script>
-    <script src="js/app.js?v=1.8.12"></script>
-    <script src="js/daily.js?v=1.8.12"></script>
-    <script src="js/celtic-cross.js?v=1.8.12"></script>
-    <script src="js/init.js?v=1.8.12"></script>
+    <script src="js/version.js?v=1.8.13"></script>
+    <script src="js/tarot_dict.js?v=1.8.13"></script>
+    <script src="js/state.js?v=1.8.13"></script>
+    <script src="js/ui.js?v=1.8.13"></script>
+    <script src="js/question.js?v=1.8.13"></script>
+    <script src="js/ring.js?v=1.8.13"></script>
+    <script src="js/gesture.js?v=1.8.13"></script>
+    <script src="js/imageExport.js?v=1.8.13"></script>
+    <script src="js/history.js?v=1.8.13"></script>
+    <script src="js/analysis.js?v=1.8.13"></script>
+    <script src="js/app.js?v=1.8.13"></script>
+    <script src="js/daily.js?v=1.8.13"></script>
+    <script src="js/celtic-cross.js?v=1.8.13"></script>
+    <script src="js/init.js?v=1.8.13"></script>
     <script>
         // 在頁面載入時顯示目前版本號
         document.addEventListener('DOMContentLoaded', () => {

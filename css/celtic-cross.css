@@ -133,6 +133,31 @@
 .cc-magic-svg { 
     width: 600px; height: 600px; 
     transform-style: preserve-3d;
+    will-change: transform;
+}
+
+/* --- 發光濾鏡與效能降級 --- */
+/* 預設桌機版：套用高畫質的三層高斯模糊發光 SVG 濾鏡 */
+.cc-glow-target {
+    filter: url(#magic-glow);
+    will-change: transform;
+}
+
+@media (max-width: 768px) {
+    /* 手機版：改用輕量級的單層模糊發光濾鏡，大幅降低 GPU 負擔 */
+    .cc-glow-target {
+        filter: url(#magic-glow-lite);
+    }
+    
+    /* 在手機上稍微縮小魔法陣，減少繪製面積 */
+    .cc-magic-svg {
+        width: 360px; height: 360px;
+    }
+    
+    /* 降低動畫複雜度（稍微減少翻轉角度） */
+    .cc-gyro-middle {
+        animation-duration: 60s;
+    }
 }
 
 /* 3D 陀螺儀星盤動畫群組 */
