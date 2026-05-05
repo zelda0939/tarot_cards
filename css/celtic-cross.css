@@ -417,7 +417,6 @@
     .cc-lp-stack-2::after { display: none; }
 }
 body.celtic-cross-active { overflow-y: auto; overflow-x: hidden; height: auto; min-height: 100vh; }
-body.celtic-cross-active main { overflow: visible; overflow-x: hidden; }
 body.celtic-cross-active #control-panel,
 body.celtic-cross-active #control-panel.centered-mode {
     position: relative;
@@ -427,10 +426,16 @@ body.celtic-cross-active #control-panel.centered-mode {
     width: min(92vw, 900px);
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     z-index: 1;
+    order: 1;
 }
-body.celtic-cross-active .control-panel-buttons { flex-wrap: wrap; }
+body.celtic-cross-active .control-panel-buttons { 
+    flex-wrap: wrap; 
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+}
 body.celtic-cross-active .question-panel,
 body.celtic-cross-active .question-panel.centered-mode {
     position: relative;
@@ -438,9 +443,11 @@ body.celtic-cross-active .question-panel.centered-mode {
     left: auto;
     transform: none;
     width: min(92vw, 900px);
-    margin: 0 0 0.85rem;
+    margin: 0 0 0.5rem;
     z-index: 1;
+    order: 2;
 }
+body.celtic-cross-active main { overflow: visible; overflow-x: hidden; justify-content: flex-start; padding-top: 1rem; }
 body.celtic-cross-active #celtic-cross-container {
     margin-top: 0.25rem;
 }
