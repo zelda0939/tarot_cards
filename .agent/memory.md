@@ -235,3 +235,7 @@
   - **動態調整**：手機版自動縮小魔法陣面積，並降低旋轉動畫複雜度。
 - **版本同步更新**：
   - 同步更新 `js/version.js`、`sw.js` 與 `index.html` 中的查詢字串。
+
+## 2026-05-13 - AI 錯誤重試機制
+- **優化內容**：當 AI 發生網路連線或 API 錯誤時，不再強迫使用者「重新洗牌」。
+- **決策**：在 `js/analysis.js` 中的 `showAnalysis` 發生錯誤的輸出訊息下方，加入「重新送出」按鈕，直接呼叫 `showAnalysis()` 嘗試再次獲取解答，維持既有的抽牌狀態（`AppState.selectedCards`）。同時修正了重新呼叫時 `geminiLoading` 與 `geminiText` 狀態必須預先清空重置的問題。

@@ -32,6 +32,12 @@ function showAnalysis() {
 
     showLoadingOverlay();
 
+    if (geminiLoading) geminiLoading.classList.remove('hidden');
+    if (geminiText) {
+        geminiText.classList.add('hidden');
+        geminiText.innerHTML = '';
+    }
+
     container.innerHTML = '';
     let positions;
     const isCelticCross = AppState.spreadMode === 'celtic-cross';
@@ -151,7 +157,7 @@ function showAnalysis() {
                         }
                     }, 15);
                 } else {
-                    geminiText.innerHTML = result.text;
+                    geminiText.innerHTML = result.text + '<br><br><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button>';
                     setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
                 }
             }
@@ -162,7 +168,7 @@ function showAnalysis() {
             if (geminiLoading) geminiLoading.classList.add('hidden');
             if (geminiText) {
                 geminiText.classList.remove('hidden');
-                geminiText.innerHTML = '<em>星辰短暫失聯，請稍後再試一次。</em>';
+                geminiText.innerHTML = '<em>星辰短暫失聯，請稍後再試一次。</em><br><br><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button>';
             }
             setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
             modal.classList.remove('hidden');

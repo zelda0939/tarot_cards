@@ -163,3 +163,8 @@
 - **修復初始畫面載入閃爍 (FOUC)**:
     - **根本原因**：控制初始畫面置中的 CSS 類別 (`centered-start`, `centered-mode`) 原本是透過 `js/init.js` 在網頁載入後才動態添加。這導致瀏覽器第一次繪製 (First Paint) 時元素在畫面上方，幾毫秒後才跳到中間，形成不舒服的視覺閃爍。
     - **修復方式**：將 `class="centered-start"` 與 `class="centered-mode"` 直接靜態寫入 `index.html` 的 `<body>`, `#control-panel`, `#question-panel` 標籤中。讓瀏覽器在第一幀就直接渲染置中佈局，徹底消除載入時的閃爍感。
+
+## 2026-05-13
+- **優化 AI 連線錯誤體驗**:
+    - **問題**：原本在「星辰的指引」中若 AI 發生網路連線或 API 錯誤，會直接覆蓋文字並顯示錯誤訊息，使用者只能選擇「重新洗牌」而遺失原本的抽牌。
+    - **修復**：在 `js/analysis.js` 中的 `showAnalysis` 與 `fetchGeminiAnalysis` 錯誤捕捉邏輯中，於錯誤訊息下方加入「✦ 重新送出」按鈕，點擊後會再次呼叫 `showAnalysis()` 重新送出同樣的牌組與提問。並在 `showAnalysis` 執行初時自動重置 `geminiLoading` 與 `geminiText` 的顯示狀態，達成無縫重新連線的體驗。
