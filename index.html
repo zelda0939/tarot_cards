@@ -20,8 +20,8 @@
     <!-- MediaPipe Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="css/style.css?v=1.9.1">
-    <link rel="stylesheet" href="css/celtic-cross.css?v=1.9.1">
+    <link rel="stylesheet" href="css/style.css?v=1.9.2">
+    <link rel="stylesheet" href="css/celtic-cross.css?v=1.9.2">
 </head>
 
 <body class="centered-start">
@@ -345,34 +345,38 @@
 
         <!-- 歷史紀錄 Modal -->
         <section id="history-modal" class="modal hidden">
-            <div class="modal-content history-modal-content modal-content--padded">
-                <div class="close-modal close-modal-btn" id="close-history-modal" title="關閉日誌">&times;</div>
-                <h2 class="settings-title">📜 占卜日誌</h2>
+            <div class="modal-content history-modal-content">
+                <div class="reading-modal-close-bar">
+                    <div class="close-modal close-modal-btn" id="close-history-modal" title="關閉日誌">&times;</div>
+                </div>
+                <div class="reading-modal-scroll">
+                    <h2 class="settings-title history-title-fixed">📜 占卜日誌</h2>
 
-                <!-- 列表視圖 -->
-                <div id="history-list-view" class="history-list-view-container">
-                    <!-- 操作列：有紀錄時才顯示 -->
-                    <div class="history-actions-bar hidden" id="history-actions-bar">
-                        <label class="history-select-all-label">
-                            <input type="checkbox" id="history-select-all">
-                            <span class="custom-checkbox"></span>全選
-                        </label>
-                        <div class="history-action-buttons">
-                            <button id="delete-selected-history-btn" class="premium-btn history-action-btn" disabled>刪除所選</button>
-                            <button id="clear-history-btn" class="premium-btn history-action-btn history-clear-btn">清空全部</button>
+                    <!-- 列表視圖 -->
+                    <div id="history-list-view" class="history-list-view-container">
+                        <!-- 操作列：有紀錄時才顯示 -->
+                        <div class="history-actions-bar hidden" id="history-actions-bar">
+                            <label class="history-select-all-label">
+                                <input type="checkbox" id="history-select-all">
+                                <span class="custom-checkbox"></span>全選
+                            </label>
+                            <div class="history-action-buttons">
+                                <button id="delete-selected-history-btn" class="premium-btn history-action-btn" disabled>刪除所選</button>
+                                <button id="clear-history-btn" class="premium-btn history-action-btn history-clear-btn">清空全部</button>
+                            </div>
+                        </div>
+                        
+                        <div id="history-list-container">
+                            <!-- 歷史清單將動態生成於此 -->
                         </div>
                     </div>
-                    
-                    <div id="history-list-container">
-                        <!-- 歷史清單將動態生成於此 -->
-                    </div>
-                </div>
 
-                <!-- 詳情視圖 -->
-                <div id="history-detail-view" class="history-detail-view-container hidden">
-                    <button id="history-back-btn" class="premium-btn history-back-btn">← 返回列表</button>
-                    <div id="history-detail-content">
-                        <!-- 詳細內容動態生成 -->
+                    <!-- 詳情視圖 -->
+                    <div id="history-detail-view" class="history-detail-view-container hidden">
+                        <button id="history-back-btn" class="premium-btn history-back-btn">← 返回列表</button>
+                        <div id="history-detail-content">
+                            <!-- 詳細內容動態生成 -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -475,20 +479,20 @@
                 class="app-version"></span></p>
     </footer>
 
-    <script src="js/version.js?v=1.9.1"></script>
-    <script src="js/tarot_dict.js?v=1.9.1"></script>
-    <script src="js/state.js?v=1.9.1"></script>
-    <script src="js/ui.js?v=1.9.1"></script>
-    <script src="js/question.js?v=1.9.1"></script>
-    <script src="js/ring.js?v=1.9.1"></script>
-    <script src="js/gesture.js?v=1.9.1"></script>
-    <script src="js/imageExport.js?v=1.9.1"></script>
-    <script src="js/history.js?v=1.9.1"></script>
-    <script src="js/analysis.js?v=1.9.1"></script>
-    <script src="js/app.js?v=1.9.1"></script>
-    <script src="js/daily.js?v=1.9.1"></script>
-    <script src="js/celtic-cross.js?v=1.9.1"></script>
-    <script src="js/init.js?v=1.9.1"></script>
+    <script src="js/version.js?v=1.9.2"></script>
+    <script src="js/tarot_dict.js?v=1.9.2"></script>
+    <script src="js/state.js?v=1.9.2"></script>
+    <script src="js/ui.js?v=1.9.2"></script>
+    <script src="js/question.js?v=1.9.2"></script>
+    <script src="js/ring.js?v=1.9.2"></script>
+    <script src="js/gesture.js?v=1.9.2"></script>
+    <script src="js/imageExport.js?v=1.9.2"></script>
+    <script src="js/history.js?v=1.9.2"></script>
+    <script src="js/analysis.js?v=1.9.2"></script>
+    <script src="js/app.js?v=1.9.2"></script>
+    <script src="js/daily.js?v=1.9.2"></script>
+    <script src="js/celtic-cross.js?v=1.9.2"></script>
+    <script src="js/init.js?v=1.9.2"></script>
     <script>
         // 在頁面載入時顯示目前版本號
         document.addEventListener('DOMContentLoaded', () => {
