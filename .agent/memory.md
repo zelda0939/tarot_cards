@@ -239,3 +239,7 @@
 ## 2026-05-13 - AI 錯誤重試機制
 - **優化內容**：當 AI 發生網路連線或 API 錯誤時，不再強迫使用者「重新洗牌」。
 - **決策**：在 `js/analysis.js` 中的 `showAnalysis` 發生錯誤的輸出訊息下方，加入「重新送出」按鈕，直接呼叫 `showAnalysis()` 嘗試再次獲取解答，維持既有的抽牌狀態（`AppState.selectedCards`）。同時修正了重新呼叫時 `geminiLoading` 與 `geminiText` 狀態必須預先清空重置的問題。
+
+## 2026-05-13 - 每日一抽關閉視窗後之佈局復原 (v1.8.21)
+- **問題**：使用者在「每日一抽」結束並點擊「關閉視窗」時，原本並未正確將畫面與選單佈局還原至初始狀態。
+- **修復**：在 `js/analysis.js` 內的關閉按鈕事件 (`closeBtn.onclick`) 中加入檢查，若為 `AppState.isDailyMode` 模式，自動呼叫 `restoreDailyHomeLayout()`，確保關閉結果畫面後首頁排版能完全恢復正常。

@@ -60,6 +60,67 @@ function cleanupDailyAnimation() {
     }
 }
 
+function restoreDailyHomeLayout() {
+    cleanupDailyAnimation();
+    if (typeof cleanupGestureTransientEffects === 'function') cleanupGestureTransientEffects();
+    if (typeof stopMediaPipeCamera === 'function') stopMediaPipeCamera('daily-close');
+    if (typeof stopCardRingAnimation === 'function') stopCardRingAnimation();
+    if (typeof cleanupCelticCrossAnimation === 'function') cleanupCelticCrossAnimation();
+    if (typeof clearCelticCrossSlots === 'function') clearCelticCrossSlots();
+
+    AppState.gameState = 'idle';
+    AppState.isDailyMode = false;
+    AppState.selectedCards = [];
+    AppState.usedCardIds.clear();
+    AppState.currentRotation = 0;
+    AppState.lastFrameTime = 0;
+    AppState.activeCardIndex = 0;
+    AppState.ringCardData = [];
+    AppState.cardElements = [];
+    AppState.userQuestion = '';
+
+    document.body.classList.add('centered-start');
+    document.body.classList.remove('celtic-cross-active');
+
+    const controlPanel = document.getElementById('control-panel');
+    const questionPanel = document.getElementById('question-panel');
+    const startGestureBtn = document.getElementById('start-gesture-btn');
+    const celticCrossBtn = document.getElementById('celtic-cross-btn');
+    const restartBtn = document.getElementById('restart-btn');
+    const instruction = document.getElementById('gesture-instruction');
+    const carouselScene = document.getElementById('carousel-scene');
+    const selectedCardsContainer = document.getElementById('selected-cards-container');
+    const celticCrossContainer = document.getElementById('celtic-cross-container');
+    const questionInput = document.getElementById('user-question-input');
+    const saveImageStatus = document.getElementById('save-image-status');
+
+    if (controlPanel) controlPanel.classList.add('centered-mode');
+    if (questionPanel) questionPanel.classList.add('centered-mode');
+    if (questionInput) questionInput.value = '';
+    if (typeof syncQuestionPreview === 'function') syncQuestionPreview();
+    if (typeof setQuestionPanelCompact === 'function') setQuestionPanelCompact(false, { skipFocus: true });
+
+    if (startGestureBtn) startGestureBtn.classList.toggle('hidden', AppState.spreadMode === 'celtic-cross');
+    if (celticCrossBtn) celticCrossBtn.classList.toggle('hidden', AppState.spreadMode !== 'celtic-cross');
+    if (restartBtn) restartBtn.classList.add('hidden');
+    if (instruction) instruction.classList.add('hidden');
+    if (carouselScene) carouselScene.classList.add('hidden');
+    if (selectedCardsContainer) selectedCardsContainer.classList.add('hidden');
+    if (celticCrossContainer) celticCrossContainer.classList.add('hidden');
+    if (saveImageStatus) {
+        saveImageStatus.classList.add('hidden');
+        saveImageStatus.textContent = '';
+    }
+
+    for (let i = 1; i <= 3; i++) {
+        const slot = document.getElementById(`slot-${i}`);
+        if (slot) {
+            slot.innerHTML = '';
+            slot.classList.remove('filled');
+        }
+    }
+}
+
 /* ============================
    每日指引特效與邏輯
    ============================ */

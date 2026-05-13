@@ -168,3 +168,6 @@
 - **優化 AI 連線錯誤體驗**:
     - **問題**：原本在「星辰的指引」中若 AI 發生網路連線或 API 錯誤，會直接覆蓋文字並顯示錯誤訊息，使用者只能選擇「重新洗牌」而遺失原本的抽牌。
     - **修復**：在 `js/analysis.js` 中的 `showAnalysis` 與 `fetchGeminiAnalysis` 錯誤捕捉邏輯中，於錯誤訊息下方加入「✦ 重新送出」按鈕，點擊後會再次呼叫 `showAnalysis()` 重新送出同樣的牌組與提問。並在 `showAnalysis` 執行初時自動重置 `geminiLoading` 與 `geminiText` 的顯示狀態，達成無縫重新連線的體驗。
+- **修復每日一抽關閉視窗後之佈局復原 (v1.8.21)**:
+    - **問題**：使用者在「每日一抽」結束並點擊「關閉視窗」時，原本並未正確將畫面與選單佈局還原至初始狀態。
+    - **修復**：在 `js/analysis.js` 內的關閉按鈕事件 (`closeBtn.onclick`) 中加入檢查：若是 `AppState.isDailyMode` 模式下，會自動呼叫 `restoreDailyHomeLayout()`，確保關閉結果畫面後首頁排版能完全恢復正常。

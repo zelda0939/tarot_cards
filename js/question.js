@@ -16,7 +16,7 @@ function syncQuestionPreview() {
         : '尚未填寫提問，點「修改問題」輸入。';
 }
 
-function setQuestionPanelCompact(shouldCompact) {
+function setQuestionPanelCompact(shouldCompact, options = {}) {
     const questionPanel = document.getElementById('question-panel');
     const questionToggleBtn = document.getElementById('question-toggle-btn');
     const questionClearBtn = document.getElementById('question-clear-btn');
@@ -43,5 +43,5 @@ function setQuestionPanelCompact(shouldCompact) {
         questionToggleBtn.textContent = '收合';
     }
     if (questionClearBtn) questionClearBtn.classList.remove('hidden');
-    if (questionInput) questionInput.focus();
+    if (!options.skipFocus && questionInput) questionInput.focus();
 }

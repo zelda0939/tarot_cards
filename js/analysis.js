@@ -106,6 +106,9 @@ function showAnalysis() {
     if (closeBtn) {
         closeBtn.onclick = () => {
             modal.classList.add('hidden');
+            if (AppState.isDailyMode && typeof restoreDailyHomeLayout === 'function') {
+                restoreDailyHomeLayout();
+            }
         };
     }
 
