@@ -343,12 +343,10 @@ async function sendFollowupQuestion() {
                     clearInterval(typeWriter);
                     if (sendBtn) sendBtn.disabled = false;
                     _scrollFollowupToBottom(historyContainer);
-                    input.focus();
                 }
             }, 15);
         } else {
             if (sendBtn) sendBtn.disabled = false;
-            input.focus();
         }
 
         // 將延伸對話更新至 IndexedDB
@@ -387,7 +385,6 @@ async function sendFollowupQuestion() {
         }
         if (sendBtn) sendBtn.disabled = false;
         _scrollFollowupToBottom(historyContainer);
-        input.focus();
     }
 }
 
