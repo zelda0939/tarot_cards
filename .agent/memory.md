@@ -243,3 +243,12 @@
 ## 2026-05-13 - 每日一抽關閉視窗後之佈局復原 (v1.8.21)
 - **問題**：使用者在「每日一抽」結束並點擊「關閉視窗」時，原本並未正確將畫面與選單佈局還原至初始狀態。
 - **修復**：在 `js/analysis.js` 內的關閉按鈕事件 (`closeBtn.onclick`) 中加入檢查，若為 `AppState.isDailyMode` 模式，自動呼叫 `restoreDailyHomeLayout()`，確保關閉結果畫面後首頁排版能完全恢復正常。
+
+## 2026-05-13 - 延伸提問功能 (v1.8.22)
+- **功能定位**：讓使用者在所有牌陣的 AI 解讀結果畫面中，能針對當次抽到的牌進行無次數限制的延伸追問。
+- **技術決策**：
+  - 利用 Gemini API 的原生多輪 `contents` 格式，延伸提問時帶入完整對話歷史，AI 自然記住牌陣脈絡。
+  - `AppState` 新增 `conversationHistory`（多輪對話）、`cardNamesForPrompt`（牌陣描述快取）、`_currentSystemPrompt`（system prompt 快取）。
+  - 延伸對話 system prompt 追加「延伸提問規則」，要求回覆精簡（150~300字）且不重複已說內容。
+- **日誌持久化決策**：延伸對話需要儲存到 IndexedDB。在 `history.js` 新增 `updateHistoryFollowup()`，透過 `get → push → put` 操作追加 `followupChats[]` 到既有紀錄（相容舊紀錄無此欄位的情況）。
+- **UI 設計**：採用聊天氣泡式介面（user 金色靠右、AI 淺色靠左），支援 Enter 送出 / Shift+Enter 換行。

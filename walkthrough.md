@@ -171,3 +171,16 @@
 - **修復每日一抽關閉視窗後之佈局復原 (v1.8.21)**:
     - **問題**：使用者在「每日一抽」結束並點擊「關閉視窗」時，原本並未正確將畫面與選單佈局還原至初始狀態。
     - **修復**：在 `js/analysis.js` 內的關閉按鈕事件 (`closeBtn.onclick`) 中加入檢查：若是 `AppState.isDailyMode` 模式下，會自動呼叫 `restoreDailyHomeLayout()`，確保關閉結果畫面後首頁排版能完全恢復正常。
+- **延伸提問功能 (v1.8.22)**:
+    - **功能概述**：在所有牌陣模式（三張牌、聖十字、每日一抽）的「星辰的指引」結果 Modal 中，新增「繼續探問星辰」區塊，讓使用者能針對當次抽到的牌進行無限次的延伸追問。
+    - **技術實作**：
+        - 利用 Gemini API 原生多輪對話格式（`contents` 陣列中 `user/model` 交替訊息），在延伸提問時帶入完整歷史對話與牌陣上下文。
+        - 在 `state.js` 新增 `conversationHistory`、`cardNamesForPrompt`、`_currentSystemPrompt` 狀態欄位。
+        - 在 `index.html` 的 reading-modal 中新增 `#followup-section`（分隔線 + 對話歷史區 + 輸入框 + 送出按鈕）。
+        - 在 `css/style.css` 新增聊天氣泡 UI 樣式（`.followup-bubble-user` / `.followup-bubble-ai`）、分隔線（`.followup-divider`）、載入動畫、手機版響應式。
+        - 重構 `analysis.js`：`fetchGeminiAnalysis()` 回傳值新增 `systemPrompt` / `userPrompt` 供初始化對話歷史；新增 `sendFollowupQuestion()` 函式處理延伸提問 API 呼叫與氣泡渲染；支援 Enter 送出。
+    - **日誌持久化**：
+        - 在 `history.js` 新增 `updateHistoryFollowup()` 函式，透過 IndexedDB 的 `get → put` 操作，將每筆延伸對話追加到歷史紀錄的 `followupChats` 陣列。
+        - 在日誌詳情頁 (`showHistoryDetail`) 中，透過 `_renderFollowupChatsHTML()` 渲染已儲存的延伸對話。
+    - **重置清理**：在 `app.js` 的 `resetGame()` 中清空所有對話狀態。
+    - **新增/修改檔案**：`state.js`、`index.html`、`css/style.css`、`analysis.js`、`history.js`、`app.js`。

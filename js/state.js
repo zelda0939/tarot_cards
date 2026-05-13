@@ -20,6 +20,13 @@ const AppState = {
     latestGuidanceText: '',
     saveImageBusy: false,
 
+    // 延伸提問：多輪對話歷史（Gemini API contents 格式）
+    conversationHistory: [],
+    // 延伸提問：快取首次分析的牌陣描述字串
+    cardNamesForPrompt: [],
+    // 延伸提問：快取當次的 system prompt
+    _currentSystemPrompt: '',
+
     // 牌庫載入狀態
     apiCardsLoaded: false,
 

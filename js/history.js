@@ -120,6 +120,42 @@ async function clearAllHistory() {
     }
 }
 
+/**
+ * 將延伸提問的對話追加到指定的歷史紀錄中
+ * @param {number} recordId - 歷史紀錄 ID
+ * @param {{ question: string, reply: string, timestamp: number }} chat - 單筆延伸對話
+ */
+async function updateHistoryFollowup(recordId, chat) {
+    try {
+        const db = await initDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([STORE_NAME], 'readwrite');
+            const store = transaction.objectStore(STORE_NAME);
+            const getRequest = store.get(Number(recordId));
+
+            getRequest.onsuccess = () => {
+                const record = getRequest.result;
+                if (!record) {
+                    resolve(null);
+                    return;
+                }
+                // 初始化 followupChats 陣列（相容舊紀錄）
+                if (!Array.isArray(record.followupChats)) {
+                    record.followupChats = [];
+                }
+                record.followupChats.push(chat);
+
+                const putRequest = store.put(record);
+                putRequest.onsuccess = () => resolve(record);
+                putRequest.onerror = (e) => reject(e.target.error);
+            };
+            getRequest.onerror = (e) => reject(e.target.error);
+        });
+    } catch (err) {
+        console.error('[\u8056\u5883\u5854\u7f85] \u66f4\u65b0\u5ef6\u4f38\u5c0d\u8a71\u5931\u6557:', err);
+    }
+}
+
 /* ============================
    UI 互動邏輯
    ============================ */
@@ -325,7 +361,41 @@ async function showHistoryDetail(id) {
                 <div id="gemini-text" style="display: block;">${formattedAiText}</div>
             </div>
         </div>
+        ${_renderFollowupChatsHTML(record.followupChats)}
     `;
+}
+
+/**
+ * 渲染歷史紀錄中的延伸提問對話 HTML
+ * @param {Array|undefined} followupChats - 延伸對話陣列
+ * @returns {string} HTML 字串
+ */
+function _renderFollowupChatsHTML(followupChats) {
+    if (!Array.isArray(followupChats) || followupChats.length === 0) return '';
+
+    let html = `
+        <div class="followup-section" style="margin-top: 1.5rem;">
+            <div class="followup-divider">
+                <span>✦ 延伸提問紀錄 ✦</span>
+            </div>
+            <div class="followup-history" style="max-height: none;">`;
+
+    followupChats.forEach(chat => {
+        const safeQ = escapeHtml(chat.question);
+        const safeR = escapeHtml(chat.reply).replace(/\n/g, '<br>');
+        html += `
+                <div class="followup-bubble followup-bubble-user">
+                    <div class="followup-bubble-label">您的追問</div>${safeQ}
+                </div>
+                <div class="followup-bubble followup-bubble-ai">
+                    <div class="followup-bubble-label">✦ 星辰回應</div>${safeR}
+                </div>`;
+    });
+
+    html += `
+            </div>
+        </div>`;
+    return html;
 }
 
 function backToHistoryList() {

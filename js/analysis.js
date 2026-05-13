@@ -38,6 +38,16 @@ function showAnalysis() {
         geminiText.innerHTML = '';
     }
 
+    // 重置延伸提問區
+    const followupSection = document.getElementById('followup-section');
+    const followupHistory = document.getElementById('followup-history');
+    if (followupSection) followupSection.classList.add('hidden');
+    if (followupHistory) followupHistory.innerHTML = '';
+
+    // 清空對話歷史（新一輪占卜）
+    AppState.conversationHistory = [];
+    AppState._currentSystemPrompt = '';
+
     container.innerHTML = '';
     let positions;
     const isCelticCross = AppState.spreadMode === 'celtic-cross';
@@ -88,6 +98,9 @@ function showAnalysis() {
         cardNamesForPrompt.push(`${positions[idx]}是「${card.name}」的【${posture}】（代表意義：${activeMeaning}）`);
     });
 
+    // 快取牌陣描述，供延伸提問使用
+    AppState.cardNamesForPrompt = cardNamesForPrompt;
+
     // 聖十字模式：在卡牌逐張解析之前插入牌陣佈局圖
     if (isCelticCross && typeof buildCelticCrossLayoutHTML === 'function') {
         html = buildCelticCrossLayoutHTML(AppState.selectedCards) + html;
@@ -120,7 +133,17 @@ function showAnalysis() {
                 if (result.success) {
                     // 將 AI 回傳結果寫入全域變數，供圖片匯出使用
                     AppState.latestGuidanceText = result.text;
-                    
+
+                    // 初始化多輪對話歷史
+                    AppState._currentSystemPrompt = result.systemPrompt || '';
+                    AppState.conversationHistory = [
+                        { role: 'user', parts: [{ text: result.userPrompt || '' }] },
+                        { role: 'model', parts: [{ text: result.text }] }
+                    ];
+
+                    // 儲存首次分析的歷史紀錄 ID，供延伸對話更新使用
+                    AppState._currentHistoryRecordId = null;
+
                     // 將紀錄寫入 IndexedDB 占卜日誌
                     if (typeof saveHistoryRecord === 'function') {
                         saveHistoryRecord({
@@ -134,7 +157,12 @@ function showAnalysis() {
                                 symbol: c.symbol,
                                 meaning: c.isReversed ? c.meaning_rev : c.meaning_up
                             })),
-                            aiText: result.text
+                            aiText: result.text,
+                            followupChats: []
+                        }).then(savedRecord => {
+                            if (savedRecord && savedRecord.id) {
+                                AppState._currentHistoryRecordId = savedRecord.id;
+                            }
                         }).catch(e => console.error('[聖境塔羅] 存入歷史紀錄失敗', e));
                     }
                     // 跳脫 HTML 特殊字元後再插入 DOM，防止 XSS
@@ -157,6 +185,8 @@ function showAnalysis() {
                         if (i >= formattedReply.length) {
                             clearInterval(typeWriter);
                             setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
+                            // 打字完成後顯示延伸提問區
+                            _showFollowupSection();
                         }
                     }, 15);
                 } else {
@@ -177,6 +207,248 @@ function showAnalysis() {
             modal.classList.remove('hidden');
         });
     });
+}
+
+/**
+ * 顯示延伸提問區並綁定事件
+ */
+function _showFollowupSection() {
+    const section = document.getElementById('followup-section');
+    if (section) section.classList.remove('hidden');
+
+    const sendBtn = document.getElementById('followup-send-btn');
+    const input = document.getElementById('followup-input');
+
+    if (sendBtn) {
+        // 移除舊的事件監聽器（避免重複綁定）
+        sendBtn.onclick = () => sendFollowupQuestion();
+    }
+
+    if (input) {
+        input.value = '';
+        // 支援 Enter 送出（Shift+Enter 換行）
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendFollowupQuestion();
+            }
+        };
+    }
+}
+
+/**
+ * 延伸提問：送出使用者的追問並取得 AI 回覆
+ */
+async function sendFollowupQuestion() {
+    const input = document.getElementById('followup-input');
+    const historyContainer = document.getElementById('followup-history');
+    const sendBtn = document.getElementById('followup-send-btn');
+
+    if (!input || !historyContainer) return;
+
+    const questionText = input.value.trim();
+    if (!questionText) return;
+
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (!apiKey) {
+        _appendFollowupBubble(historyContainer, 'ai',
+            '<em>您尚未設定 API Key，請點擊右上角 ⚙️ 設定金鑰。</em>');
+        return;
+    }
+
+    // 清空輸入框並禁用按鈕
+    input.value = '';
+    if (sendBtn) sendBtn.disabled = true;
+
+    // 追加使用者提問氣泡
+    _appendFollowupBubble(historyContainer, 'user', escapeHtml(questionText));
+
+    // 追加 AI loading 氣泡
+    const loadingBubble = _appendFollowupBubble(historyContainer, 'ai-loading', '');
+
+    // 自動捲到底部
+    _scrollFollowupToBottom(historyContainer);
+
+    // 將使用者提問加入對話歷史
+    AppState.conversationHistory.push({
+        role: 'user',
+        parts: [{ text: questionText }]
+    });
+
+    try {
+        const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+        const modelInfo = AI_MODELS[modelId] || AI_MODELS['gemma-4-31b-it'];
+
+        // 建構延伸提問的 system prompt（追加延伸規則）
+        const followupSystemPrompt = AppState._currentSystemPrompt +
+            '\n\n【延伸提問規則】\n' +
+            '- 使用者現在針對這次的牌陣進行延伸追問\n' +
+            '- 請根據先前的牌陣分析結果與對話脈絡回答\n' +
+            '- 保持同樣的占卜師角色與語氣\n' +
+            '- 回答精簡有力，約 150~300 字\n' +
+            '- 使用繁體中文（台灣用語）\n' +
+            '- 不要重複已經說過的內容';
+
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelInfo.id}:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    system_instruction: { parts: [{ text: followupSystemPrompt }] },
+                    contents: AppState.conversationHistory
+                })
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`API 錯誤狀態碼: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const parts = data.candidates?.[0]?.content?.parts || [];
+        const replyParts = parts.filter(p => !p.thought);
+        const reply = replyParts.map(p => p.text).join('') || '';
+
+        // 將 AI 回覆加入對話歷史
+        AppState.conversationHistory.push({
+            role: 'model',
+            parts: [{ text: reply }]
+        });
+
+        // 替換 loading 氣泡為打字機效果回覆
+        if (loadingBubble) {
+            const formattedReply = escapeHtml(reply).replace(/\n/g, '<br>');
+            loadingBubble.innerHTML = '<div class="followup-bubble-label">✦ 星辰回應</div>';
+            loadingBubble.classList.remove('followup-bubble-loading');
+
+            // 建立一個文字容器，用打字機效果逐字填入
+            const textContainer = document.createElement('span');
+            loadingBubble.appendChild(textContainer);
+
+            let i = 0;
+            const typeWriter = setInterval(() => {
+                if (formattedReply.substring(i, i + 4) === '<br>') {
+                    textContainer.insertAdjacentHTML('beforeend', '<br>');
+                    i += 4;
+                } else {
+                    textContainer.insertAdjacentHTML('beforeend', formattedReply.charAt(i));
+                    i++;
+                }
+                // 每隔數個字元自動捲動一次，確保最新文字在視野內
+                if (i % 30 === 0) {
+                    _scrollFollowupToBottom(historyContainer);
+                }
+                if (i >= formattedReply.length) {
+                    clearInterval(typeWriter);
+                    if (sendBtn) sendBtn.disabled = false;
+                    _scrollFollowupToBottom(historyContainer);
+                    input.focus();
+                }
+            }, 15);
+        } else {
+            if (sendBtn) sendBtn.disabled = false;
+            input.focus();
+        }
+
+        // 將延伸對話更新至 IndexedDB
+        _updateFollowupInHistory(questionText, reply);
+
+    } catch (err) {
+        console.error('[聖境塔羅] 延伸提問 API 呼叫失敗:', err);
+        const safeErrMsg = escapeHtml(err.message || '未知錯誤');
+
+        // 移除最後一筆 user 訊息（因為失敗了）
+        AppState.conversationHistory.pop();
+
+        // 替換 loading 氣泡為錯誤訊息 + 重試按鈕
+        if (loadingBubble) {
+            loadingBubble.innerHTML = `<div class="followup-bubble-label">✦ 星辰回應</div>
+                <span style="color: #ff6b6b;">星辰暫時無法回應。(${safeErrMsg})</span>
+                <div style="text-align: center; margin-top: 12px;">
+                    <button class="premium-btn followup-retry-btn" style="padding: 6px 14px; font-size: 0.78em;">✦ 重新送出</button>
+                </div>`;
+            loadingBubble.classList.remove('followup-bubble-loading');
+
+            // 綁定重試按鈕：移除錯誤氣泡與使用者氣泡，將原文回填輸入框並自動送出
+            const retryBtn = loadingBubble.querySelector('.followup-retry-btn');
+            if (retryBtn) {
+                retryBtn.onclick = () => {
+                    // 移除使用者的提問氣泡（在錯誤氣泡前一個）
+                    const userBubble = loadingBubble.previousElementSibling;
+                    if (userBubble) userBubble.remove();
+                    // 移除錯誤氣泡
+                    loadingBubble.remove();
+                    // 回填原始提問文字並自動送出
+                    if (input) input.value = questionText;
+                    sendFollowupQuestion();
+                };
+            }
+        }
+        if (sendBtn) sendBtn.disabled = false;
+        _scrollFollowupToBottom(historyContainer);
+        input.focus();
+    }
+}
+
+/**
+ * 在延伸提問歷史區追加對話氣泡
+ * @param {HTMLElement} container - 歷史容器
+ * @param {'user'|'ai'|'ai-loading'} type - 氣泡類型
+ * @param {string} content - HTML 內容
+ * @returns {HTMLElement} 新建立的氣泡元素
+ */
+function _appendFollowupBubble(container, type, content) {
+    const bubble = document.createElement('div');
+
+    if (type === 'user') {
+        bubble.className = 'followup-bubble followup-bubble-user';
+        bubble.innerHTML = `<div class="followup-bubble-label">您的追問</div>${content}`;
+    } else if (type === 'ai-loading') {
+        bubble.className = 'followup-bubble followup-bubble-ai followup-bubble-loading';
+        bubble.innerHTML = `<div class="followup-bubble-label">✦ 星辰回應</div><div class="followup-loading"><div class="spinner"></div>星辰正在凝視牌面...</div>`;
+    } else {
+        bubble.className = 'followup-bubble followup-bubble-ai';
+        bubble.innerHTML = `<div class="followup-bubble-label">✦ 星辰回應</div>${content}`;
+    }
+
+    container.appendChild(bubble);
+    return bubble;
+}
+
+/**
+ * 自動捲動到延伸提問的最新訊息
+ * 只捲動 followup-history 內部 + 將最新氣泡滾入 Modal 可視區域
+ */
+function _scrollFollowupToBottom(container) {
+    requestAnimationFrame(() => {
+        // 捲動 followup-history 容器內部到底部
+        container.scrollTop = container.scrollHeight;
+
+        // 將最新的氣泡滾入 Modal 的可視範圍（而非把整個 Modal 捲到最底）
+        const lastBubble = container.lastElementChild;
+        if (lastBubble) {
+            lastBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    });
+}
+
+/**
+ * 將延伸對話更新至 IndexedDB 的歷史紀錄
+ */
+async function _updateFollowupInHistory(userQuestion, aiReply) {
+    if (!AppState._currentHistoryRecordId) return;
+    if (typeof updateHistoryFollowup !== 'function') return;
+
+    try {
+        await updateHistoryFollowup(AppState._currentHistoryRecordId, {
+            question: userQuestion,
+            reply: aiReply,
+            timestamp: Date.now()
+        });
+    } catch (e) {
+        console.error('[聖境塔羅] 更新延伸對話至日誌失敗', e);
+    }
 }
 
 async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
@@ -301,7 +573,8 @@ ${cardsLog.join('\n')}
         const replyParts = parts.filter(p => !p.thought);
         const reply = replyParts.map(p => p.text).join('') || '';
 
-        return { success: true, text: reply };
+        // 回傳時一併帶出 systemPrompt 與 userPrompt，供多輪對話初始化使用
+        return { success: true, text: reply, systemPrompt, userPrompt };
     } catch (err) {
         console.error('[聖境塔羅] AI API 呼叫失敗:', err);
         // 跳脫錯誤訊息中的特殊字元，防止 XSS

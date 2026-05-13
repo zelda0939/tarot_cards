@@ -831,6 +831,169 @@ body.centered-start #tarot-board {
 }
 
 /* ═══════════════════════════════
+   延伸提問區 (Follow-up Chat)
+   ═══════════════════════════════ */
+.followup-section {
+    margin-top: 1.5rem;
+    padding-top: 0;
+}
+
+.followup-divider {
+    text-align: center;
+    position: relative;
+    margin-bottom: 1.2rem;
+}
+
+.followup-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold-glow), var(--gold), var(--gold-glow), transparent);
+}
+
+.followup-divider span {
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(135deg, #1a1b3a, #0d0e24);
+    padding: 0 1rem;
+    color: var(--gold);
+    font-family: 'Cinzel', serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.1rem;
+}
+
+.followup-history {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.followup-bubble {
+    max-width: 85%;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    line-height: 1.6;
+    animation: followupFadeIn 0.3s ease;
+}
+
+@keyframes followupFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.followup-bubble-user {
+    align-self: flex-end;
+    background: rgba(212, 175, 55, 0.15);
+    border: 1px solid rgba(212, 175, 55, 0.35);
+    color: var(--gold-light);
+}
+
+.followup-bubble-ai {
+    align-self: flex-start;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
+}
+
+.followup-bubble-label {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.08rem;
+    margin-bottom: 0.3rem;
+    opacity: 0.7;
+}
+
+.followup-bubble-user .followup-bubble-label {
+    color: var(--gold);
+    text-align: right;
+}
+
+.followup-bubble-ai .followup-bubble-label {
+    color: var(--text-muted);
+}
+
+.followup-bubble-ai .followup-loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.followup-bubble-ai .followup-loading .spinner {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+    margin: 0;
+}
+
+.followup-input-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.followup-input-row textarea {
+    flex: 1;
+    min-height: 44px;
+    max-height: 100px;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.45);
+    color: var(--text-white);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    resize: none;
+}
+
+.followup-input-row textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.followup-input-row textarea::placeholder {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+.followup-send-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+    min-width: auto;
+    flex-shrink: 0;
+    height: fit-content;
+}
+
+/* 手機版延伸提問微調 */
+@media (max-width: 768px) {
+    .followup-bubble {
+        max-width: 92%;
+        font-size: 0.82rem;
+    }
+
+    .followup-input-row textarea {
+        font-size: 0.78rem;
+    }
+
+    .followup-send-btn {
+        padding: 0.45rem 0.8rem;
+        font-size: 0.72rem;
+    }
+}
+
+/* ═══════════════════════════════
    單張牌解析區 (三欄排版)
    ═══════════════════════════════ */
 .cards-analysis-container {

@@ -333,6 +333,12 @@ async function resetGame() {
     AppState.ringCardData = [];
     AppState.cardElements = [];
 
+    // 清空延伸提問對話歷史
+    AppState.conversationHistory = [];
+    AppState.cardNamesForPrompt = [];
+    AppState._currentSystemPrompt = '';
+    AppState._currentHistoryRecordId = null;
+
     // 重置 slot UI（三張牌 + 聖十字）
     for (let i = 1; i <= 3; i++) {
         const slot = document.getElementById(`slot-${i}`);

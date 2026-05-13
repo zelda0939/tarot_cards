@@ -20,8 +20,8 @@
     <!-- MediaPipe Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="css/style.css?v=1.8.21">
-    <link rel="stylesheet" href="css/celtic-cross.css?v=1.8.21">
+    <link rel="stylesheet" href="css/style.css?v=1.9.0">
+    <link rel="stylesheet" href="css/celtic-cross.css?v=1.9.0">
 </head>
 
 <body class="centered-start">
@@ -313,6 +313,21 @@
                     </div>
                 </div>
 
+                <!-- 延伸提問區 -->
+                <div id="followup-section" class="followup-section hidden">
+                    <div class="followup-divider">
+                        <span>✦ 繼續探問星辰 ✦</span>
+                    </div>
+                    <div id="followup-history" class="followup-history"></div>
+                    <div class="followup-input-row">
+                        <textarea id="followup-input" rows="2" maxlength="200"
+                            placeholder="想更深入了解什麼？例如：這張牌對我的感情有什麼暗示？"></textarea>
+                        <button id="followup-send-btn" class="premium-btn followup-send-btn" type="button">
+                            ✦ 送出
+                        </button>
+                    </div>
+                </div>
+
                 <!-- 單張牌解析區 (改為三欄 flex) -->
                 <div id="cards-analysis-container" class="cards-analysis-container"></div>
 
@@ -457,20 +472,20 @@
                 class="app-version"></span></p>
     </footer>
 
-    <script src="js/version.js?v=1.8.21"></script>
-    <script src="js/tarot_dict.js?v=1.8.21"></script>
-    <script src="js/state.js?v=1.8.21"></script>
-    <script src="js/ui.js?v=1.8.21"></script>
-    <script src="js/question.js?v=1.8.21"></script>
-    <script src="js/ring.js?v=1.8.21"></script>
-    <script src="js/gesture.js?v=1.8.21"></script>
-    <script src="js/imageExport.js?v=1.8.21"></script>
-    <script src="js/history.js?v=1.8.21"></script>
-    <script src="js/analysis.js?v=1.8.21"></script>
-    <script src="js/app.js?v=1.8.21"></script>
-    <script src="js/daily.js?v=1.8.21"></script>
-    <script src="js/celtic-cross.js?v=1.8.21"></script>
-    <script src="js/init.js?v=1.8.21"></script>
+    <script src="js/version.js?v=1.9.0"></script>
+    <script src="js/tarot_dict.js?v=1.9.0"></script>
+    <script src="js/state.js?v=1.9.0"></script>
+    <script src="js/ui.js?v=1.9.0"></script>
+    <script src="js/question.js?v=1.9.0"></script>
+    <script src="js/ring.js?v=1.9.0"></script>
+    <script src="js/gesture.js?v=1.9.0"></script>
+    <script src="js/imageExport.js?v=1.9.0"></script>
+    <script src="js/history.js?v=1.9.0"></script>
+    <script src="js/analysis.js?v=1.9.0"></script>
+    <script src="js/app.js?v=1.9.0"></script>
+    <script src="js/daily.js?v=1.9.0"></script>
+    <script src="js/celtic-cross.js?v=1.9.0"></script>
+    <script src="js/init.js?v=1.9.0"></script>
     <script>
         // 在頁面載入時顯示目前版本號
         document.addEventListener('DOMContentLoaded', () => {

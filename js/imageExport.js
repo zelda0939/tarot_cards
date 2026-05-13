@@ -83,6 +83,29 @@ const waitImageLoad = (src) => new Promise((resolve) => {
     img.src = src;
 });
 
+/**
+ * 從 AppState.conversationHistory 提取延伸提問對話
+ * conversationHistory[0] = 初始 user prompt, [1] = 初始 AI reply
+ * 之後的偶數索引 = 延伸提問, 奇數索引 = 延伸回覆
+ * @returns {Array<{question: string, reply: string}>}
+ */
+function _extractFollowupChats() {
+    const history = AppState.conversationHistory || [];
+    const chats = [];
+    // 從索引 2 開始（跳過初始 prompt/reply），每兩筆為一組
+    for (let i = 2; i < history.length - 1; i += 2) {
+        const userMsg = history[i];
+        const modelMsg = history[i + 1];
+        if (userMsg?.role === 'user' && modelMsg?.role === 'model') {
+            chats.push({
+                question: userMsg.parts?.[0]?.text || '',
+                reply: modelMsg.parts?.[0]?.text || ''
+            });
+        }
+    }
+    return chats;
+}
+
 async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     const width = 1080;
     const padding = 82;
@@ -98,6 +121,28 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     measureCtx.font = "400 37px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
     const rawGuidanceLines = wrapCanvasText(measureCtx, safeGuidance, contentWidth - 96);
     const guidanceLines = rawGuidanceLines;
+
+    // 預先計算延伸提問文字行數
+    const followupChats = _extractFollowupChats();
+    const followupLineHeight = 50;
+    const followupLabelHeight = 72;
+    const followupGapAfterQ = 32;
+    const followupGapAfterA = 52;
+    let followupTotalHeight = 0;
+    const followupMeasured = [];
+    if (followupChats.length > 0) {
+        followupTotalHeight += 90; // 區塊標題 + 上間距
+        followupChats.forEach(chat => {
+            measureCtx.font = "500 34px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+            const qLines = wrapCanvasText(measureCtx, chat.question, contentWidth - 160);
+            measureCtx.font = "400 34px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+            const rLines = wrapCanvasText(measureCtx, chat.reply, contentWidth - 160);
+            followupMeasured.push({ qLines, rLines });
+            followupTotalHeight += followupLabelHeight + (qLines.length * followupLineHeight) + followupGapAfterQ
+                + followupLabelHeight + (rLines.length * followupLineHeight) + followupGapAfterA;
+        });
+        followupTotalHeight += 40; // 底部間距
+    }
 
     let cardsBoxHeight = 0;
     const isCelticCross = AppState.spreadMode === 'celtic-cross' && cards && cards.length === 10;
@@ -148,7 +193,8 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     const betweenSections = 48;
     const footerHeight = 118;
     const cardsSectionTotalSpace = cardsBoxHeight > 0 ? cardsBoxHeight + betweenSections : 0;
-    const totalHeight = headerHeight + questionBoxHeight + betweenSections + cardsSectionTotalSpace + guidanceBoxHeight + footerHeight + padding;
+    const followupSectionSpace = followupTotalHeight > 0 ? followupTotalHeight + betweenSections : 0;
+    const totalHeight = headerHeight + questionBoxHeight + betweenSections + cardsSectionTotalSpace + guidanceBoxHeight + followupSectionSpace + footerHeight + padding;
     const height = Math.max(1500, Math.ceil(totalHeight));
 
     const canvas = document.createElement('canvas');
@@ -439,6 +485,58 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
         ctx.fillText(line || ' ', questionBoxX + 46, guidanceY);
         guidanceY += guidanceLineHeight;
     });
+
+    // ===== 延伸提問區塊 =====
+    if (followupMeasured.length > 0) {
+        let followupY = guidanceBoxY + guidanceBoxHeight + betweenSections;
+
+        // 繪製延伸提問外框
+        drawRoundedRect(ctx, questionBoxX, followupY, contentWidth, followupTotalHeight, 28);
+        ctx.fillStyle = 'rgba(5, 9, 24, 0.76)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.36)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // 區塊標題
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#f6d77a';
+        ctx.font = "600 31px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+        ctx.fillText('延伸提問紀錄', questionBoxX + 46, followupY + 56);
+        followupY += 90;
+
+        followupMeasured.forEach((item, idx) => {
+            // 使用者提問標籤
+            ctx.fillStyle = '#d4af37';
+            ctx.font = "700 27px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+            ctx.fillText(`── 追問 ${idx + 1} ──`, questionBoxX + 70, followupY + 32);
+            followupY += followupLabelHeight;
+
+            // 使用者提問文字
+            ctx.fillStyle = '#f9e596';
+            ctx.font = "500 34px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+            item.qLines.forEach(line => {
+                ctx.fillText(line || ' ', questionBoxX + 80, followupY);
+                followupY += followupLineHeight;
+            });
+            followupY += followupGapAfterQ;
+
+            // AI 回應標籤
+            ctx.fillStyle = '#b0b3bc';
+            ctx.font = "700 27px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+            ctx.fillText('✦ 星辰回應', questionBoxX + 70, followupY + 32);
+            followupY += followupLabelHeight;
+
+            // AI 回應文字
+            ctx.fillStyle = '#eaf1ff';
+            ctx.font = "400 34px 'Noto Sans TC', 'Microsoft JhengHei', sans-serif";
+            item.rLines.forEach(line => {
+                ctx.fillText(line || ' ', questionBoxX + 80, followupY);
+                followupY += followupLineHeight;
+            });
+            followupY += followupGapAfterA;
+        });
+    }
 
     const generatedAt = new Date().toLocaleString('zh-TW', {
         year: 'numeric',
