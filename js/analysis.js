@@ -157,7 +157,7 @@ function showAnalysis() {
                         }
                     }, 15);
                 } else {
-                    geminiText.innerHTML = result.text + '<br><br><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button>';
+                    geminiText.innerHTML = result.text + '<div style="text-align: center; margin-top: 20px;"><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button></div>';
                     setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
                 }
             }
@@ -168,7 +168,7 @@ function showAnalysis() {
             if (geminiLoading) geminiLoading.classList.add('hidden');
             if (geminiText) {
                 geminiText.classList.remove('hidden');
-                geminiText.innerHTML = '<em>星辰短暫失聯，請稍後再試一次。</em><br><br><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button>';
+                geminiText.innerHTML = '<em>星辰短暫失聯，請稍後再試一次。</em><div style="text-align: center; margin-top: 20px;"><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button></div>';
             }
             setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
             modal.classList.remove('hidden');
