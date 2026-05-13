@@ -418,14 +418,14 @@ function _appendFollowupBubble(container, type, content) {
 
 /**
  * 自動捲動到延伸提問的最新訊息
- * 只捲動 followup-history 內部 + 將最新氣泡滾入 Modal 可視區域
+ * 捲動 followup-history 內部 + 將最新氣泡滾入 reading-modal-scroll 可視區域
  */
 function _scrollFollowupToBottom(container) {
     requestAnimationFrame(() => {
         // 捲動 followup-history 容器內部到底部
         container.scrollTop = container.scrollHeight;
 
-        // 將最新的氣泡滾入 Modal 的可視範圍（而非把整個 Modal 捲到最底）
+        // 將最新的氣泡滾入可捲動區域的可視範圍
         const lastBubble = container.lastElementChild;
         if (lastBubble) {
             lastBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });

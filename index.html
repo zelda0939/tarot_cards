@@ -293,11 +293,13 @@
         </section>
 
         <section id="reading-modal" class="modal hidden">
-            <div class="modal-content reading-modal-content modal-content--padded">
-                <div class="close-modal close-modal-btn" id="close-reading-modal"
-                    title="關閉視窗">&times;</div>
+            <div class="modal-content reading-modal-content">
+                <div class="reading-modal-close-bar">
+                    <div class="close-modal close-modal-btn" id="close-reading-modal"
+                        title="關閉視窗">&times;</div>
+                </div>
+                <div class="reading-modal-scroll">
                 <h2 id="card-title">✦ 星辰的指引 ✦</h2>
-
                 <!-- Gemini 綜合分析區 -->
                 <div id="gemini-analysis-section">
                     <div class="gemini-header">
@@ -337,6 +339,7 @@
                     </button>
                     <button id="modal-restart-btn" class="premium-btn modal-restart-btn" type="button">✦ 重新洗牌</button>
                 </div>
+                </div><!-- /reading-modal-scroll -->
             </div>
         </section>
 
