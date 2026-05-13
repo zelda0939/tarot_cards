@@ -281,6 +281,35 @@ async function renderHistoryList() {
 }
 
 // 將資料呈現於已有的 HTML 結構 (利用內建的排版，或動態建構)
+async function exportHistoryImage(record) {
+    const btn = document.getElementById('history-export-btn');
+    if (btn) btn.textContent = '儲存中...';
+    try {
+        const options = {
+            spreadMode: record.spreadMode,
+            followupChats: record.followupChats || []
+        };
+        const canvas = await buildGuidanceImageCanvas(record.question, record.aiText, record.cards, options);
+        
+        canvas.toBlob((blob) => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const dateStr = record.dateString.replace(/[\/\s:]/g, '');
+            a.download = `tarot_history_${dateStr}.jpg`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            if (btn) btn.textContent = '儲存圖片';
+        }, 'image/jpeg', 0.85);
+    } catch (e) {
+        if (btn) btn.textContent = '儲存圖片';
+        alert('儲存圖片失敗：' + e.message);
+    }
+}
+
+
 async function showHistoryDetail(id) {
     const records = await getAllHistory();
     const record = records.find(r => r.id === Number(id));
@@ -290,6 +319,11 @@ async function showHistoryDetail(id) {
     document.getElementById('history-detail-view').classList.remove('hidden');
 
     const detailContainer = document.getElementById('history-detail-content');
+
+    const exportBtn = document.getElementById('history-export-btn');
+    if (exportBtn) {
+        exportBtn.onclick = () => exportHistoryImage(record);
+    }
 
     // 根據 spreadMode 決定牌位名稱
     const isCelticCross = record.spreadMode === 'celtic-cross';

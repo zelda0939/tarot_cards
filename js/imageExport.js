@@ -89,8 +89,8 @@ const waitImageLoad = (src) => new Promise((resolve) => {
  * 之後的偶數索引 = 延伸提問, 奇數索引 = 延伸回覆
  * @returns {Array<{question: string, reply: string}>}
  */
-function _extractFollowupChats() {
-    const history = AppState.conversationHistory || [];
+function _extractFollowupChats(customHistory) {
+    const history = customHistory || AppState.conversationHistory || [];
     const chats = [];
     // 從索引 2 開始（跳過初始 prompt/reply），每兩筆為一組
     for (let i = 2; i < history.length - 1; i += 2) {
@@ -106,7 +106,7 @@ function _extractFollowupChats() {
     return chats;
 }
 
-async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
+async function buildGuidanceImageCanvas(questionText, guidanceText, cards, options = {}) {
     const width = 1080;
     const padding = 82;
     const contentWidth = width - padding * 2;
@@ -123,7 +123,7 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     const guidanceLines = rawGuidanceLines;
 
     // 預先計算延伸提問文字行數
-    const followupChats = _extractFollowupChats();
+    const followupChats = options.followupChats || _extractFollowupChats();
     const followupLineHeight = 50;
     const followupLabelHeight = 72;
     const followupGapAfterQ = 32;
@@ -145,7 +145,8 @@ async function buildGuidanceImageCanvas(questionText, guidanceText, cards) {
     }
 
     let cardsBoxHeight = 0;
-    const isCelticCross = AppState.spreadMode === 'celtic-cross' && cards && cards.length === 10;
+    const spreadMode = options.spreadMode || AppState.spreadMode;
+    const isCelticCross = spreadMode === 'celtic-cross' && cards && cards.length === 10;
     const cardImgWidth = isCelticCross ? 160 : 230;
     const cardImgHeight = isCelticCross ? 272 : 391;
     const cardGap = isCelticCross ? 30 : 66;
