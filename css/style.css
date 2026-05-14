@@ -1867,61 +1867,100 @@ footer {
     }
 
     h1.glow-text {
-        font-size: 3.5rem; /* 收斂字體大小，增加精緻感 */
+        font-size: 3.8rem; /* 稍微放大，更顯氣勢 */
         letter-spacing: 0.8rem;
         margin-bottom: 1vh;
         text-shadow: 0 0 15px var(--gold-shadow), 0 0 30px rgba(212, 175, 55, 0.35);
     }
 
     .subtitle {
-        font-size: 1.25rem;
-        letter-spacing: 0.4rem;
+        font-size: 1.3rem;
+        letter-spacing: 0.5rem;
         opacity: 0.8;
     }
 
-    /* 初始進入畫面：調整間距，讓排版更緊湊優雅 */
+    /* 初始進入畫面：調整間距，讓排版更舒展 */
     body.centered-start main {
-        gap: 3vh;
-        padding-bottom: 6vh;
+        gap: 4vh;
+        padding-bottom: 8vh;
     }
 
     .question-panel {
         width: 85vw;
-        max-width: 600px;
-        padding: 2.5rem 3rem;
+        max-width: 800px; /* 放寬最大寬度 */
+        padding: 2.5rem 3.5rem;
         margin-bottom: 0;
         border-width: 1.5px;
         background: rgba(212, 175, 55, 0.08);
     }
 
     .question-panel label {
-        font-size: 1.3rem;
-        margin-bottom: 1.5rem;
+        font-size: 1.4rem;
+        margin-bottom: 1.8rem;
     }
 
     #user-question-input {
-        min-height: 120px; /* 固定高度，避免佔用過多垂直空間 */
-        font-size: 1.4rem;
-        padding: 1.2rem 1.5rem;
+        min-height: 140px; /* 增加高度 */
+        font-size: 1.5rem;
+        padding: 1.5rem 2rem;
         line-height: 1.6;
+    }
+
+    /* 牌陣選擇器優化 */
+    .spread-selector {
+        gap: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .spread-option {
+        padding: 1.2rem 2rem;
+        min-width: 220px;
+    }
+
+    .spread-option-icon {
+        font-size: 1.8rem;
+    }
+
+    .spread-option-name {
+        font-size: 1.25rem;
+    }
+
+    .spread-option-desc {
+        font-size: 0.9rem;
+    }
+
+    /* 按鈕組優化 */
+    .control-panel-buttons {
+        display: flex;
+        flex-direction: row; /* 在平板寬螢幕並排 */
+        justify-content: center;
+        gap: 2rem;
+        width: 100%;
+        max-width: 800px;
     }
 
     /* 當尚未點擊開始時（centered-mode）的視覺分佈 */
     body.centered-start #question-panel.centered-mode {
         width: 85vw;
-        max-width: 600px;
+        max-width: 800px;
     }
 
     body.centered-start #control-panel.centered-mode {
-        gap: 2.5vh;
+        gap: 4vh;
     }
 
     .premium-btn {
-        padding: 1rem 4rem; /* 縮小過大的按鈕尺寸 */
-        font-size: 1.2rem;
+        padding: 1.2rem 3rem; /* 調整比例，不要太窄也不要太長 */
+        font-size: 1.35rem;
         border-width: 2px;
-        letter-spacing: 0.15rem;
-        border-radius: 10px;
+        letter-spacing: 0.2rem;
+        border-radius: 12px;
+        flex: 1; /* 平分寬度 */
+        max-width: 320px;
+    }
+
+    .premium-btn.daily-btn {
+        margin-right: 0;
     }
 
     .header-settings-wrap {
@@ -1931,7 +1970,7 @@ footer {
     }
 
     .header-settings-btn {
-        font-size: 2.5rem;
+        font-size: 2.8rem;
     }
 
     /* 3D 牌環場景：調整為適中高度 */
