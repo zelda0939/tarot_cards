@@ -6,17 +6,6 @@ const AI_MODELS = {
     'gemma-4-31b-it': { name: 'Gemma 4 31B', id: 'gemma-4-31b-it' }
 };
 
-/**
- * HTML 特殊字元跳脫（防止 XSS 注入）
- * @param {string} str - 原始字串
- * @returns {string} 跳脫後的安全字串
- */
-function escapeHtml(str) {
-    const div = document.createElement('div');
-    div.appendChild(document.createTextNode(str));
-    return div.innerHTML;
-}
-
 function showAnalysis() {
     const modal = document.getElementById('reading-modal');
     const container = document.getElementById('cards-analysis-container');

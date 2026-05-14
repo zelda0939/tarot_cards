@@ -164,23 +164,13 @@
     - **根本原因**：控制初始畫面置中的 CSS 類別 (`centered-start`, `centered-mode`) 原本是透過 `js/init.js` 在網頁載入後才動態添加。這導致瀏覽器第一次繪製 (First Paint) 時元素在畫面上方，幾毫秒後才跳到中間，形成不舒服的視覺閃爍。
     - **修復方式**：將 `class="centered-start"` 與 `class="centered-mode"` 直接靜態寫入 `index.html` 的 `<body>`, `#control-panel`, `#question-panel` 標籤中。讓瀏覽器在第一幀就直接渲染置中佈局，徹底消除載入時的閃爍感。
 
-## 2026-05-13
-- **優化 AI 連線錯誤體驗**:
-    - **問題**：原本在「星辰的指引」中若 AI 發生網路連線或 API 錯誤，會直接覆蓋文字並顯示錯誤訊息，使用者只能選擇「重新洗牌」而遺失原本的抽牌。
-    - **修復**：在 `js/analysis.js` 中的 `showAnalysis` 與 `fetchGeminiAnalysis` 錯誤捕捉邏輯中，於錯誤訊息下方加入「✦ 重新送出」按鈕，點擊後會再次呼叫 `showAnalysis()` 重新送出同樣的牌組與提問。並在 `showAnalysis` 執行初時自動重置 `geminiLoading` 與 `geminiText` 的顯示狀態，達成無縫重新連線的體驗。
-- **修復每日一抽關閉視窗後之佈局復原 (v1.8.21)**:
-    - **問題**：使用者在「每日一抽」結束並點擊「關閉視窗」時，原本並未正確將畫面與選單佈局還原至初始狀態。
-    - **修復**：在 `js/analysis.js` 內的關閉按鈕事件 (`closeBtn.onclick`) 中加入檢查：若是 `AppState.isDailyMode` 模式下，會自動呼叫 `restoreDailyHomeLayout()`，確保關閉結果畫面後首頁排版能完全恢復正常。
-- **延伸提問功能 (v1.8.22)**:
-    - **功能概述**：在所有牌陣模式（三張牌、聖十字、每日一抽）的「星辰的指引」結果 Modal 中，新增「繼續探問星辰」區塊，讓使用者能針對當次抽到的牌進行無限次的延伸追問。
+## 2026-05-14
+- **占卜日誌 (History) 支援接續延伸提問 (v1.9.0)**:
+    - **功能概述**：現在使用者不僅能在剛抽完牌時進行追問，還能隨時開啟過往的「占卜日誌」，在詳情頁面中繼續與星辰對話。
     - **技術實作**：
-        - 利用 Gemini API 原生多輪對話格式（`contents` 陣列中 `user/model` 交替訊息），在延伸提問時帶入完整歷史對話與牌陣上下文。
-        - 在 `state.js` 新增 `conversationHistory`、`cardNamesForPrompt`、`_currentSystemPrompt` 狀態欄位。
-        - 在 `index.html` 的 reading-modal 中新增 `#followup-section`（分隔線 + 對話歷史區 + 輸入框 + 送出按鈕）。
-        - 在 `css/style.css` 新增聊天氣泡 UI 樣式（`.followup-bubble-user` / `.followup-bubble-ai`）、分隔線（`.followup-divider`）、載入動畫、手機版響應式。
-        - 重構 `analysis.js`：`fetchGeminiAnalysis()` 回傳值新增 `systemPrompt` / `userPrompt` 供初始化對話歷史；新增 `sendFollowupQuestion()` 函式處理延伸提問 API 呼叫與氣泡渲染；支援 Enter 送出。
-    - **日誌持久化**：
-        - 在 `history.js` 新增 `updateHistoryFollowup()` 函式，透過 IndexedDB 的 `get → put` 操作，將每筆延伸對話追加到歷史紀錄的 `followupChats` 陣列。
-        - 在日誌詳情頁 (`showHistoryDetail`) 中，透過 `_renderFollowupChatsHTML()` 渲染已儲存的延伸對話。
-    - **重置清理**：在 `app.js` 的 `resetGame()` 中清空所有對話狀態。
-    - **新增/修改檔案**：`state.js`、`index.html`、`css/style.css`、`analysis.js`、`history.js`、`app.js`。
+        - **互動式日誌詳情**：修改 `js/history.js` 中的 `showHistoryDetail`，將原本靜態的延伸對話顯示區升級為包含輸入框與送出按鈕的互動式區域。
+        - **重建對話脈絡**：實作 `sendHistoryFollowupQuestion()`，當使用者在歷史紀錄中追問時，系統會自動抓取該筆紀錄的原始提問、AI 解析及過去的所有延伸對話，重新建構成符合 Gemini API 規範的 `contents` 陣列（多輪對話歷史），確保 AI 能精準接續先前的語境。
+        - **打字機效果與自動捲動**：歷史紀錄中的追問回覆同樣具備打字機逐字顯示效果，並優化了 Modal 內的自動捲動邏輯，確保最新回覆始終在視野內。
+        - **資料持久化**：新的對話會即時寫入 IndexedDB 中的 `followupChats` 欄位，確保資料永久留存。
+        - **全域公用函式優化**：將 `escapeHtml` 移至 `js/ui.js` 以便在不同模組（Analysis/History/UI）間安全共享，避免程式碼重複。
+    - **版本更新**：同步更新 `js/version.js` 與 `sw.js` 版本號至 **1.9.0**。

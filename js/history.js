@@ -395,8 +395,249 @@ async function showHistoryDetail(id) {
                 <div id="gemini-text" style="display: block;">${formattedAiText}</div>
             </div>
         </div>
-        ${_renderFollowupChatsHTML(record.followupChats)}
+        ${_renderHistoryFollowupSection(record)}
     `;
+
+    // 綁定延伸提問事件
+    _bindHistoryFollowupEvents(record);
+}
+
+/**
+ * 渲染歷史紀錄中的延伸提問區（包含過往對話與輸入框）
+ * @param {Object} record - 歷史紀錄物件
+ * @returns {string} HTML 字串
+ */
+function _renderHistoryFollowupSection(record) {
+    const followupChats = record.followupChats || [];
+    
+    let html = `
+        <div class="followup-section" id="history-followup-section" style="margin-top: 2rem; margin-bottom: 2rem;">
+            <div class="followup-divider">
+                <span>✦ 延伸提問 ✦</span>
+            </div>
+            <div class="followup-history" id="history-followup-container" style="max-height: 50vh; overflow-y: auto; padding-right: 5px;">`;
+
+    followupChats.forEach(chat => {
+        const safeQ = escapeHtml(chat.question);
+        const safeR = escapeHtml(chat.reply).replace(/\n/g, '<br>');
+        html += `
+                <div class="followup-bubble followup-bubble-user">
+                    <div class="followup-bubble-label">您的追問</div>${safeQ}
+                </div>
+                <div class="followup-bubble followup-bubble-ai">
+                    <div class="followup-bubble-label">✦ 星辰回應</div>${safeR}
+                </div>`;
+    });
+
+    html += `
+            </div>
+            <div class="followup-input-row" style="margin-top: 15px; display: flex; gap: 10px;">
+                <textarea id="history-followup-input" rows="2" maxlength="200" 
+                    placeholder="針對這次占卜，還有什麼想追問星辰的嗎？" 
+                    style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(212,175,55,0.3); color: #fff; padding: 10px; border-radius: 8px; font-family: inherit; resize: none;"></textarea>
+                <button id="history-followup-send-btn" class="premium-btn followup-send-btn" type="button" 
+                    style="padding: 0 20px; font-size: 0.9em; white-space: nowrap;">送出</button>
+            </div>
+        </div>`;
+    return html;
+}
+
+/**
+ * 綁定歷史紀錄延伸提問區的事件
+ * @param {Object} record - 歷史紀錄物件
+ */
+function _bindHistoryFollowupEvents(record) {
+    const sendBtn = document.getElementById('history-followup-send-btn');
+    const input = document.getElementById('history-followup-input');
+
+    if (sendBtn) {
+        sendBtn.onclick = () => sendHistoryFollowupQuestion(record);
+    }
+
+    if (input) {
+        input.onkeydown = (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendHistoryFollowupQuestion(record);
+            }
+        };
+    }
+}
+
+/**
+ * 歷史紀錄延伸提問：送出並取得 AI 回覆
+ * @param {Object} record - 原始歷史紀錄
+ */
+async function sendHistoryFollowupQuestion(record) {
+    const input = document.getElementById('history-followup-input');
+    const historyContainer = document.getElementById('history-followup-container');
+    const sendBtn = document.getElementById('history-followup-send-btn');
+
+    if (!input || !historyContainer || !record) return;
+
+    const questionText = input.value.trim();
+    if (!questionText) return;
+
+    const apiKey = localStorage.getItem('gemini_api_key');
+    if (!apiKey) {
+        _appendHistoryFollowupBubble(historyContainer, 'ai',
+            '<em style="color: #ff6b6b;">您尚未設定 API Key，請先點擊主畫面右上角 ⚙️ 設定。</em>');
+        return;
+    }
+
+    // 禁用輸入與按鈕
+    input.value = '';
+    input.disabled = true;
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.textContent = '...';
+    }
+
+    // 追加使用者提問氣泡
+    _appendHistoryFollowupBubble(historyContainer, 'user', escapeHtml(questionText));
+
+    // 追加 AI loading 氣泡
+    const loadingBubble = _appendHistoryFollowupBubble(historyContainer, 'ai-loading', '');
+
+    // 自動捲到底部
+    _scrollHistoryFollowupToBottom(historyContainer);
+
+    // 重建對話歷史
+    const conversationHistory = [
+        { role: 'user', parts: [{ text: `使用者針對以下提問進行占卜：\n「${record.question || '一般指引'}」\n\n獲得的綜合神諭如下：\n${record.aiText}\n\n請根據以上脈絡回答使用者的後續追問。` }] },
+        { role: 'model', parts: [{ text: '理解了。我已掌握先前的牌陣訊息與神諭內容，請說出您的追問。' }] }
+    ];
+
+    // 加入現有的追問紀錄
+    if (Array.isArray(record.followupChats)) {
+        record.followupChats.forEach(chat => {
+            conversationHistory.push({ role: 'user', parts: [{ text: chat.question }] });
+            conversationHistory.push({ role: 'model', parts: [{ text: chat.reply }] });
+        });
+    }
+
+    // 加入本次提問
+    conversationHistory.push({ role: 'user', parts: [{ text: questionText }] });
+
+    try {
+        const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+        const modelInfo = (typeof AI_MODELS !== 'undefined' ? AI_MODELS[modelId] : null) || { id: modelId };
+
+        const followupSystemPrompt = `你是一位充滿智慧、語氣溫柔且帶有神祕感的高階塔羅占卜師。
+使用者現在針對這筆歷史占卜紀錄進行延伸追問。請根據先前的牌陣分析結果與對話脈絡回答。
+- 保持同樣的占卜師角色與語氣
+- 回答精簡有力，約 150~350 字
+- 使用繁體中文（台灣用語）
+- 不要重複已經說過的內容`;
+
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/${modelInfo.id}:generateContent?key=${apiKey}`,
+            {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    system_instruction: { parts: [{ text: followupSystemPrompt }] },
+                    contents: conversationHistory
+                })
+            }
+        );
+
+        if (!response.ok) throw new Error(`API 錯誤: ${response.status}`);
+
+        const data = await response.json();
+        const parts = data.candidates?.[0]?.content?.parts || [];
+        const replyParts = parts.filter(p => !p.thought);
+        const reply = replyParts.map(p => p.text).join('') || '星辰暫時無法給出回應...';
+
+        // 替換 loading 氣泡為打字機效果回覆
+        if (loadingBubble) {
+            const formattedReply = escapeHtml(reply).replace(/\n/g, '<br>');
+            loadingBubble.innerHTML = '<div class="followup-bubble-label">✦ 星辰回應</div>';
+            loadingBubble.classList.remove('followup-bubble-loading');
+
+            const textContainer = document.createElement('span');
+            loadingBubble.appendChild(textContainer);
+
+            let i = 0;
+            const typeWriter = setInterval(() => {
+                if (formattedReply.substring(i, i + 4) === '<br>') {
+                    textContainer.insertAdjacentHTML('beforeend', '<br>');
+                    i += 4;
+                } else {
+                    textContainer.insertAdjacentHTML('beforeend', formattedReply.charAt(i));
+                    i++;
+                }
+                if (i % 20 === 0) _scrollHistoryFollowupToBottom(historyContainer);
+                if (i >= formattedReply.length) {
+                    clearInterval(typeWriter);
+                    input.disabled = false;
+                    if (sendBtn) {
+                        sendBtn.disabled = false;
+                        sendBtn.textContent = '送出';
+                    }
+                    _scrollHistoryFollowupToBottom(historyContainer);
+                }
+            }, 15);
+        }
+
+        // 將延伸對話更新至 IndexedDB
+        const newChat = {
+            question: questionText,
+            reply: reply,
+            timestamp: Date.now()
+        };
+        await updateHistoryFollowup(record.id, newChat);
+
+        // 同步更新記憶體中的 record，確保在不重新進入詳情的情況下能正確匯出
+        if (!record.followupChats) record.followupChats = [];
+        record.followupChats.push(newChat);
+
+    } catch (err) {
+        console.error('[聖境塔羅] 歷史延伸提問失敗:', err);
+        if (loadingBubble) {
+            loadingBubble.innerHTML = `<div class="followup-bubble-label">✦ 星辰回應</div>
+                <span style="color: #ff6b6b;">星辰暫時失聯了 (${escapeHtml(err.message)})。請稍後再試。</span>`;
+            loadingBubble.classList.remove('followup-bubble-loading');
+        }
+        input.disabled = false;
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.textContent = '送出';
+        }
+    }
+}
+
+/**
+ * 歷史紀錄專用：追加對話氣泡
+ */
+function _appendHistoryFollowupBubble(container, type, content) {
+    const bubble = document.createElement('div');
+    if (type === 'user') {
+        bubble.className = 'followup-bubble followup-bubble-user';
+        bubble.innerHTML = `<div class="followup-bubble-label">您的追問</div>${content}`;
+    } else if (type === 'ai-loading') {
+        bubble.className = 'followup-bubble followup-bubble-ai followup-bubble-loading';
+        bubble.innerHTML = `<div class="followup-bubble-label">✦ 星辰回應</div><div class="followup-loading"><div class="spinner"></div>星辰正在凝視過往牌面...</div>`;
+    } else {
+        bubble.className = 'followup-bubble followup-bubble-ai';
+        bubble.innerHTML = `<div class="followup-bubble-label">✦ 星辰回應</div>${content}`;
+    }
+    container.appendChild(bubble);
+    return bubble;
+}
+
+/**
+ * 歷史紀錄專用：捲動到底部
+ */
+function _scrollHistoryFollowupToBottom(container) {
+    requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight;
+        // 歷史 Modal 比較大，確保整個內容區也盡量向下捲動
+        const modalContent = document.querySelector('#history-modal .modal-content');
+        if (modalContent) {
+            modalContent.scrollTop = modalContent.scrollHeight;
+        }
+    });
 }
 
 /**

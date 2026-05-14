@@ -1,6 +1,17 @@
 /* ============================
    UI 輔助函式
    ============================ */
+
+/**
+ * HTML 特殊字元跳脫（防止 XSS 注入）
+ */
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+}
+
 function updateInstruction(text) {
     const el = document.querySelector('#gesture-instruction p');
     if (el) {
