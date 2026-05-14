@@ -1030,7 +1030,7 @@ body.centered-start #tarot-board {
 }
 
 /* 手機版延伸提問微調 */
-@media (max-width: 768px) {
+@media (max-width: 739px) {
     .followup-bubble {
         max-width: 92%;
         font-size: 0.82rem;
@@ -1659,7 +1659,7 @@ footer {
 }
 
 /* 響應式 — 平板 */
-@media (max-width: 768px) {
+@media (max-width: 739px) {
     h1.glow-text {
         font-size: 1.6rem;
         letter-spacing: 0.2rem;
@@ -1859,108 +1859,194 @@ footer {
     }
 }
 
-/* 響應式 — 針對大型直向螢幕 (iPad 直向 Desktop Mode 或旋轉螢幕) 放大排版比例 */
-@media (orientation: portrait) and (min-width: 600px) and (min-height: 800px) {
+/* 響應式 — 針對大型直向螢幕 (iPad mini 6, iPad Air/Pro 直向) 比例平衡優化 */
+/* iPad mini 6 邏輯寬度為 744px，高度 1133px */
+@media (orientation: portrait) and (min-width: 740px) and (min-height: 1000px) {
     header {
-        padding: 4vh 2vw 2vh;
+        padding: 5vh 2vw 3vh;
     }
 
     h1.glow-text {
-        font-size: 6vmin;
-        letter-spacing: 0.8vmin;
+        font-size: 3.5rem; /* 收斂字體大小，增加精緻感 */
+        letter-spacing: 0.8rem;
         margin-bottom: 1vh;
+        text-shadow: 0 0 15px var(--gold-shadow), 0 0 30px rgba(212, 175, 55, 0.35);
     }
 
     .subtitle {
-        font-size: 2.5vmin;
-        letter-spacing: 0.4vmin;
+        font-size: 1.25rem;
+        letter-spacing: 0.4rem;
+        opacity: 0.8;
+    }
+
+    /* 初始進入畫面：調整間距，讓排版更緊湊優雅 */
+    body.centered-start main {
+        gap: 3vh;
+        padding-bottom: 6vh;
     }
 
     .question-panel {
-        width: 88vw;
-        max-width: 900px;
-        padding: 2.5vh 4vw;
-        margin-bottom: 2vh;
+        width: 85vw;
+        max-width: 600px;
+        padding: 2.5rem 3rem;
+        margin-bottom: 0;
+        border-width: 1.5px;
+        background: rgba(212, 175, 55, 0.08);
     }
 
     .question-panel label {
-        font-size: 2.5vmin;
-        margin-bottom: 1vh;
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
     }
 
     #user-question-input {
-        min-height: 10vh;
-        font-size: 2.8vmin;
-        padding: 1.5vh 2vw;
+        min-height: 120px; /* 固定高度，避免佔用過多垂直空間 */
+        font-size: 1.4rem;
+        padding: 1.2rem 1.5rem;
+        line-height: 1.6;
     }
 
-    .question-panel.centered-mode {
-        width: 88vw;
-        max-width: 900px;
-        top: calc(50% - 15vh);
+    /* 當尚未點擊開始時（centered-mode）的視覺分佈 */
+    body.centered-start #question-panel.centered-mode {
+        width: 85vw;
+        max-width: 600px;
     }
 
-    #control-panel.centered-mode {
-        top: calc(50% + 12vh);
+    body.centered-start #control-panel.centered-mode {
+        gap: 2.5vh;
     }
 
     .premium-btn {
-        padding: 2vh 5vw;
-        font-size: 2.5vmin;
+        padding: 1rem 4rem; /* 縮小過大的按鈕尺寸 */
+        font-size: 1.2rem;
         border-width: 2px;
+        letter-spacing: 0.15rem;
+        border-radius: 10px;
     }
 
     .header-settings-wrap {
-        top: 3vh;
+        top: 3.5vh;
         right: 4vw;
         gap: 3vw !important;
     }
 
     .header-settings-btn {
-        font-size: 5vmin;
+        font-size: 2.5rem;
     }
 
+    /* 3D 牌環場景：調整為適中高度 */
     .carousel-scene {
-        height: 40vh;
+        height: 42vh;
         max-width: 90vw;
+        margin-bottom: 1.5vh;
     }
 
     .tarot-card {
-        width: 20vmin;
-        height: 31.6vmin;
-        margin-left: -10vmin;
-        margin-top: -15.8vmin;
+        width: 135px;
+        height: 214px;
+        margin-left: -67.5px;
+        margin-top: -107px;
     }
 
     .tarot-card.in-slot .card-name {
-        font-size: 2vmin;
-        padding: 0.8vh 0;
+        font-size: 0.95rem;
+        padding: 10px 0;
     }
 
     .slot-position-badge {
-        font-size: 1.8vmin;
-        padding: 0.8vh 2vw;
-        top: 0.8vh;
+        font-size: 0.85rem;
+        padding: 5px 15px;
+        top: 8px;
     }
 
     #selected-cards-container {
         padding: 2vh 0 4vh;
         width: 90vw;
-        max-width: 1000px;
     }
 
     #selected-cards-container>.subtitle {
-        font-size: 2.8vmin;
-        margin-bottom: 1.5vh;
+        font-size: 1.4rem;
+        margin-bottom: 2vh;
     }
 
     .selected-cards {
-        gap: 5vw;
+        gap: 2.5rem;
     }
 
     .slot {
-        width: 18vmin;
-        height: 27vmin;
+        width: 120px;
+        height: 185px;
+    }
+
+    /* iPad 端 Modal 深度優化 (比例修正) */
+    .modal-content {
+        width: 85vw;
+        max-width: 680px;
+        max-height: 85vh;
+        padding: 4rem 3rem 3rem;
+        border-radius: 16px;
+    }
+
+    .reading-modal-scroll {
+        padding: 1.5rem 1rem;
+    }
+
+    .analysis-card {
+        padding: 2rem 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .analysis-name {
+        font-size: 1.5rem;
+        letter-spacing: 0.1rem;
+    }
+
+    .analysis-symbol {
+        font-size: 2.2rem;
+        margin: 0.4rem 0;
+    }
+    
+    .analysis-meaning, .analysis-meaning-rev {
+        font-size: 1rem;
+        padding: 0.8rem;
+        line-height: 1.7;
+    }
+
+    .history-detail-date {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* 響應式 — 針對平板橫向 (iPad Landscape) */
+@media (orientation: landscape) and (min-width: 800px) and (max-width: 1366px) {
+    .centered-mode #control-panel,
+    #control-panel.centered-mode {
+        top: calc(50% + 18vh);
+        flex-direction: row;
+        gap: 2vw;
+    }
+
+    .centered-mode .question-panel,
+    .question-panel.centered-mode {
+        top: calc(50% - 12vh);
+        width: 60vw;
+    }
+
+    .carousel-scene {
+        height: 50vh;
+    }
+
+    .tarot-card {
+        width: 15vw;
+        height: 23.7vw;
+        margin-left: -7.5vw;
+        margin-top: -11.85vw;
+    }
+
+    .modal-content {
+        width: 70vw;
+        height: 90vh;
     }
 }
 
@@ -3423,7 +3509,7 @@ footer {
 }
 
 /* ─── 手機響應式 ─── */
-@media (max-width: 768px) {
+@media (max-width: 739px) {
     .daily-deck-card {
         width: 65px;
         height: 105px;
