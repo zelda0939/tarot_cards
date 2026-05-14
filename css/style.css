@@ -1861,116 +1861,127 @@ footer {
 
 /* 響應式 — 針對大型直向螢幕 (iPad mini 6, iPad Air/Pro 直向) 比例平衡優化 */
 /* iPad mini 6 邏輯寬度為 744px，高度 1133px */
+/* 響應式 — 針對大型直向螢幕 (iPad mini 6, iPad Air/Pro 直向) 比例平衡優化 */
+/* iPad mini 6 邏輯寬度為 744px，高度 1133px */
 @media (orientation: portrait) and (min-width: 740px) and (min-height: 1000px) {
     header {
-        padding: 5vh 2vw 3vh;
+        padding: 6vh 2vw 4vh;
+        animation: reveal-down 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
     h1.glow-text {
-        font-size: 3.8rem; /* 稍微放大，更顯氣勢 */
-        letter-spacing: 0.8rem;
-        margin-bottom: 1vh;
-        text-shadow: 0 0 15px var(--gold-shadow), 0 0 30px rgba(212, 175, 55, 0.35);
+        font-size: clamp(3.2rem, 8vw, 4.2rem);
+        letter-spacing: 1.2rem;
+        margin-bottom: 1.5vh;
+        text-shadow: 0 0 20px var(--gold-shadow), 0 0 40px rgba(212, 175, 55, 0.4);
     }
 
     .subtitle {
-        font-size: 1.3rem;
-        letter-spacing: 0.5rem;
-        opacity: 0.8;
+        font-size: 1.4rem;
+        letter-spacing: 0.6rem;
+        opacity: 0.7;
+        text-transform: uppercase;
     }
 
-    /* 初始進入畫面：調整間距，讓排版更舒展 */
+    /* 初始進入畫面：深度優化負空間與儀式感 */
     body.centered-start main {
-        gap: 4vh;
-        padding-bottom: 8vh;
+        gap: 5vh;
+        padding-bottom: 10vh;
     }
 
     .question-panel {
-        width: 85vw;
-        max-width: 800px; /* 放寬最大寬度 */
-        padding: 2.5rem 3.5rem;
-        margin-bottom: 0;
-        border-width: 1.5px;
-        background: rgba(212, 175, 55, 0.08);
+        width: 88vw;
+        max-width: 860px;
+        padding: 3rem 4rem;
+        background: radial-gradient(circle at center, rgba(212, 175, 55, 0.12) 0%, rgba(17, 20, 36, 0.85) 100%);
+        border: 1.5px solid var(--gold-border);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(212, 175, 55, 0.05);
+        animation: reveal-up 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
     }
 
     .question-panel label {
-        font-size: 1.4rem;
-        margin-bottom: 1.8rem;
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        color: var(--gold-light);
+        font-family: 'Cinzel', serif;
+        text-align: center;
+        display: block;
     }
 
     #user-question-input {
-        min-height: 140px; /* 增加高度 */
-        font-size: 1.5rem;
-        padding: 1.5rem 2rem;
-        line-height: 1.6;
+        min-height: 160px;
+        font-size: 1.6rem;
+        padding: 1.8rem 2.2rem;
+        line-height: 1.7;
+        background: rgba(0, 0, 0, 0.4);
+        border-radius: 12px;
+        transition: all 0.4s ease;
     }
 
-    /* 牌陣選擇器優化 */
+    #user-question-input:focus {
+        background: rgba(212, 175, 55, 0.08);
+        box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+    }
+
+    /* 牌陣選擇器：更開闊的佈局 */
     .spread-selector {
-        gap: 2rem;
-        margin-bottom: 1.5rem;
+        gap: 2.5rem;
+        margin-bottom: 2.5rem;
+        animation: reveal-up 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.4s backwards;
     }
 
     .spread-option {
-        padding: 1.2rem 2rem;
-        min-width: 220px;
+        padding: 1.5rem 2.5rem;
+        min-width: 260px;
+        border-radius: 20px;
     }
 
     .spread-option-icon {
-        font-size: 1.8rem;
+        font-size: 2.2rem;
     }
 
     .spread-option-name {
-        font-size: 1.25rem;
+        font-size: 1.4rem;
     }
 
     .spread-option-desc {
-        font-size: 0.9rem;
+        font-size: 1rem;
     }
 
-    /* 按鈕組優化 */
+    /* 按鈕組：極致精緻化 */
     .control-panel-buttons {
         display: flex;
-        flex-direction: row; /* 在平板寬螢幕並排 */
+        flex-direction: row;
         justify-content: center;
-        gap: 2rem;
+        gap: 2.5rem;
         width: 100%;
-        max-width: 800px;
-    }
-
-    /* 當尚未點擊開始時（centered-mode）的視覺分佈 */
-    body.centered-start #question-panel.centered-mode {
-        width: 85vw;
-        max-width: 800px;
-    }
-
-    body.centered-start #control-panel.centered-mode {
-        gap: 4vh;
+        max-width: 860px;
+        animation: reveal-up 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.6s backwards;
     }
 
     .premium-btn {
-        padding: 1.2rem 3rem; /* 調整比例，不要太窄也不要太長 */
-        font-size: 1.35rem;
-        border-width: 2px;
-        letter-spacing: 0.2rem;
-        border-radius: 12px;
-        flex: 1; /* 平分寬度 */
-        max-width: 320px;
+        padding: 1.4rem 3.5rem;
+        font-size: 1.4rem;
+        letter-spacing: 0.25rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease;
     }
 
-    .premium-btn.daily-btn {
-        margin-right: 0;
+    .premium-btn:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
     }
 
-    .header-settings-wrap {
-        top: 3.5vh;
-        right: 4vw;
-        gap: 3vw !important;
+    /* 進場動畫定義 */
+    @keyframes reveal-down {
+        from { opacity: 0; transform: translateY(-30px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
-    .header-settings-btn {
-        font-size: 2.8rem;
+    @keyframes reveal-up {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     /* 3D 牌環場景：調整為適中高度 */
