@@ -282,3 +282,10 @@
   - 決策：優先處理 CSS 冗長問題，後續將規劃 `js/db.js` 以分離資料層與 UI 層。
   - 核心規範應用：實踐「外科手術式修改」與「模組化」原則。
 
+- **2026-05-15 - 實作資料層分離 (v1.9.19)**：
+  - **決策**：為了提高代碼的可維護性與可測試性，決定將原本耦合在 `history.js` 中的 IndexedDB 資料庫邏輯完全抽離。
+  - **異動**：
+    - 新增 `js/db.js`：封裝所有資料庫操作（`initDB`, `saveHistoryRecord`, `getAllHistory`, `deleteHistoryRecord`, `clearAllHistory`, `updateHistoryFollowup`）。
+    - 重構 `js/history.js`：將所有直接調用 `indexedDB` 的代碼替換為對 `js/db.js` 模組函式的調用。
+  - **版本更新**：同步更新 `js/version.js`、`sw.js` 與 `index.html` 至 **v1.9.19**。
+

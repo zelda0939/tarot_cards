@@ -207,3 +207,11 @@
         - **成果**: 恢復了沉浸式星空背景與正確的標題/按鈕排列順序，確保應用在所有裝置上的視覺一致性。
     - **外科手術式程式碼清理**: 在遷移過程中，系統性地從 `style.css` 移除冗長的動畫程式碼塊，並即時修復了過程中誤刪的關鍵 UI 樣式，確保 3D 牌環與 Loading 特效的視覺完整性。
     - **重構成果**: 成功將 `style.css` 體積縮減約 10% (由 80.6 KB 降至 72.9 KB)，為後續的 CSS 職責細分（如 base 與 components）奠定基礎。
+
+- **實作獨立資料層 js/db.js (v1.9.19)**:
+    - **重構目標**: 將原本分散且耦合在 `history.js` 中的 IndexedDB 資料庫操作邏輯徹底分離，建立專用的資料存取層。
+    - **建立 js/db.js**: 實作了 `initDB`（初始化）、`saveHistoryRecord`（儲存）、`getAllHistory`（獲取）、`deleteHistoryRecord`（刪除）、`clearAllHistory`（清除）以及 `updateHistoryFollowup`（更新延伸提問）等核心 API。
+    - **整合與清理**: 
+        - 修改 `js/history.js`，將其內部重複的資料庫代碼移除，改為引用 `js/db.js`。
+        - 更新 `index.html` 引入新腳本並同步所有資源版本號。
+    - **成果**: 實現了 UI 邏輯與資料持久化邏輯的關注點分離 (SOC)，大幅提升代碼的可測試性與後續擴充性。
