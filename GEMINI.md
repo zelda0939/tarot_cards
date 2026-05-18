@@ -5,17 +5,17 @@
 
 **核心特色與技術棧：**
 - **純前端架構 (Vanilla Stack)**: HTML5, CSS3, 原生 JavaScript (無大型框架如 React/Vue，無繁雜的建置工具)。
-- **AI 深度解牌**: 串接 Google AI (Gemini 3 Flash / Gemma 4 31B) 進行塔羅牌陣解讀。
+- **AI 深度解牌**: 串接 Google AI（Gemini 3 Flash、Gemma 4 31B，以 `analysis.js` 中 `AI_MODELS` 為準）進行塔羅牌陣解讀。
 - **手勢辨識互動**: 整合 Google MediaPipe Hands 模型，實現無觸碰的 3D 牌環 (Carousel) 旋轉與抽牌。
-- **PWA 與離線支援**: 透過 `manifest.json` 與 `sw.js` (Network-First 策略) 支援安裝為應用程式並提供基本離線能力。
+- **PWA 與離線支援**: 透過 `manifest.json` 與 `sw.js`（一般資源採 Network-First，卡牌圖片 `assets/images/*.jpg` 採 Cache-First）支援安裝為應用程式並提供離線能力。
 - **資料持久化**: 
   - `localStorage`: 儲存使用者偏好設定與 API Key。
   - `IndexedDB` (`CelestialTarotDB`): 儲存使用者的歷史占卜日誌。
 - **極致動畫體驗**: 強調 60fps 的流暢度，包含複雜的 SVG 魔法陣、3D 翻轉、Canvas 粒子系統，並具備智慧效能分級 (Adaptive Performance) 針對手機進行降級優化。
 
 ## 目錄結構 (Directory Structure)
-- `/js/`: 核心 JavaScript 邏輯模組。
-  - `init.js`: 應用程式入口，處理初始化、事件綁定與 Service Worker 註冊。
+- `/js/`: 核心 JavaScript 邏輯模組（ES6 Module，單一進入點 `init.js`）。
+  - `init.js`: 應用程式入口，處理初始化與事件綁定。
   - `app.js`: 整體流程控制、抽牌邏輯與遊戲狀態重置。
   - `state.js`: 全域狀態 (`AppState`) 與常數 (如牌位定義) 管理。
   - `ring.js`: 3D 牌環渲染邏輯與視覺差投影計算。
@@ -27,14 +27,17 @@
   - `gesture.js`: MediaPipe 手勢捕捉、效能調整與防抖處理。
   - `ui.js`: 通用 UI 元件（如 Confirm Dialog）與工具函式（如 HTML 跳脫）。
   - `question.js`: 提問輸入處理。
-  - `tarot_dict.js`: 內建 78 張塔羅牌組字典檔。
   - `version.js`: 版本號管理與快取更新控制。
 - `/css/`: 樣式表。
   - `style.css`: 全域主樣式，包含星空背景、手勢抽牌動畫與響應式斷點。
+  - `animations.css`: 專屬動畫關鍵幀（星環旋轉、粒子閃爍等）。
   - `celtic-cross.css`: 聖十字牌陣特定 Grid 佈局、3D 星盤與魔幻特效樣式。
-- `/assets/`: 靜態資源 (卡牌圖片 `/images` 與 PWA 圖示 `/icons`)。
-- `index.html`: 單頁應用 (SPA) 入口。
-- `sw.js` / `manifest.json`: PWA 相關設定。
+- `/assets/`:
+  - `data/tarot_dict.json`: 78 張塔羅牌中文字典（替代已移除的 `tarot_dict.js`）。
+  - `images/`: 卡牌圖片 (`c01.jpg`…`w14.jpg`) 與 `card_back.png`。
+  - `icons/`: PWA 應用圖示。
+- `index.html`: 單頁應用 (SPA) 入口（含 Service Worker 註冊腳本）。
+- `sw.js` / `manifest.json`: PWA 相關設定（SW 採 Network-First + Cache-First 混合策略）。
 
 ## 建置與執行 (Building and Running)
 本專案不依賴 Node.js 建置工具 (如 Webpack/Vite)，只需任意靜態檔案伺服器即可運行。
@@ -69,7 +72,7 @@ npx http-server -p 8000
 2. **技術限制與架構**: 
    - **嚴格維持 Vanilla JavaScript**，不引入 React、Vue 等外部大型 UI 框架。
    - 不依賴複雜的建置系統，所有 JS 模組均為 ES6 Module，由瀏覽器原生解析。
-   - 資料流盡量單純，以事件或直接呼叫模組函數傳遞狀態 (`AppState`)。
+   - 資料流盡量單純：模組間透過 `import`/`export` 匯入匯出函數，搭配 `AppState` 共用狀態；避免複雜的雙向綁定或事件匯流排。
 
 3. **視覺與效能優先**: 
    - 必須確保手機端的流暢度。新增複雜特效時，需考量使用 `@media (max-width: 768px)` 進行效能降級 (Graceful Degradation)。
