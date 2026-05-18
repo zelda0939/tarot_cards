@@ -1,13 +1,15 @@
 /* ============================
    提問面板邏輯
    ============================ */
-function getActiveQuestionText() {
+import { AppState } from './state.js';
+
+export function getActiveQuestionText() {
     const questionInput = document.getElementById('user-question-input');
     const typedQuestion = questionInput ? questionInput.value.trim() : '';
     return typedQuestion || AppState.userQuestion;
 }
 
-function syncQuestionPreview() {
+export function syncQuestionPreview() {
     const previewEl = document.getElementById('question-preview');
     if (!previewEl) return;
     const activeQuestion = getActiveQuestionText();
@@ -16,7 +18,7 @@ function syncQuestionPreview() {
         : '尚未填寫提問，點「修改問題」輸入。';
 }
 
-function setQuestionPanelCompact(shouldCompact, options = {}) {
+export function setQuestionPanelCompact(shouldCompact, options = {}) {
     const questionPanel = document.getElementById('question-panel');
     const questionToggleBtn = document.getElementById('question-toggle-btn');
     const questionClearBtn = document.getElementById('question-clear-btn');

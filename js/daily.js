@@ -2,6 +2,15 @@
  * 聖境塔羅 (Celestial Tarot)
  * 每日指引 (Daily Draw) 動畫特效與流程
  */
+import { AppState, STORAGE_KEYS } from './state.js';
+import { showConfirmDialog } from './ui.js';
+import { drawTrueRandomCard } from './ring.js';
+import { showAnalysis } from './analysis.js';
+import { cleanupGestureTransientEffects } from './app.js';
+import { stopMediaPipeCamera } from './gesture.js';
+import { stopCardRingAnimation } from './ring.js';
+import { setQuestionPanelCompact, syncQuestionPreview } from './question.js';
+import { cleanupCelticCrossAnimation, clearCelticCrossSlots } from './celtic-cross.js';
 
 /* ============================
    每日一抽資源追蹤與統一清理
@@ -17,7 +26,7 @@
  * — 釋放 Canvas 位圖記憶體
  * — 重置 overlay class 狀態
  */
-function cleanupDailyAnimation() {
+export function cleanupDailyAnimation() {
     // 1. 清除所有排程中的 setTimeout
     AppState._dailyTimers.forEach(id => clearTimeout(id));
     AppState._dailyTimers = [];
@@ -58,7 +67,7 @@ function cleanupDailyAnimation() {
     }
 }
 
-function restoreDailyHomeLayout() {
+export function restoreDailyHomeLayout() {
     cleanupDailyAnimation();
     if (typeof cleanupGestureTransientEffects === 'function') cleanupGestureTransientEffects();
     if (typeof stopMediaPipeCamera === 'function') stopMediaPipeCamera('daily-close');
@@ -122,7 +131,7 @@ function restoreDailyHomeLayout() {
 /* ============================
    每日指引特效與邏輯
    ============================ */
-async function triggerDailyCard() {
+export async function triggerDailyCard() {
     const todayStr = new Date().toISOString().slice(0, 10);
     const lastDailyDate = localStorage.getItem(STORAGE_KEYS.DAILY_CARD_DATE);
 
@@ -145,7 +154,7 @@ async function triggerDailyCard() {
     startDailyFlow(todayStr);
 }
 
-function startDailyFlow(todayStr) {
+export function startDailyFlow(todayStr) {
     document.body.classList.remove('centered-start');
     if (AppState.gameState !== 'idle' && AppState.gameState !== 'rotating') return; // 防呆，允許在初始或重新洗牌旋轉中抽取
 

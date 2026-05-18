@@ -253,7 +253,12 @@
     - 更新 [sw.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/sw.js) 的離線快取檔案列表，將舊的 `'./js/tarot_dict.js'` 置換為 `'./assets/data/tarot_dict.json'`，保障新架構在斷網環境下的完整可用性。
 - **正式發佈版本號同步 (v1.9.20)**:
     - 運行 `node scripts/bump-version.js 1.9.20` 升級腳本，同步將版本號升級為 `1.9.20`。
-    - 更新 [js/version.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/version.js) 的 `APP_VERSION`、[sw.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/sw.js) 的 `CACHE_VERSION`，並一併更新了 [index.html](file:///c:/Users/steve/Documents/code_local/tarot_cards/index.html) 中共 17 處資源檔案引入的 `?v=1.9.20` 查詢字串，保障客戶端快取即時更新。
+    - 更新 [js/version.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/version.js) 的 `APP_VERSION`、[sw.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/sw.js) 的 `CACHE_VERSION`，並一併更新了 [index.html](file:///c:/Users/steve/Documents/code_local/tarot_cards/index.html) 中共 17 處資源檔案引入 the `?v=1.9.20` 查詢字串，保障客戶端快取即時更新。
+- **全端導入原生 ES6 Modules (ESM) 模組化大重構**:
+    - **消滅全域腳本依賴**：重構 [index.html](file:///c:/Users/steve/Documents/code_local/tarot_cards/index.html)，移除原本所有寫死的同步加載 `<script src="js/xxx.js"></script>`，全面改為唯一的原生模組進入點 `<script type="module" src="./js/init.js?v=1.9.20"></script>`，極大精簡了首頁 HTML 體積並消除了載入競態問題。
+    - **全面模組化封裝**：將專案內 14 個核心 JS 檔案（`state.js`, `ui.js`, `question.js`, `ring.js`, `gesture.js`, `imageExport.js`, `db.js`, `history.js`, `analysis.js`, `app.js`, `daily.js`, `celtic-cross.js`, `init.js`, `version.js`）全面改造為原生 ESM 模式，透過 `export` 顯式導出、`import` 顯式導入，徹底擺脫隱性全域變量依賴，程式碼結構極其清晰。
+    - **PWA 快取架構重構**：更新 [sw.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/sw.js) 快取列表，適應原生模組載入機制，精簡快取清單以確保留線時的原生 ESM 機制依然能順利執行。
+
 
 
 

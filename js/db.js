@@ -7,7 +7,7 @@ const STORE_NAME = 'historyLogs';
 
 let dbInstance = null;
 
-function initDB() {
+export function initDB() {
     return new Promise((resolve, reject) => {
         if (dbInstance) {
             resolve(dbInstance);
@@ -35,7 +35,7 @@ function initDB() {
     });
 }
 
-async function saveHistoryRecord(record) {
+export async function saveHistoryRecord(record) {
     try {
         const db = await initDB();
         return new Promise((resolve, reject) => {
@@ -67,7 +67,7 @@ async function saveHistoryRecord(record) {
     }
 }
 
-async function getAllHistory() {
+export async function getAllHistory() {
     try {
         const db = await initDB();
         return new Promise((resolve, reject) => {
@@ -89,7 +89,7 @@ async function getAllHistory() {
     }
 }
 
-async function deleteHistoryRecord(id) {
+export async function deleteHistoryRecord(id) {
     try {
         const db = await initDB();
         return new Promise((resolve, reject) => {
@@ -106,7 +106,7 @@ async function deleteHistoryRecord(id) {
     }
 }
 
-async function clearAllHistory() {
+export async function clearAllHistory() {
     try {
         const db = await initDB();
         return new Promise((resolve, reject) => {
@@ -128,7 +128,7 @@ async function clearAllHistory() {
  * @param {number} recordId - 歷史紀錄 ID
  * @param {{ question: string, reply: string, timestamp: number }} chat - 單筆延伸對話
  */
-async function updateHistoryFollowup(recordId, chat) {
+export async function updateHistoryFollowup(recordId, chat) {
     try {
         const db = await initDB();
         return new Promise((resolve, reject) => {

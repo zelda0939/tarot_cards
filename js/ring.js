@@ -1,9 +1,11 @@
 /* ============================
    抽牌環渲染與動畫
    ============================ */
+import { AppState } from './state.js';
+import { getTarotCards } from './app.js';
+import { setSaveImageStatus, setSaveImageButtonState } from './ui.js';
 
-
-function clearSmoothTransitionTimer() {
+export function clearSmoothTransitionTimer() {
     if (AppState._smoothTransitionTimer) {
         clearTimeout(AppState._smoothTransitionTimer);
         AppState._smoothTransitionTimer = null;
@@ -13,7 +15,7 @@ function clearSmoothTransitionTimer() {
     });
 }
 
-function drawRandomCard() {
+export function drawRandomCard() {
     const cards = getTarotCards();
     const available = cards.filter(c => !AppState.usedCardIds.has(c.id));
     if (available.length === 0) {
@@ -26,7 +28,7 @@ function drawRandomCard() {
     return { ...baseCard, isReversed: Math.random() >= 0.5 };
 }
 
-function drawTrueRandomCard() {
+export function drawTrueRandomCard() {
     const cards = getTarotCards();
     const selectedIds = new Set(AppState.selectedCards.map(c => c.id));
     const available = cards.filter(c => !selectedIds.has(c.id));
@@ -40,7 +42,7 @@ function drawTrueRandomCard() {
  * @param {Object} card - 卡牌資料
  * @returns {{ reversedClass: string, artStyle: string, postureText: string }}
  */
-function getCardVisualProps(card) {
+export function getCardVisualProps(card) {
     const reversedClass = card.isReversed ? 'reversed' : '';
     const artStyle = card.isReversed
         ? `background-image: url('./assets/images/${card.name_short}.jpg'); transform: rotate(180deg);`
@@ -51,7 +53,7 @@ function getCardVisualProps(card) {
     return { reversedClass, artStyle, postureText };
 }
 
-function updateCardFrontDOM(cardEl, card) {
+export function updateCardFrontDOM(cardEl, card) {
     const { reversedClass, artStyle, postureText } = getCardVisualProps(card);
 
     const cardArt = cardEl.querySelector('.card-art');
@@ -66,7 +68,7 @@ function updateCardFrontDOM(cardEl, card) {
     }
 }
 
-function generateCardRing() {
+export function generateCardRing() {
     clearSmoothTransitionTimer();
     AppState.carouselEl = document.getElementById('carousel');
     AppState.carouselEl.innerHTML = '';
@@ -105,7 +107,7 @@ function generateCardRing() {
     updateCardPositions();
 }
 
-function createCardElement(index, card) {
+export function createCardElement(index, card) {
     const cardEl = document.createElement('div');
     cardEl.className = 'tarot-card';
     cardEl.dataset.index = index;
@@ -127,7 +129,7 @@ function createCardElement(index, card) {
     return cardEl;
 }
 
-function refillCardSlot(slotIndex) {
+export function refillCardSlot(slotIndex) {
     const newCard = drawRandomCard();
     AppState.ringCardData[slotIndex] = newCard;
 
@@ -150,7 +152,7 @@ function refillCardSlot(slotIndex) {
  * 2. 用單一 cssText 批次寫入 transform/opacity/zIndex，減少 style recalc
  * 3. 只在 active 狀態真正改變時才操作 classList（最昂貴的 DOM API）
  */
-function updateCardPositions() {
+export function updateCardPositions() {
     const numberOfCards = AppState.numberOfCards;
     const anglePerCard = 360 / numberOfCards;
     const ellipseVerticalRadius = AppState.spreadRadius * 0.4;
@@ -194,7 +196,7 @@ function updateCardPositions() {
     }
 }
 
-function scheduleRingAnimationFrame() {
+export function scheduleRingAnimationFrame() {
     const frameId = requestAnimationFrame((timestamp) => {
         AppState._ringAnimationFrameIds.delete(frameId);
         animateCardRing(timestamp);
@@ -203,7 +205,7 @@ function scheduleRingAnimationFrame() {
     AppState.animationFrameId = frameId;
 }
 
-function animateCardRing(timestamp) {
+export function animateCardRing(timestamp) {
     if (!AppState.ringAnimationRunning) return;
 
     if (!timestamp) timestamp = performance.now();
@@ -225,7 +227,7 @@ function animateCardRing(timestamp) {
     }
 }
 
-function startCardRingAnimation() {
+export function startCardRingAnimation() {
     if (AppState.ringAnimationRunning) return;
 
     // 暫停背景動畫以釋放 GPU 資源給卡牌環旋轉
@@ -236,7 +238,7 @@ function startCardRingAnimation() {
     scheduleRingAnimationFrame();
 }
 
-function stopCardRingAnimation() {
+export function stopCardRingAnimation() {
     AppState._ringAnimationFrameIds.forEach(frameId => cancelAnimationFrame(frameId));
     AppState._ringAnimationFrameIds.clear();
     AppState.animationFrameId = null;
@@ -248,7 +250,7 @@ function stopCardRingAnimation() {
     _setBackgroundAnimPaused(false);
 }
 
-function stopCardRing() {
+export function stopCardRing() {
     AppState.gameState = 'stopped';
     const anglePerCard = 360 / AppState.numberOfCards;
 

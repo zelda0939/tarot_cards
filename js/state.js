@@ -2,7 +2,7 @@
    全域狀態（集中管理）
    所有模組透過 AppState.xxx 存取，方便 grep 追蹤來源
    ============================ */
-const AppState = {
+export const AppState = {
     // MediaPipe 實體
     mpHands: null,
     mpCamera: null,
@@ -66,7 +66,9 @@ const AppState = {
     _dailyScanAnimId: null,
     _ccTimers: [],
     _ccParticleAnimId: null,
-    selectedHistoryIds: new Set()
+    selectedHistoryIds: new Set(),
+    // 當前分析的歷史紀錄 ID（供延伸對話更新使用，ESM 模組模式下必須在物件中預先宣告）
+    _currentHistoryRecordId: null
 };
 
 // 防止意外新增未定義的屬性，但允許修改既有屬性值
@@ -75,13 +77,13 @@ Object.seal(AppState);
 /* ============================
    localStorage 鍵值常數
    ============================ */
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
     API_KEY: 'gemini_api_key',
     MODEL: 'gemini_model',
     DAILY_CARD_DATE: 'dailyCardDate'
 };
 
-const CELTIC_CROSS_POSITIONS = [
+export const CELTIC_CROSS_POSITIONS = [
     { id: 1, name: '現況', en: 'The Present', desc: '問題的核心，當前處境' },
     { id: 2, name: '挑戰', en: 'The Challenge', desc: '橫跨的阻礙或衝突', rotated: true },
     { id: 3, name: '理想', en: 'The Ideal', desc: '意識中的期望與目標' },

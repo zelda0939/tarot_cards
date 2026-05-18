@@ -1,9 +1,12 @@
 /* ============================
    手勢辨識與 MediaPipe 控制
    ============================ */
+import { AppState } from './state.js';
+import { updateInstruction } from './ui.js';
+import { stopCardRing } from './ring.js';
+import { confirmSelection } from './app.js';
 
-
-function stopMediaPipeCamera(reason = 'manual-stop') {
+export function stopMediaPipeCamera(reason = 'manual-stop') {
     AppState._mediaPipeSessionId++;
 
     if (AppState.mpCamera) {
@@ -27,7 +30,7 @@ function stopMediaPipeCamera(reason = 'manual-stop') {
     AppState.mediaPipeStarting = false;
 }
 
-async function initMediaPipe() {
+export async function initMediaPipe() {
     const videoElement = document.getElementById('videoElement');
 
     if (typeof Hands === 'undefined') {

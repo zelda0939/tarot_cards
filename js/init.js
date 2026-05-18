@@ -2,17 +2,28 @@
  * 聖境塔羅 (Celestial Tarot)
  * 初始化控制模組
  */
+import { AppState, STORAGE_KEYS } from './state.js';
+import { getActiveQuestionText, syncQuestionPreview, setQuestionPanelCompact } from './question.js';
+import { updateInstruction } from './ui.js';
+import { cleanupDailyAnimation, triggerDailyCard } from './daily.js';
+import { cleanupGestureTransientEffects, fetchCardsFromAPI, resetGame, requestWakeLock } from './app.js';
+import { generateCardRing, startCardRingAnimation, stopCardRingAnimation } from './ring.js';
+import { stopMediaPipeCamera, initMediaPipe } from './gesture.js';
+import { triggerCelticCross } from './celtic-cross.js';
+import { _setupAnalysisEvents } from './analysis.js';
+import { saveReadingAsImage } from './imageExport.js';
+import './history.js';
 
 /* ============================
    DOMContentLoaded 入口
    ============================ */
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[聖境塔羅] 頁面載入完成');
-    detectInAppBrowser(); // 偵測 LINE 等 in-app 瀏覽器
+    detectInAppBrowser();
     initStars();
     initApp();
-    if (typeof _setupAnalysisEvents === 'function') _setupAnalysisEvents();
-    requestWakeLock(); // 啟動螢幕恆亮
+    _setupAnalysisEvents();
+    requestWakeLock();
 });
 
 /* ============================

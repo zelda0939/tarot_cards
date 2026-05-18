@@ -1,6 +1,10 @@
 /* ============================
    解牌結果圖片匯出
    ============================ */
+import { AppState, CELTIC_CROSS_POSITIONS } from './state.js';
+import { getActiveQuestionText } from './question.js';
+import { setSaveImageStatus, setSaveImageButtonState } from './ui.js';
+
 function normalizeGuidanceText(rawText) {
     if (!rawText) return '';
     return String(rawText)
@@ -106,7 +110,7 @@ function _extractFollowupChats(customHistory) {
     return chats;
 }
 
-async function buildGuidanceImageCanvas(questionText, guidanceText, cards, options = {}) {
+export async function buildGuidanceImageCanvas(questionText, guidanceText, cards, options = {}) {
     const width = 1080;
     const padding = 82;
     const contentWidth = width - padding * 2;
@@ -601,7 +605,7 @@ function downloadImageBlob(blob, fileName) {
     setTimeout(() => URL.revokeObjectURL(objectUrl), 2000);
 }
 
-async function saveReadingAsImage() {
+export async function saveReadingAsImage() {
     if (AppState.saveImageBusy) return;
 
     const questionText = getActiveQuestionText();

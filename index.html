@@ -483,38 +483,18 @@
                 class="app-version"></span></p>
     </footer>
 
-    <script src="js/version.js?v=1.9.20"></script>
-    <script src="js/state.js?v=1.9.20"></script>
-    <script src="js/ui.js?v=1.9.20"></script>
-    <script src="js/question.js?v=1.9.20"></script>
-    <script src="js/ring.js?v=1.9.20"></script>
-    <script src="js/gesture.js?v=1.9.20"></script>
-    <script src="js/imageExport.js?v=1.9.20"></script>
-    <script src="js/db.js?v=1.9.20"></script>
-    <script src="js/history.js?v=1.9.20"></script>
-    <script src="js/analysis.js?v=1.9.20"></script>
-    <script src="js/app.js?v=1.9.20"></script>
-    <script src="js/daily.js?v=1.9.20"></script>
-    <script src="js/celtic-cross.js?v=1.9.20"></script>
-    <script src="js/init.js?v=1.9.20"></script>
-    <script>
-        // 在頁面載入時顯示目前版本號
-        document.addEventListener('DOMContentLoaded', () => {
-            const versionEl = document.getElementById('app-version-display');
-            if (versionEl && typeof APP_VERSION !== 'undefined') {
-                versionEl.textContent = 'v' + APP_VERSION;
-            }
-        });
-
-        // 註冊 Service Worker（PWA）— 加版本號確保更新時重新註冊
+    <script type="module" src="js/init.js?v=1.9.20"></script>
+    <script type="module">
+        import { APP_VERSION } from './js/version.js';
+        const versionEl = document.getElementById('app-version-display');
+        if (versionEl) versionEl.textContent = 'v' + APP_VERSION;
+    </script>
+    <script type="module">
+        import { APP_VERSION } from './js/version.js';
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js?v=' + APP_VERSION)
-                    .then(reg => {
-                        console.log('[PWA] Service Worker 註冊成功:', reg.scope);
-                        // 顯示版本號
-                        console.log('[聖境塔羅] 版本:', APP_VERSION);
-                    })
+                    .then(reg => console.log('[PWA] Service Worker 註冊成功:', reg.scope))
                     .catch(err => console.warn('[PWA] Service Worker 註冊失敗:', err));
             });
         }

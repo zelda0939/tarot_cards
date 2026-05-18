@@ -304,6 +304,8 @@
   - **決策 12：重構字典數據為非同步載入 JSON 檔**：為了大幅節省首頁初次加載的 JS 文件大小與解析開銷，將原全域龐大的 `js/tarot_dict.js` 移出，重構成非同步動態獲取的 `assets/data/tarot_dict.json`，並在 `js/app.js` 的 `fetchCardsFromAPI()` 中優先動態 `fetch` 本地中文翻譯，保障了頁面的 FCP 與 FOUC 的極佳性能表現。
   - **決策 13：實作一次性監聽器綁定，消滅閉包與 GC 洩漏**：在 `js/analysis.js`（`_setupAnalysisEvents()`）及 `js/history.js`（`_currentHistoryRecord` 機制）中，全面以一次性 `addEventListener` 取代原本每次開啟 Modal 詳情時動態對屬性 `.onclick`/`.onkeydown` 重新指派閉包的寫法。這徹底解決了在頁面高頻互動中產生重複閉包與監聽器溢出的 GC 壓力，並更新 `sw.js` 快取以確保 PWA 的完整離線相容性。
   - **決策 14：正式同步版本升級 v1.9.20**：執行 `node scripts/bump-version.js 1.9.20` 升級腳本。全面同步更新 `js/version.js`、`sw.js` 及 `index.html` 共 17 處引入資源查詢字串 `?v=1.9.20`，確保 PWA 用戶端的本地緩存在最新版發佈時能即時無縫重新獲取最新程式碼與資源，消除舊版資源殘留問題。
+  - **決策 15：全端導入原生 ES6 Modules (ESM) 重構**：為徹底消除隱性全域變量與靜態 `<script>` 腳本加載順序依賴的頑疾，將專案全體 14 個核心 JavaScript 模組全面重構為原生 ES6 Module 架構。在 `index.html` 中僅引入唯一的入口模組 `<script type="module" src="./js/init.js?v=1.9.20"></script>`，其餘模組依賴關係皆透過顯式的 `export` / `import` 控制，大幅精簡 DOM 架構並提升瀏覽器加載與編譯效能，同時優化 `sw.js` 機制以確保 PWA 離線完整相容性。
+
 
 
 

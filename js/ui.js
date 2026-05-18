@@ -1,11 +1,12 @@
 /* ============================
    UI 輔助函式
    ============================ */
+import { AppState } from './state.js';
 
 /**
  * HTML 特殊字元跳脫（防止 XSS 注入）
  */
-function escapeHtml(str) {
+export function escapeHtml(str) {
     if (!str) return '';
     const div = document.createElement('div');
     div.appendChild(document.createTextNode(str));
@@ -19,7 +20,7 @@ function escapeHtml(str) {
  * @param {object} options - { interval, onChar(i), onComplete }
  * @returns {number} setInterval ID
  */
-function typewriteText(container, text, options = {}) {
+export function typewriteText(container, text, options = {}) {
     const { interval = 15, onChar, onComplete } = options;
     let i = 0;
     const timer = setInterval(() => {
@@ -39,14 +40,14 @@ function typewriteText(container, text, options = {}) {
     return timer;
 }
 
-function updateInstruction(text) {
+export function updateInstruction(text) {
     const el = document.querySelector('#gesture-instruction p');
     if (el) {
         el.textContent = text;
     }
 }
 
-function setSaveImageStatus(message, statusType = '') {
+export function setSaveImageStatus(message, statusType = '') {
     const statusEl = document.getElementById('save-image-status');
     if (!statusEl) return;
 
@@ -65,14 +66,14 @@ function setSaveImageStatus(message, statusType = '') {
     }
 }
 
-function setSaveImageButtonState(disabled, buttonText) {
+export function setSaveImageButtonState(disabled, buttonText) {
     const btn = document.getElementById('save-reading-image-btn');
     if (!btn) return;
     btn.disabled = !!disabled;
     btn.textContent = buttonText || '儲存提問＋星辰指引圖';
 }
 
-function showLoadingOverlay() {
+export function showLoadingOverlay() {
     const overlay = document.getElementById('loading-overlay');
     const cardsRow = document.getElementById('loading-selected-cards');
     if (!overlay) return;
@@ -97,7 +98,7 @@ function showLoadingOverlay() {
     overlay.classList.remove('hidden', 'fade-out');
 }
 
-function hideLoadingOverlay(callback) {
+export function hideLoadingOverlay(callback) {
     const overlay = document.getElementById('loading-overlay');
     if (!overlay) {
         if (callback) callback();
@@ -123,7 +124,7 @@ function hideLoadingOverlay(callback) {
 // 自訂確認對話框 (Confirm Modal)
 // ============================
 
-function showConfirmDialog(title, message) {
+export function showConfirmDialog(title, message) {
     return new Promise((resolve) => {
         const modal = document.getElementById('confirm-modal');
         const titleEl = document.getElementById('confirm-modal-title');

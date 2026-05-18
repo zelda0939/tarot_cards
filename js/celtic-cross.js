@@ -2,6 +2,14 @@
  * 聖境塔羅 (Celestial Tarot)
  * 聖十字牌陣 (Celtic Cross) — 一鍵展牌動畫與流程
  */
+import { AppState, CELTIC_CROSS_POSITIONS } from './state.js';
+import { getActiveQuestionText, setQuestionPanelCompact } from './question.js';
+import { updateInstruction } from './ui.js';
+import { cleanupDailyAnimation } from './daily.js';
+import { cleanupGestureTransientEffects, fetchCardsFromAPI } from './app.js';
+import { stopMediaPipeCamera } from './gesture.js';
+import { stopCardRingAnimation, drawTrueRandomCard, getCardVisualProps } from './ring.js';
+import { showAnalysis } from './analysis.js';
 
 /* ============================
    聖十字資源追蹤與統一清理
@@ -11,7 +19,7 @@
 /**
  * 統一清理聖十字動畫所有資源
  */
-function cleanupCelticCrossAnimation() {
+export function cleanupCelticCrossAnimation() {
     AppState._ccTimers.forEach(id => clearTimeout(id));
     AppState._ccTimers = [];
 
@@ -41,7 +49,7 @@ function cleanupCelticCrossAnimation() {
 /**
  * 啟動聖十字牌陣一鍵展牌流程
  */
-async function triggerCelticCross() {
+export async function triggerCelticCross() {
     const activeQuestion = getActiveQuestionText();
     if (!activeQuestion) {
         const instruction = document.getElementById('gesture-instruction');
@@ -102,7 +110,7 @@ async function triggerCelticCross() {
  * 聖十字一鍵展牌動畫
  * 10 張牌依序飛入 Celtic Cross 位置，牌背→翻牌
  */
-function startCelticCrossAnimation() {
+export function startCelticCrossAnimation() {
     const overlay = document.getElementById('celtic-cross-animation-overlay');
     const stage = document.getElementById('cc-anim-card-stage');
     const statusEl = document.getElementById('cc-anim-status');
@@ -290,7 +298,7 @@ function startCelticCrossAnimation() {
 /**
  * 將已抽的 10 張牌填入靜態聖十字 slot 佈局
  */
-function populateCelticCrossSlots() {
+export function populateCelticCrossSlots() {
     const container = document.getElementById('celtic-cross-container');
     if (container) container.classList.remove('hidden');
 
@@ -329,7 +337,7 @@ function populateCelticCrossSlots() {
 /**
  * 清空聖十字 slot UI
  */
-function clearCelticCrossSlots() {
+export function clearCelticCrossSlots() {
     for (let i = 1; i <= 10; i++) {
         const slot = document.getElementById(`cc-slot-${i}`);
         if (slot) {
@@ -344,7 +352,7 @@ function clearCelticCrossSlots() {
  * @param {Array} cards — 10 張卡牌資料
  * @returns {string} HTML 字串
  */
-function buildCelticCrossLayoutHTML(cards) {
+export function buildCelticCrossLayoutHTML(cards) {
     if (!cards || cards.length < 10) return '';
 
     function cardMiniHTML(card, posIdx, options = {}) {

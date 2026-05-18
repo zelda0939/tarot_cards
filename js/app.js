@@ -2,6 +2,14 @@
  * 聖境塔羅 (Celestial Tarot)
  * 核心應用程式邏輯與手勢辨識整合 (3D 環形架構)
  */
+import { AppState } from './state.js';
+import { getActiveQuestionText, setQuestionPanelCompact, syncQuestionPreview } from './question.js';
+import { updateInstruction } from './ui.js';
+import { generateCardRing, startCardRingAnimation, stopCardRingAnimation, refillCardSlot, updateCardFrontDOM, drawTrueRandomCard } from './ring.js';
+import { stopMediaPipeCamera, initMediaPipe } from './gesture.js';
+import { showAnalysis } from './analysis.js';
+import { clearCelticCrossSlots, cleanupCelticCrossAnimation } from './celtic-cross.js';
+import { cleanupDailyAnimation } from './daily.js';
 
 /* ============================
    塔羅牌資料（本地 fallback + API 整合）
@@ -48,13 +56,13 @@ let _tarotCardsData = [
     { id: 21, name: '世界', en: 'The World', name_short: 'ar21', numeral: 'XXI', symbol: '◎', meaning_up: '完成、圓滿與整合，旅程的圓滿完成。', meaning_rev: '未完成、缺少收尾、延遲。', desc: '一位女性在月桂花環中舞蹈，四角有四活物。' }
 ];
 /** 外部模組請使用 getTarotCards() 唯讀存取 */
-function getTarotCards() { return _tarotCardsData; }
+export function getTarotCards() { return _tarotCardsData; }
 
 /**
  * 從 tarotapi.dev 取得完整 78 張牌資料
  * 成功後將取代本地 _tarotCardsData 陣列
  */
-async function fetchCardsFromAPI() {
+export async function fetchCardsFromAPI() {
     try {
         console.log('[聖境塔羅] 正在從 tarotapi.dev 載入牌庫...');
 
@@ -124,7 +132,7 @@ async function fetchCardsFromAPI() {
    ============================ */
 
 
-function scheduleGestureTimer(callback, delay) {
+export function scheduleGestureTimer(callback, delay) {
     const timerId = setTimeout(() => {
         AppState._gestureTimers = AppState._gestureTimers.filter(id => id !== timerId);
         callback();
@@ -133,13 +141,13 @@ function scheduleGestureTimer(callback, delay) {
     return timerId;
 }
 
-function clearGestureTimer(timerId) {
+export function clearGestureTimer(timerId) {
     if (!timerId) return;
     clearTimeout(timerId);
     AppState._gestureTimers = AppState._gestureTimers.filter(id => id !== timerId);
 }
 
-function cleanupGestureTransientEffects() {
+export function cleanupGestureTransientEffects() {
     AppState._gestureTimers.forEach(id => clearTimeout(id));
     AppState._gestureTimers = [];
 
@@ -154,7 +162,7 @@ function cleanupGestureTransientEffects() {
     });
 }
 
-function confirmSelection() {
+export function confirmSelection() {
     const maxCards = AppState.spreadMode === 'celtic-cross' ? 10 : 3;
     if (AppState.selectedCards.length >= maxCards) return;
 
@@ -315,7 +323,7 @@ function confirmSelection() {
 /* ============================
    重新抽牌 — 重置所有狀態
    ============================ */
-async function resetGame() {
+export async function resetGame() {
     console.log('[聖境塔羅] 🔄 重新抽牌');
 
     if (typeof cleanupDailyAnimation === 'function') cleanupDailyAnimation();
@@ -401,7 +409,7 @@ async function resetGame() {
    螢幕恆亮 (Screen Wake Lock API)
    防止使用手勢操作時螢幕自動關閉
    ============================ */
-async function requestWakeLock() {
+export async function requestWakeLock() {
     if (!('wakeLock' in navigator)) {
         console.warn('[聖境塔羅] 此瀏覽器不支援 Screen Wake Lock API');
         return;

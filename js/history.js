@@ -1,6 +1,13 @@
 /* ============================
    UI 互動邏輯
    ============================ */
+import { AppState, STORAGE_KEYS, CELTIC_CROSS_POSITIONS } from './state.js';
+import { getAllHistory, deleteHistoryRecord, clearAllHistory, updateHistoryFollowup, initDB } from './db.js';
+import { showConfirmDialog, escapeHtml, typewriteText } from './ui.js';
+import { buildGuidanceImageCanvas } from './imageExport.js';
+import { buildCelticCrossLayoutHTML } from './celtic-cross.js';
+import { fetchWithRetry, AI_MODELS } from './analysis.js';
+
 let _currentHistoryRecord = null;
 
 
@@ -153,7 +160,7 @@ async function exportHistoryImage(record) {
 }
 
 
-async function showHistoryDetail(id) {
+export async function showHistoryDetail(id) {
     const records = await getAllHistory();
     const record = records.find(r => r.id === Number(id));
     if (!record) return;
@@ -599,5 +606,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 初始化本地資料庫
     initDB();
 });
+
+// 內嵌 onclick="showHistoryDetail(${id})" 的 HTML 字串（歷史列表中的點擊）需要此暴露
+window.showHistoryDetail = showHistoryDetail;
 
 

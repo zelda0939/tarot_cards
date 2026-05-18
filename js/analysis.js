@@ -1,7 +1,14 @@
 /* ============================
-   AI 解牌流程
-   ============================ */
-const AI_MODELS = {
+    AI 解牌流程
+    ============================ */
+import { AppState, STORAGE_KEYS, CELTIC_CROSS_POSITIONS } from './state.js';
+import { getActiveQuestionText } from './question.js';
+import { setSaveImageStatus, setSaveImageButtonState, showLoadingOverlay, hideLoadingOverlay, escapeHtml, typewriteText } from './ui.js';
+import { saveHistoryRecord, getAllHistory, updateHistoryFollowup } from './db.js';
+import { buildCelticCrossLayoutHTML } from './celtic-cross.js';
+import { restoreDailyHomeLayout } from './daily.js';
+
+export const AI_MODELS = {
     'gemini-3-flash-preview': { name: 'Gemini 3 Flash', id: 'gemini-3-flash-preview' },
     'gemma-4-31b-it': { name: 'Gemma 4 31B', id: 'gemma-4-31b-it' }
 };
@@ -11,7 +18,7 @@ const AI_MODELS = {
  * 4xx 錯誤不重試（API key 錯誤等客戶端問題）
  * 擲出的錯誤會附加 retryAttempts 屬性
  */
-async function fetchWithRetry(url, options, maxRetries = 3) {
+export async function fetchWithRetry(url, options, maxRetries = 3) {
     let lastError;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
@@ -38,7 +45,7 @@ async function fetchWithRetry(url, options, maxRetries = 3) {
     throw lastError;
 }
 
-function showAnalysis() {
+export function showAnalysis() {
     const modal = document.getElementById('reading-modal');
     const container = document.getElementById('cards-analysis-container');
     const geminiLoading = document.getElementById('gemini-loading');
@@ -226,7 +233,7 @@ function _showFollowupSection() {
 /**
  * 延伸提問：送出使用者的追問並取得 AI 回覆
  */
-async function sendFollowupQuestion() {
+export async function sendFollowupQuestion() {
     const input = document.getElementById('followup-input');
     const historyContainer = document.getElementById('followup-history');
     const sendBtn = document.getElementById('followup-send-btn');
@@ -420,7 +427,7 @@ function _scrollFollowupToBottom(container) {
     });
 }
 
-async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
+export async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
     const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
     if (!apiKey) {
         return {
@@ -551,8 +558,11 @@ ${cardsLog.join('\n')}
     }
 }
 
+// 內嵌 onclick="showAnalysis()" 的 HTML 字串（錯誤訊息中的重新送出按鈕）需要此暴露
+window.showAnalysis = showAnalysis;
+
 /* 一次性事件綁定（取代每次 showAnalysis 重新指派 .onclick） */
-function _setupAnalysisEvents() {
+export function _setupAnalysisEvents() {
     const closeBtn = document.getElementById('close-reading-modal');
     if (closeBtn) {
         closeBtn.addEventListener('click', () => {
