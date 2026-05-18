@@ -262,3 +262,12 @@
 
 
 
+
+- **正式發佈 ES6 原生模組化大版本 (v1.10.0)**:
+    - 運行 `bump-version.js` 升級腳本，同步將版本號自 `v1.9.20` 升級為 `1.10.0`。
+    - 同步更新 [js/version.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/version.js) 的 `APP_VERSION`、[sw.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/sw.js) 的 `CACHE_VERSION`，並一併更新了 [index.html](file:///c:/Users/steve/Documents/code_local/tarot_cards/index.html) 中引入資源查詢字串為 `?v=1.10.0`，確保快取失效刷新機制。
+- **CSS 變數統一、PWA 離線圖片優化與版本更新 (v1.10.1)**:
+    - **CSS 金色與暗色系配色變數化**：為優化 UI 的可維護性，將全專案中約 108 處硬編碼的金色配色 `rgba(212, 175, 55)` 統一替換為基於 CSS 變數的 `rgba(var(--gold-rgb))`，並於 `:root` 新增 `--gold-rgb` 以及 `--navy-blue-rgb` 等變數。修復了 `:root` 區塊註解遺失與 `--navy-blue` 變數自我參考的 Bug，大幅提升設計系統的一致性。
+    - **PWA 卡牌圖片離線加載策略優化**：在 [sw.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/sw.js) 中新增針對卡牌圖片資源 (`assets/images/*.jpg`) 的 `Cache-First` 快取策略。使得用戶在離線狀態下進行占卜時，能直接且快速地從本地快取加載 78 張高質感卡牌圖片。而一般靜態程式碼資源與 API 請求則繼續維持 `Network-First` 策略，完美兼顧「版本即時更新」與「卡牌圖片離線流暢加載」。
+    - **延伸提問發送行為一致性修復**：修正並統一天人延伸提問送出按鈕在發送中的狀態行為。在歷史詳情與解牌結果 Modal 中，發送期間統一僅設為 `disabled` 狀態，而不更動原按鈕文字，消除任何視覺閃爍或狀態不一致的問題。
+    - **正式發佈版本號同步 (v1.10.1)**：執行 `node scripts/bump-version.js 1.10.1` 升級腳本。同步更新 `js/version.js`、`sw.js` 及 `index.html` 共 4 處引入資源查詢字串 `?v=1.10.1`，保障用戶端快取即時更新。

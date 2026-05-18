@@ -3,4 +3,4 @@
  * 更新此值即可觸發所有資源的快取失效
  * 格式：主版本.次版本.修訂號
  */
-export const APP_VERSION = '1.10.0';
+export const APP_VERSION = '1.10.1';
