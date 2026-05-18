@@ -229,4 +229,12 @@
     - 自 [css/style.css](file:///c:/Users/steve/Documents/code_local/tarot_cards/css/style.css) 移除已廢棄且無實際用途的 `.reading-modal-actions` CSS 樣式。
 - **PWA 規格校驗修復**:
     - 修正 [manifest.json](file:///c:/Users/steve/Documents/code_local/tarot_cards/manifest.json) 中桌面端與行動端螢幕截圖（screenshots）定義的 `type` 為 `image/png`，以精確匹配實際的圖檔副檔名（`.png`），防止 PWA 安裝校驗警告。
-
+- **實作 API 自動重試機制 (fetchWithRetry)**:
+    - 於 [js/analysis.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/analysis.js) 實作 `fetchWithRetry()` 通用 API 請求函式，設定最多自動重試 3 次，並採用「指數退避（Exponential Backoff）」策略（初始延遲 1s，每次倍增延遲），提升在不穩定網路環境下的容錯力。
+    - 將 [js/analysis.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/analysis.js)（`sendFollowupQuestion`, `fetchGeminiAnalysis`）與 [js/history.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/history.js)（`sendHistoryFollowupQuestion`）中原本的 `fetch` 呼叫全面改為 `fetchWithRetry`。
+- **優化占卜日誌延伸追問之錯誤處理與重試**:
+    - 修改 [js/history.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/history.js)，在歷史延伸提問發生 API 連線錯誤時，於回應泡泡中新增「✦ 重新送出」按鈕。點擊後會清理暫態的使用者對話框，並自動重新觸發 `sendHistoryFollowupQuestion` 流程。
+- **修復螢幕恆亮 Wake Lock 被系統釋放之重啟問題**:
+    - 修改 [js/app.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/app.js) 的 `requestWakeLock`，新增檢查 `sentinel.released`。當鎖已被系統隱性釋放但 `release` 事件尚未觸發時，能自動清除舊有 sentinel 並重新建立螢幕恆亮鎖，防範恆亮失效。
+- **全面強化 IndexedDB 資料層錯誤暴露（禁止靜默失敗）**:
+    - 重構 [js/db.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/db.js) 中所有的 catch 區塊。將原本僅使用 `console.error` 列印後便靜默結束的行為，修正為在印出錯誤日誌後「顯式拋出錯誤（`throw err`）」，讓調用端能精確感知資料存取之實質失敗，徹底落實專案健壯性。

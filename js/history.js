@@ -372,7 +372,7 @@ async function sendHistoryFollowupQuestion(record) {
 - 使用繁體中文（台灣用語）
 - 不要重複已經說過的內容`;
 
-        const response = await fetch(
+        const response = await fetchWithRetry(
             `https://generativelanguage.googleapis.com/v1beta/models/${modelInfo.id}:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
@@ -383,8 +383,6 @@ async function sendHistoryFollowupQuestion(record) {
                 })
             }
         );
-
-        if (!response.ok) throw new Error(`API 錯誤: ${response.status}`);
 
         const data = await response.json();
         const parts = data.candidates?.[0]?.content?.parts || [];
@@ -430,9 +428,24 @@ async function sendHistoryFollowupQuestion(record) {
     } catch (err) {
         console.error('[聖境塔羅] 歷史延伸提問失敗:', err);
         if (loadingBubble) {
+            const safeErr = escapeHtml(err.message || '未知錯誤');
             loadingBubble.innerHTML = `<div class="followup-bubble-label">✦ 星辰回應</div>
-                <span style="color: #ff6b6b;">星辰暫時失聯了 (${escapeHtml(err.message)})。請稍後再試。</span>`;
+                <span style="color: #ff6b6b;">星辰暫時失聯了 (${safeErr})。請稍後再試。</span>
+                <div style="text-align: center; margin-top: 12px;">
+                    <button class="premium-btn followup-retry-btn" style="padding: 6px 14px; font-size: 0.78em;">✦ 重新送出</button>
+                </div>`;
             loadingBubble.classList.remove('followup-bubble-loading');
+            const retryBtn = loadingBubble.querySelector('.followup-retry-btn');
+            if (retryBtn) {
+                retryBtn.onclick = () => {
+                    const userBubble = loadingBubble.previousElementSibling;
+                    if (userBubble && userBubble.classList.contains('followup-bubble-user')) userBubble.remove();
+                    loadingBubble.remove();
+                    input.disabled = false;
+                    if (sendBtn) sendBtn.disabled = false;
+                    sendHistoryFollowupQuestion(record);
+                };
+            }
         }
         input.disabled = false;
         if (sendBtn) {

@@ -398,7 +398,11 @@ async function requestWakeLock() {
     }
     // 若現有 sentinel 仍有效，不重複請求（防止洩漏）
     if (AppState.wakeLockSentinel) {
-        return;
+        // 若 sentinel 已被系統釋放但 release 事件尚未觸發，仍應重新請求
+        if (!AppState.wakeLockSentinel.released) {
+            return;
+        }
+        AppState.wakeLockSentinel = null;
     }
     try {
         AppState.wakeLockSentinel = await navigator.wakeLock.request('screen');

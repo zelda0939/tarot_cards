@@ -6,6 +6,38 @@ const AI_MODELS = {
     'gemma-4-31b-it': { name: 'Gemma 4 31B', id: 'gemma-4-31b-it' }
 };
 
+/**
+ * 帶自動重試的 fetch 包裝（最多 3 次，指數退避）
+ * 4xx 錯誤不重試（API key 錯誤等客戶端問題）
+ * 擲出的錯誤會附加 retryAttempts 屬性
+ */
+async function fetchWithRetry(url, options, maxRetries = 3) {
+    let lastError;
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+            const response = await fetch(url, options);
+            if (!response.ok) {
+                const err = new Error(`API 錯誤狀態碼: ${response.status}`);
+                err.retryAttempts = attempt;
+                if (response.status >= 400 && response.status < 500) {
+                    throw err;
+                }
+                throw err;
+            }
+            return response;
+        } catch (err) {
+            err.retryAttempts = attempt;
+            lastError = err;
+            if (attempt < maxRetries - 1 && (!err.message.includes('狀態碼') || err.message.includes('5'))) {
+                const delay = Math.min(1000 * Math.pow(2, attempt), 4000);
+                console.warn(`[聖境塔羅] API 呼叫失敗，${delay/1000}秒後重試 (${attempt + 1}/${maxRetries})`);
+                await new Promise(r => setTimeout(r, delay));
+            }
+        }
+    }
+    throw lastError;
+}
+
 function showAnalysis() {
     const modal = document.getElementById('reading-modal');
     const container = document.getElementById('cards-analysis-container');
@@ -167,7 +199,7 @@ function showAnalysis() {
                         }
                     });
                 } else {
-                    geminiText.innerHTML = result.text + '<div style="text-align: center; margin-top: 20px;"><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button></div>';
+                    geminiText.innerHTML = result.text;
                     setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
                 }
             }
@@ -266,7 +298,7 @@ async function sendFollowupQuestion() {
             '- 使用繁體中文（台灣用語）\n' +
             '- 不要重複已經說過的內容';
 
-        const response = await fetch(
+        const response = await fetchWithRetry(
             `https://generativelanguage.googleapis.com/v1beta/models/${modelInfo.id}:generateContent?key=${apiKey}`,
             {
                 method: 'POST',
@@ -277,10 +309,6 @@ async function sendFollowupQuestion() {
                 })
             }
         );
-
-        if (!response.ok) {
-            throw new Error(`API 錯誤狀態碼: ${response.status}`);
-        }
 
         const data = await response.json();
         const parts = data.candidates?.[0]?.content?.parts || [];
@@ -519,7 +547,7 @@ ${cardsLog.join('\n')}
     }
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelInfo.id}:generateContent?key=${apiKey}`, {
+        const response = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/${modelInfo.id}:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -527,10 +555,6 @@ ${cardsLog.join('\n')}
                 contents: [{ role: 'user', parts: [{ text: userPrompt }] }]
             })
         });
-
-        if (!response.ok) {
-            throw new Error(`API 錯誤狀態碼: ${response.status}`);
-        }
 
         const data = await response.json();
         const parts = data.candidates?.[0]?.content?.parts || [];
@@ -541,11 +565,11 @@ ${cardsLog.join('\n')}
         return { success: true, text: reply, systemPrompt, userPrompt };
     } catch (err) {
         console.error('[聖境塔羅] AI API 呼叫失敗:', err);
-        // 跳脫錯誤訊息中的特殊字元，防止 XSS
         const safeErrMsg = escapeHtml(err.message || '未知錯誤');
+        const retryNote = err.retryAttempts > 0 ? `（已自動重試 ${err.retryAttempts} 次）` : '';
         return {
             success: false,
-            text: `<span style="color: #ff6b6b;">無法取得神諭指引。請確認您的 API Key 是否正確或網路是否通暢。(錯誤: ${safeErrMsg})</span>`
+            text: `<span style="color: #ff6b6b;">無法取得神諭指引。請確認您的 API Key 是否正確或網路是否通暢。${retryNote}</span><div style="text-align: center; margin-top: 20px;"><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button></div>`
         };
     }
 }

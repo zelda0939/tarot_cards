@@ -62,7 +62,8 @@ async function saveHistoryRecord(record) {
             };
         });
     } catch (err) {
-        console.error(err);
+        console.error('[聖境塔羅] 儲存歷史紀錄失敗:', err);
+        throw err;
     }
 }
 
@@ -83,8 +84,8 @@ async function getAllHistory() {
             request.onerror = (e) => reject(e.target.error);
         });
     } catch (err) {
-        console.error(err);
-        return [];
+        console.error('[聖境塔羅] 讀取歷史紀錄失敗:', err);
+        throw err;
     }
 }
 
@@ -100,7 +101,8 @@ async function deleteHistoryRecord(id) {
             request.onerror = (e) => reject(e.target.error);
         });
     } catch (err) {
-        console.error(err);
+        console.error('[聖境塔羅] 刪除歷史紀錄失敗:', err);
+        throw err;
     }
 }
 
@@ -116,7 +118,8 @@ async function clearAllHistory() {
             request.onerror = (e) => reject(e.target.error);
         });
     } catch (err) {
-        console.error(err);
+        console.error('[聖境塔羅] 清空歷史紀錄失敗:', err);
+        throw err;
     }
 }
 
@@ -152,6 +155,7 @@ async function updateHistoryFollowup(recordId, chat) {
             getRequest.onerror = (e) => reject(e.target.error);
         });
     } catch (err) {
-        console.error('[\u8056\u5883\u5854\u7f85] \u66f4\u65b0\u5ef6\u4f38\u5c0d\u8a71\u5931\u6557:', err);
+        console.error('[聖境塔羅] 更新延伸對話失敗:', err);
+        throw err;
     }
 }
