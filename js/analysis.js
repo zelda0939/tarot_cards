@@ -102,7 +102,12 @@ export function showAnalysis() {
         const activeMeaning = card.isReversed ? card.meaning_rev : card.meaning_up;
         const imgUrl = `assets/images/${card.name_short}.jpg`;
         const imgReversedClass = card.isReversed ? ' reversed-img' : '';
-        const cardDesc = card.desc ? `<div class="analysis-desc">${card.desc.substring(0, 150)}...</div>` : '';
+        const safeName = escapeHtml(card.name);
+        const safeSymbol = escapeHtml(card.symbol || '✦');
+        const safeEn = escapeHtml(card.en);
+        const safeDesc = card.desc ? escapeHtml(card.desc.substring(0, 150)) : '';
+        const safeMeaning = escapeHtml(activeMeaning);
+        const cardDesc = safeDesc ? `<div class="analysis-desc">${safeDesc}...</div>` : '';
         const meaningLabel = card.isReversed ? '▽ 逆位' : '▲ 正位';
         const meaningClass = card.isReversed ? 'analysis-meaning-rev' : 'analysis-meaning';
 
@@ -112,15 +117,15 @@ export function showAnalysis() {
         <div class="analysis-card ${AppState.isDailyMode ? 'daily-layout-card' : ''}">
             <div class="analysis-position">${posLabel}</div>
             <div class="analysis-card-img">
-                <img src="${imgUrl}" alt="${card.name}" class="${imgReversedClass}" onerror="this.parentElement.style.display='none'">
+                <img src="${imgUrl}" alt="${safeName}" class="${imgReversedClass}" onerror="this.parentElement.style.display='none'">
             </div>
             <div class="analysis-header">
-                <div class="analysis-symbol">${card.symbol || '✦'}</div>
-                <div class="analysis-name">${card.name} <span class="analysis-posture-tag">[${posture}]</span></div>
-                <div class="analysis-en">${card.en}</div>
+                <div class="analysis-symbol">${safeSymbol}</div>
+                <div class="analysis-name">${safeName} <span class="analysis-posture-tag">[${posture}]</span></div>
+                <div class="analysis-en">${safeEn}</div>
             </div>
             ${cardDesc}
-            <div class="${meaningClass}"><strong>${meaningLabel}：</strong><br>${activeMeaning}</div>
+            <div class="${meaningClass}"><strong>${meaningLabel}：</strong><br>${safeMeaning}</div>
         </div>`;
 
         cardNamesForPrompt.push(`${positions[idx]}是「${card.name}」的【${posture}】（代表意義：${activeMeaning}）`);

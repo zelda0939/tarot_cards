@@ -188,7 +188,7 @@ main {
     gap: 2rem;
     padding: 0.5rem 0;
     flex-shrink: 0;
-    transition: all 0.5s ease;
+    transition: transform 0.5s ease, opacity 0.5s ease;
 }
 
 #control-panel.centered-mode {
@@ -369,7 +369,7 @@ body.centered-start #tarot-board {
     font-family: 'Montserrat', sans-serif;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
     text-transform: uppercase;
     letter-spacing: 0.1rem;
     position: relative;
@@ -534,7 +534,7 @@ body.centered-start #tarot-board {
     justify-content: center;
     align-items: center;
     color: var(--text-muted);
-    transition: all 0.5s ease;
+    transition: border-color 0.5s ease, background 0.5s ease, box-shadow 0.5s ease;
     position: relative;
     overflow: hidden;
 }
@@ -1412,7 +1412,7 @@ footer {
     border-radius: 8px;
     margin-bottom: 1rem;
     padding: 0.8rem 1rem;
-    transition: all 0.3s ease;
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .history-item:hover {
@@ -2699,7 +2699,7 @@ footer {
     /* 非選中牌往外散開 */
     transform: rotate(calc((var(--i) - var(--mid)) * 12deg)) translateY(80px);
     filter: blur(3px);
-    transition: all 0.7s ease-in;
+    transition: transform 0.7s ease-in, opacity 0.7s ease-in, filter 0.7s ease-in;
 }
 
 #daily-animation-overlay.stage-draw .daily-deck-card.chosen {

@@ -3,7 +3,7 @@
    ============================ */
 import { AppState } from './state.js';
 import { getTarotCards } from './app.js';
-import { setSaveImageStatus, setSaveImageButtonState } from './ui.js';
+import { setSaveImageStatus, setSaveImageButtonState, escapeHtml } from './ui.js';
 
 export function clearSmoothTransitionTimer() {
     if (AppState._smoothTransitionTimer) {
@@ -64,7 +64,7 @@ export function updateCardFrontDOM(cardEl, card) {
         cardArt.style.cssText = artStyle;
     }
     if (cardName) {
-        cardName.innerHTML = `${card.name}${postureText}`;
+        cardName.innerHTML = `${escapeHtml(card.name)}${postureText}`;
     }
 }
 
@@ -114,13 +114,14 @@ export function createCardElement(index, card) {
     cardEl.dataset.id = card.id;
 
     const { reversedClass, artStyle, postureText } = getCardVisualProps(card);
+    const safeName = escapeHtml(card.name);
 
     cardEl.innerHTML = `
         <div class="card-inner">
             <div class="card-front">
                 <div class="card-art ${reversedClass}" style="${artStyle}"></div>
                 <div class="card-name-plate">
-                    <span class="card-name">${card.name}${postureText}</span>
+                    <span class="card-name">${safeName}${postureText}</span>
                 </div>
             </div>
             <div class="card-back"></div>
