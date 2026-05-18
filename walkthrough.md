@@ -251,5 +251,9 @@
     - **歷史追問故障體驗優化**：發生 API 連線錯誤時，重新送出按鈕除了發起重試，還會將先前填寫的 `questionText` 重新回填至輸入框中，便於使用者調整提問，操作更貼心。
 - **PWA 離線快取無縫轉移**:
     - 更新 [sw.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/sw.js) 的離線快取檔案列表，將舊的 `'./js/tarot_dict.js'` 置換為 `'./assets/data/tarot_dict.json'`，保障新架構在斷網環境下的完整可用性。
+- **正式發佈版本號同步 (v1.9.20)**:
+    - 運行 `node scripts/bump-version.js 1.9.20` 升級腳本，同步將版本號升級為 `1.9.20`。
+    - 更新 [js/version.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/version.js) 的 `APP_VERSION`、[sw.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/sw.js) 的 `CACHE_VERSION`，並一併更新了 [index.html](file:///c:/Users/steve/Documents/code_local/tarot_cards/index.html) 中共 17 處資源檔案引入的 `?v=1.9.20` 查詢字串，保障客戶端快取即時更新。
+
 
 
