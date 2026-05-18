@@ -1,6 +1,7 @@
 /* ============================
    UI 互動邏輯
    ============================ */
+let _currentHistoryRecord = null;
 
 
 function updateHistoryActionButtons() {
@@ -162,10 +163,7 @@ async function showHistoryDetail(id) {
 
     const detailContainer = document.getElementById('history-detail-content');
 
-    const exportBtn = document.getElementById('history-export-btn');
-    if (exportBtn) {
-        exportBtn.onclick = () => exportHistoryImage(record);
-    }
+    _currentHistoryRecord = record;
 
     // 根據 spreadMode 決定牌位名稱
     const isCelticCross = record.spreadMode === 'celtic-cross';
@@ -289,6 +287,7 @@ function _renderHistoryFollowupSection(record) {
  * @param {Object} record - 歷史紀錄物件
  */
 function _bindHistoryFollowupEvents(record) {
+    _currentHistoryRecord = record;
     const sendBtn = document.getElementById('history-followup-send-btn');
     const input = document.getElementById('history-followup-input');
 
@@ -441,6 +440,7 @@ async function sendHistoryFollowupQuestion(record) {
                     const userBubble = loadingBubble.previousElementSibling;
                     if (userBubble && userBubble.classList.contains('followup-bubble-user')) userBubble.remove();
                     loadingBubble.remove();
+                    input.value = questionText;
                     input.disabled = false;
                     if (sendBtn) sendBtn.disabled = false;
                     sendHistoryFollowupQuestion(record);
@@ -588,6 +588,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // 匯出按鈕：靜態元素，一次綁定即可（透過 _currentHistoryRecord 取得當前紀錄）
+    const exportBtn = document.getElementById('history-export-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            if (_currentHistoryRecord) exportHistoryImage(_currentHistoryRecord);
+        });
+    }
+
     // 初始化本地資料庫
     initDB();
 });

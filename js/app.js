@@ -57,6 +57,16 @@ function getTarotCards() { return _tarotCardsData; }
 async function fetchCardsFromAPI() {
     try {
         console.log('[聖境塔羅] 正在從 tarotapi.dev 載入牌庫...');
+
+        // 先載入本地繁體中文翻譯（78 張牌名稱與牌義）
+        let zhData = {};
+        try {
+            const zhResponse = await fetch('assets/data/tarot_dict.json');
+            if (zhResponse.ok) zhData = await zhResponse.json();
+        } catch (e) {
+            console.warn('[聖境塔羅] 無法載入翻譯資料，使用英文 fallback');
+        }
+
         const response = await fetch('https://tarotapi.dev/api/v1/cards');
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
@@ -66,8 +76,7 @@ async function fetchCardsFromAPI() {
         // 將 API 資料轉換為專案格式並套用繁體中文翻譯
         _tarotCardsData = data.cards.map((card, index) => {
             const valueInt = card.value_int || index;
-            // 取得本地的翻譯資料，若無則 fallback 原始英文
-            const zh = window.TAROT_ZH && window.TAROT_ZH[card.name_short] ? window.TAROT_ZH[card.name_short] : {};
+            const zh = zhData[card.name_short] || {};
 
             return {
                 id: index,

@@ -242,4 +242,14 @@
     - **消滅局部自由變數與 GC 洩漏**：將原本散落於 `ring.js`, `gesture.js`, `daily.js`, `history.js`, `celtic-cross.js` 等模組級局部定時器陣列（`_dailyTimers`、`_gestureTimers`、`_ccTimers` 等）、動畫訊框 ID 集（`_ringAnimationFrameIds`）及 `selectedHistoryIds` 等狀態，全面移植並集中管理於 [js/state.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/state.js) 的 `AppState` 中。
     - **引進 `Object.seal(AppState)` 封鎖機制**：為防範日常開發中因拼寫錯誤（例如將 `AppState.gameState` 誤寫為其他命名）而意外在全域狀態樹上追加未定義屬性的幽靈臭蟲（Silent Bugs），於 `js/state.js` 底部正式加入 `Object.seal(AppState)` 硬防禦，強制封裝屬性結構，僅允許對現有狀態進行讀寫。
     - **替換字典常數直接依賴**：在 [js/ring.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/ring.js) 及 [js/daily.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/daily.js) 中，將原本直接引用 `TAROT_CARDS` 字典檔的寫法重構為呼叫 `getTarotCards()`，防範潛在的資源加載暫時性死區（TDZ）。
+- **外部化字典數據與非同步載入重構 (v1.9.20)**:
+    - **JSON 字典外部化**：廢棄全域龐大的 `js/tarot_dict.js` 並從 `index.html` 移除，改為乾淨的 JSON 數據 [assets/data/tarot_dict.json](file:///c:/Users/steve/Documents/code_local/tarot_cards/assets/data/tarot_dict.json)。
+    - **非同步動態翻譯套用**：重構 [js/app.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/app.js) 的 `fetchCardsFromAPI()`，優先非同步 `fetch` 本地 JSON 字典。若成功載入，則於 API 資料轉換時動態拼裝套用繁體中文牌義；若載入失敗，則平滑地降級到英文 fallback。這顯著減少了首頁同步加載 JS 的帶寬與解析開銷，提升 FCP (First Contentful Paint)。
+- **記憶體洩漏與幽靈監聽器消除 (Event Listener Optimization)**:
+    - **消滅重複閉包綁定**：重構 [js/analysis.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/analysis.js)，新增 `_setupAnalysisEvents()` 並於 `init.js` 的 `DOMContentLoaded` 階段進行一次性事件綁定 (`addEventListener`)，全面移除原本每次執行 `showAnalysis` 或 `_showFollowupSection` 時對彈窗關閉、送出按鈕、輸入框按鍵動態重複指派 `.onclick` / `.onkeydown` 箭頭函式而帶來的垃圾回收 (GC) 閉包壓力。
+    - **日誌詳情按鈕解耦**：重構 [js/history.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/history.js)，引進模組級變數 `_currentHistoryRecord`，將匯出按鈕的事件綁定改為一次性 `addEventListener`，徹底消除了反複進入日誌詳情時重複閉包綁定的記憶體開銷。
+    - **歷史追問故障體驗優化**：發生 API 連線錯誤時，重新送出按鈕除了發起重試，還會將先前填寫的 `questionText` 重新回填至輸入框中，便於使用者調整提問，操作更貼心。
+- **PWA 離線快取無縫轉移**:
+    - 更新 [sw.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/sw.js) 的離線快取檔案列表，將舊的 `'./js/tarot_dict.js'` 置換為 `'./assets/data/tarot_dict.json'`，保障新架構在斷網環境下的完整可用性。
+
 

@@ -301,6 +301,9 @@
   - **決策 9：全域 AppState 資源治理與定時器/動畫銷毀集中化**：為防範垃圾回收（GC）洩漏威脅及跨模式時的生命週期殘留，決定將原本散落於 `ring.js`、`gesture.js`、`daily.js`、`celtic-cross.js`、`history.js` 各自的局部的 timers 陣列、rAF 訊框 ID 集合、以及多選 Set 欄位，全數集中到全域單一狀態樹 `AppState` 中管理。
   - **決策 10：引進 `Object.seal(AppState)` 屬性防護鎖**：為防範協作開發中因為拼寫錯誤意外在狀態樹上開拓「新變量」的幽靈 Bug，於 `js/state.js` 底部正式加入 `Object.seal(AppState)`。此舉保留屬性值可寫，但嚴格鎖定鍵名結構，極大提升專案防錯安全性。
   - **決策 11：以 getTarotCards() 動態讀取字典**：在 `ring.js` 與 `daily.js` 中把直接引用的 `TAROT_CARDS` 常數重構為呼叫 `getTarotCards()`，防止加載順序引起的 TDZ 錯誤。
+  - **決策 12：重構字典數據為非同步載入 JSON 檔**：為了大幅節省首頁初次加載的 JS 文件大小與解析開銷，將原全域龐大的 `js/tarot_dict.js` 移出，重構成非同步動態獲取的 `assets/data/tarot_dict.json`，並在 `js/app.js` 的 `fetchCardsFromAPI()` 中優先動態 `fetch` 本地中文翻譯，保障了頁面的 FCP 與 FOUC 的極佳性能表現。
+  - **決策 13：實作一次性監聽器綁定，消滅閉包與 GC 洩漏**：在 `js/analysis.js`（`_setupAnalysisEvents()`）及 `js/history.js`（`_currentHistoryRecord` 機制）中，全面以一次性 `addEventListener` 取代原本每次開啟 Modal 詳情時動態對屬性 `.onclick`/`.onkeydown` 重新指派閉包的寫法。這徹底解決了在頁面高頻互動中產生重複閉包與監聽器溢出的 GC 壓力，並更新 `sw.js` 快取以確保 PWA 的完整離線相容性。
+
 
 
 

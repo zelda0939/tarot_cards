@@ -30,7 +30,7 @@ const CORE_ASSETS = [
     './js/daily.js',
     './js/celtic-cross.js',
     './js/init.js',
-    './js/tarot_dict.js',
+    './assets/data/tarot_dict.json',
     './manifest.json',
     './assets/icons/icon-192.png',
     './assets/images/card_back.png',

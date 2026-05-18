@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     detectInAppBrowser(); // 偵測 LINE 等 in-app 瀏覽器
     initStars();
     initApp();
+    if (typeof _setupAnalysisEvents === 'function') _setupAnalysisEvents();
     requestWakeLock(); // 啟動螢幕恆亮
 });
 

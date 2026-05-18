@@ -136,16 +136,6 @@ function showAnalysis() {
         geminiHeader.innerHTML = `<span class="gold-star">❉</span> 綜合神諭 <span style="font-size: 0.7em; opacity: 0.7;">powered by ${modelInfo.name}</span> <span class="gold-star">❉</span>`;
     }
 
-    const closeBtn = document.getElementById('close-reading-modal');
-    if (closeBtn) {
-        closeBtn.onclick = () => {
-            modal.classList.add('hidden');
-            if (AppState.isDailyMode && typeof restoreDailyHomeLayout === 'function') {
-                restoreDailyHomeLayout();
-            }
-        };
-    }
-
     fetchGeminiAnalysis(cardNamesForPrompt, questionText).then((result) => {
         hideLoadingOverlay(() => {
             if (geminiLoading) geminiLoading.classList.add('hidden');
@@ -228,20 +218,8 @@ function _showFollowupSection() {
     const sendBtn = document.getElementById('followup-send-btn');
     const input = document.getElementById('followup-input');
 
-    if (sendBtn) {
-        // 移除舊的事件監聽器（避免重複綁定）
-        sendBtn.onclick = () => sendFollowupQuestion();
-    }
-
     if (input) {
         input.value = '';
-        // 支援 Enter 送出（Shift+Enter 換行）
-        input.onkeydown = (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendFollowupQuestion();
-            }
-        };
     }
 }
 
@@ -345,7 +323,24 @@ async function sendFollowupQuestion() {
         }
 
         // 將延伸對話更新至 IndexedDB
-        _updateFollowupInHistory(questionText, reply);
+        (async () => {
+            try {
+                let targetId = AppState._currentHistoryRecordId;
+                if (!targetId) {
+                    const records = await getAllHistory();
+                    if (records && records.length > 0) targetId = records[0].id;
+                }
+                if (targetId && typeof updateHistoryFollowup === 'function') {
+                    await updateHistoryFollowup(targetId, {
+                        question: questionText,
+                        reply: reply,
+                        timestamp: Date.now()
+                    });
+                }
+            } catch (e) {
+                console.error('[聖境塔羅] 儲存延伸對話失敗', e);
+            }
+        })();
 
     } catch (err) {
         console.error('[聖境塔羅] 延伸提問 API 呼叫失敗:', err);
@@ -423,24 +418,6 @@ function _scrollFollowupToBottom(container) {
             lastBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     });
-}
-
-/**
- * 將延伸對話更新至 IndexedDB 的歷史紀錄
- */
-async function _updateFollowupInHistory(userQuestion, aiReply) {
-    if (!AppState._currentHistoryRecordId) return;
-    if (typeof updateHistoryFollowup !== 'function') return;
-
-    try {
-        await updateHistoryFollowup(AppState._currentHistoryRecordId, {
-            question: userQuestion,
-            reply: aiReply,
-            timestamp: Date.now()
-        });
-    } catch (e) {
-        console.error('[聖境塔羅] 更新延伸對話至日誌失敗', e);
-    }
 }
 
 async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
@@ -571,5 +548,34 @@ ${cardsLog.join('\n')}
             success: false,
             text: `<span style="color: #ff6b6b;">無法取得神諭指引。請確認您的 API Key 是否正確或網路是否通暢。${retryNote}</span><div style="text-align: center; margin-top: 20px;"><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button></div>`
         };
+    }
+}
+
+/* 一次性事件綁定（取代每次 showAnalysis 重新指派 .onclick） */
+function _setupAnalysisEvents() {
+    const closeBtn = document.getElementById('close-reading-modal');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            const modal = document.getElementById('reading-modal');
+            if (modal) modal.classList.add('hidden');
+            if (AppState.isDailyMode && typeof restoreDailyHomeLayout === 'function') {
+                restoreDailyHomeLayout();
+            }
+        });
+    }
+
+    const followupSendBtn = document.getElementById('followup-send-btn');
+    if (followupSendBtn) {
+        followupSendBtn.addEventListener('click', () => sendFollowupQuestion());
+    }
+
+    const followupInput = document.getElementById('followup-input');
+    if (followupInput) {
+        followupInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendFollowupQuestion();
+            }
+        });
     }
 }
