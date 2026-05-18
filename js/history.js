@@ -1,7 +1,7 @@
 /* ============================
    UI 互動邏輯
    ============================ */
-let selectedHistoryIds = new Set();
+
 
 function updateHistoryActionButtons() {
     const deleteBtn = document.getElementById('delete-selected-history-btn');
@@ -9,12 +9,12 @@ function updateHistoryActionButtons() {
     const allCheckboxes = document.querySelectorAll('.history-item-checkbox');
     
     if (deleteBtn) {
-        deleteBtn.disabled = selectedHistoryIds.size === 0;
-        deleteBtn.textContent = selectedHistoryIds.size > 0 ? `刪除所選 (${selectedHistoryIds.size})` : '刪除所選';
+        deleteBtn.disabled = AppState.selectedHistoryIds.size === 0;
+        deleteBtn.textContent = AppState.selectedHistoryIds.size > 0 ? `刪除所選 (${AppState.selectedHistoryIds.size})` : '刪除所選';
     }
     
     if (selectAllCheckbox && allCheckboxes.length > 0) {
-        selectAllCheckbox.checked = selectedHistoryIds.size === allCheckboxes.length;
+        selectAllCheckbox.checked = AppState.selectedHistoryIds.size === allCheckboxes.length;
     }
 }
 
@@ -27,7 +27,7 @@ async function openHistoryModal() {
     document.getElementById('history-detail-view').classList.add('hidden');
     
     // 重置多選狀態
-    selectedHistoryIds.clear();
+    AppState.selectedHistoryIds.clear();
     const selectAllCheckbox = document.getElementById('history-select-all');
     if (selectAllCheckbox) selectAllCheckbox.checked = false;
     updateHistoryActionButtons();
@@ -50,7 +50,7 @@ async function renderHistoryList() {
     const records = await getAllHistory();
 
     const actionsBar = document.getElementById('history-actions-bar');
-    selectedHistoryIds.clear();
+    AppState.selectedHistoryIds.clear();
     updateHistoryActionButtons();
 
     if (records.length === 0) {
@@ -111,10 +111,10 @@ async function renderHistoryList() {
             const historyItem = document.getElementById(`history-item-${id}`);
             
             if (e.target.checked) {
-                selectedHistoryIds.add(id);
+                AppState.selectedHistoryIds.add(id);
                 if (historyItem) historyItem.classList.add('selected');
             } else {
-                selectedHistoryIds.delete(id);
+                AppState.selectedHistoryIds.delete(id);
                 if (historyItem) historyItem.classList.remove('selected');
             }
             updateHistoryActionButtons();
@@ -561,10 +561,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const historyItem = document.getElementById(`history-item-${id}`);
                 
                 if (isChecked) {
-                    selectedHistoryIds.add(id);
+                    AppState.selectedHistoryIds.add(id);
                     if (historyItem) historyItem.classList.add('selected');
                 } else {
-                    selectedHistoryIds.delete(id);
+                    AppState.selectedHistoryIds.delete(id);
                     if (historyItem) historyItem.classList.remove('selected');
                 }
             });
@@ -576,13 +576,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const deleteSelectedBtn = document.getElementById('delete-selected-history-btn');
     if (deleteSelectedBtn) {
         deleteSelectedBtn.addEventListener('click', async () => {
-            if (selectedHistoryIds.size === 0) return;
+            if (AppState.selectedHistoryIds.size === 0) return;
             
-            const confirmed = await showConfirmDialog('刪除日誌', `確定要刪除選取的 ${selectedHistoryIds.size} 筆占卜紀錄嗎？`);
+            const confirmed = await showConfirmDialog('刪除日誌', `確定要刪除選取的 ${AppState.selectedHistoryIds.size} 筆占卜紀錄嗎？`);
             if (confirmed) {
                 // 批次刪除
-                await Promise.all(Array.from(selectedHistoryIds).map(id => deleteHistoryRecord(id)));
-                selectedHistoryIds.clear();
+                await Promise.all(Array.from(AppState.selectedHistoryIds).map(id => deleteHistoryRecord(id)));
+                AppState.selectedHistoryIds.clear();
                 await renderHistoryList();
             }
         });

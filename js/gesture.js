@@ -1,10 +1,10 @@
 /* ============================
    手勢辨識與 MediaPipe 控制
    ============================ */
-let _mediaPipeSessionId = 0;
+
 
 function stopMediaPipeCamera(reason = 'manual-stop') {
-    _mediaPipeSessionId++;
+    AppState._mediaPipeSessionId++;
 
     if (AppState.mpCamera) {
         try {
@@ -80,7 +80,7 @@ async function initMediaPipe() {
 
     return new Promise((resolve) => {
         AppState.mediaPipeStarting = true;
-        const sessionId = ++_mediaPipeSessionId;
+        const sessionId = ++AppState._mediaPipeSessionId;
         
         let firstFrameResolved = false;
         let isProcessingFrame = false;
@@ -104,7 +104,7 @@ async function initMediaPipe() {
                             await AppState.mpHands.send({ image: videoElement });
                             
                             // 🔥 關鍵修復：第一張影像成功推論後（WebGL Shader 編譯完成），才結束等待狀態並開始旋轉！
-                            if (!firstFrameResolved && sessionId === _mediaPipeSessionId) {
+                            if (!firstFrameResolved && sessionId === AppState._mediaPipeSessionId) {
                                 firstFrameResolved = true;
                                 console.log('[聖境塔羅] ✅ 鏡頭開啟與視覺模型暖機完成！');
                                 AppState.mediaPipeInitialized = true;
@@ -127,7 +127,7 @@ async function initMediaPipe() {
 
         AppState.mpCamera.start()
             .then(() => {
-                if (sessionId !== _mediaPipeSessionId) {
+                if (sessionId !== AppState._mediaPipeSessionId) {
                     resolve(false);
                     return;
                 }
@@ -135,7 +135,7 @@ async function initMediaPipe() {
                 // 不要在這裡 resolve，等待 onFrame 第一張推論完成
             })
             .catch((err) => {
-                if (sessionId !== _mediaPipeSessionId) {
+                if (sessionId !== AppState._mediaPipeSessionId) {
                     resolve(false);
                     return;
                 }

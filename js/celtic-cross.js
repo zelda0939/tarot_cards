@@ -6,19 +6,18 @@
 /* ============================
    聖十字資源追蹤與統一清理
    ============================ */
-let _ccTimers = [];
-let _ccParticleAnimId = null;
+
 
 /**
  * 統一清理聖十字動畫所有資源
  */
 function cleanupCelticCrossAnimation() {
-    _ccTimers.forEach(id => clearTimeout(id));
-    _ccTimers = [];
+    AppState._ccTimers.forEach(id => clearTimeout(id));
+    AppState._ccTimers = [];
 
-    if (_ccParticleAnimId) {
-        cancelAnimationFrame(_ccParticleAnimId);
-        _ccParticleAnimId = null;
+    if (AppState._ccParticleAnimId) {
+        cancelAnimationFrame(AppState._ccParticleAnimId);
+        AppState._ccParticleAnimId = null;
     }
 
     const canvas = document.getElementById('cc-particle-canvas');
@@ -181,7 +180,7 @@ function startCelticCrossAnimation() {
     });
 
     // 顯示 overlay
-    _ccTimers.push(setTimeout(() => {
+    AppState._ccTimers.push(setTimeout(() => {
         overlay.classList.add('show');
     }, 50));
 
@@ -233,9 +232,9 @@ function startCelticCrossAnimation() {
                 ctx.fillStyle = `hsla(${p.hue}, 80%, 65%, ${p.opacity})`;
                 ctx.fill();
             }
-            _ccParticleAnimId = requestAnimationFrame(drawCCParticles);
+            AppState._ccParticleAnimId = requestAnimationFrame(drawCCParticles);
         }
-        _ccParticleAnimId = requestAnimationFrame(drawCCParticles);
+        AppState._ccParticleAnimId = requestAnimationFrame(drawCCParticles);
     }
 
     // 依序展開 10 張牌（每張間隔 600ms）
@@ -247,7 +246,7 @@ function startCelticCrossAnimation() {
         const flipDelay = revealDelay + 400; // 顯示牌背 400ms 後翻面
 
         // 更新狀態文字
-        _ccTimers.push(setTimeout(() => {
+        AppState._ccTimers.push(setTimeout(() => {
             const pos = CELTIC_CROSS_POSITIONS[cardIdx];
             if (statusEl) {
                 statusEl.textContent = `✦ 第 ${cardIdx + 1} 張：${pos.name}`;
@@ -255,12 +254,12 @@ function startCelticCrossAnimation() {
         }, revealDelay));
 
         // 牌飛入（reveal）
-        _ccTimers.push(setTimeout(() => {
+        AppState._ccTimers.push(setTimeout(() => {
             animCards[cardIdx].classList.add('revealed');
         }, revealDelay));
 
         // 翻牌
-        _ccTimers.push(setTimeout(() => {
+        AppState._ccTimers.push(setTimeout(() => {
             animCards[cardIdx].classList.add('flipped');
         }, flipDelay));
     });
@@ -268,14 +267,14 @@ function startCelticCrossAnimation() {
     // 全部展完後等待一下再淡出
     const TOTAL_DEAL_TIME = DEAL_START + 10 * DEAL_INTERVAL + 800;
 
-    _ccTimers.push(setTimeout(() => {
+    AppState._ccTimers.push(setTimeout(() => {
         if (statusEl) statusEl.textContent = '✦ 星辰已定，正在解讀命運的軌跡...';
     }, TOTAL_DEAL_TIME - 500));
 
-    _ccTimers.push(setTimeout(() => {
+    AppState._ccTimers.push(setTimeout(() => {
         overlay.classList.add('stage-fadeout');
 
-        _ccTimers.push(setTimeout(() => {
+        AppState._ccTimers.push(setTimeout(() => {
             cleanupCelticCrossAnimation();
             particles = [];
 

@@ -23,7 +23,7 @@ const CARD_SYMBOLS = {
 const ROMAN_NUMERALS = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
 
 // 預設/fallback 的本地卡牌資料（22 張大阿爾克那）
-let TAROT_CARDS = [
+let _tarotCardsData = [
     { id: 0, name: '愚者', en: 'The Fool', name_short: 'ar00', numeral: '0', symbol: '☀', meaning_up: '新的開始、無限的可能性，代表天真、冒險和對未知的信任。', meaning_rev: '魯莽、漫無目的、缺乏方向。', desc: '一位年輕旅人站在懸崖邊，腳下是未知的深淵。' },
     { id: 1, name: '魔術師', en: 'The Magician', name_short: 'ar01', numeral: 'I', symbol: '∞', meaning_up: '創造力、意志力與行動，你擁有實現目標所需的一切資源。', meaning_rev: '操縱、欺騙、缺乏方向。', desc: '一位年輕人手持法杖，桌上擁有四元素的象徵。' },
     { id: 2, name: '女祭司', en: 'The High Priestess', name_short: 'ar02', numeral: 'II', symbol: '☽', meaning_up: '直覺、潛意識與奧秘，傾聽內在的聲音。', meaning_rev: '忽視直覺、表面知識。', desc: '她坐在兩根柱子之間，手中持有至聖律法的卷軸。' },
@@ -47,10 +47,12 @@ let TAROT_CARDS = [
     { id: 20, name: '審判', en: 'Judgement', name_short: 'ar20', numeral: 'XX', symbol: '♮', meaning_up: '覺醒、反省與重生，回應內在的召喚。', meaning_rev: '逃避反省、自我否定。', desc: '天使吹響號角，亡者從墓地中復活。' },
     { id: 21, name: '世界', en: 'The World', name_short: 'ar21', numeral: 'XXI', symbol: '◎', meaning_up: '完成、圓滿與整合，旅程的圓滿完成。', meaning_rev: '未完成、缺少收尾、延遲。', desc: '一位女性在月桂花環中舞蹈，四角有四活物。' }
 ];
+/** 外部模組請使用 getTarotCards() 唯讀存取 */
+function getTarotCards() { return _tarotCardsData; }
 
 /**
  * 從 tarotapi.dev 取得完整 78 張牌資料
- * 成功後將覆蓋本地 TAROT_CARDS 陣列
+ * 成功後將取代本地 _tarotCardsData 陣列
  */
 async function fetchCardsFromAPI() {
     try {
@@ -62,7 +64,7 @@ async function fetchCardsFromAPI() {
         if (!data.cards || !Array.isArray(data.cards)) throw new Error('Invalid data format');
 
         // 將 API 資料轉換為專案格式並套用繁體中文翻譯
-        TAROT_CARDS = data.cards.map((card, index) => {
+        _tarotCardsData = data.cards.map((card, index) => {
             const valueInt = card.value_int || index;
             // 取得本地的翻譯資料，若無則 fallback 原始英文
             const zh = window.TAROT_ZH && window.TAROT_ZH[card.name_short] ? window.TAROT_ZH[card.name_short] : {};
@@ -83,7 +85,7 @@ async function fetchCardsFromAPI() {
         });
 
         AppState.apiCardsLoaded = true;
-        console.log(`[聖境塔羅] ✅ 成功載入 ${TAROT_CARDS.length} 張牌（含完整 78 張）`);
+        console.log(`[聖境塔羅] ✅ 成功載入 ${_tarotCardsData.length} 張牌（含完整 78 張）`);
     } catch (err) {
         console.warn('[聖境塔羅] ⚠️ API 載入失敗，使用本地 22 張大阿爾克那:', err.message);
         AppState.apiCardsLoaded = false;
@@ -111,32 +113,31 @@ async function fetchCardsFromAPI() {
    使用 clone 元素掛到 body，避免 carousel 的 3D perspective 干擾
    飛入結束後將 clone 嵌入 slot，保持卡牌正面原樣
    ============================ */
-let _gestureTimers = [];
-const _gestureFlyClones = new Set();
+
 
 function scheduleGestureTimer(callback, delay) {
     const timerId = setTimeout(() => {
-        _gestureTimers = _gestureTimers.filter(id => id !== timerId);
+        AppState._gestureTimers = AppState._gestureTimers.filter(id => id !== timerId);
         callback();
     }, delay);
-    _gestureTimers.push(timerId);
+    AppState._gestureTimers.push(timerId);
     return timerId;
 }
 
 function clearGestureTimer(timerId) {
     if (!timerId) return;
     clearTimeout(timerId);
-    _gestureTimers = _gestureTimers.filter(id => id !== timerId);
+    AppState._gestureTimers = AppState._gestureTimers.filter(id => id !== timerId);
 }
 
 function cleanupGestureTransientEffects() {
-    _gestureTimers.forEach(id => clearTimeout(id));
-    _gestureTimers = [];
+    AppState._gestureTimers.forEach(id => clearTimeout(id));
+    AppState._gestureTimers = [];
 
-    _gestureFlyClones.forEach(clone => {
+    AppState._gestureFlyClones.forEach(clone => {
         if (clone && clone.parentNode) clone.parentNode.removeChild(clone);
     });
-    _gestureFlyClones.clear();
+    AppState._gestureFlyClones.clear();
 
     document.querySelectorAll('.tarot-card.flying').forEach(clone => clone.remove());
     AppState.cardElements.forEach(el => {
@@ -214,7 +215,7 @@ function confirmSelection() {
             transform-style: preserve-3d;
         `;
         document.body.appendChild(flyClone);
-        _gestureFlyClones.add(flyClone);
+        AppState._gestureFlyClones.add(flyClone);
 
         // 強制 reflow 註冊起始位置
         void flyClone.offsetHeight;
@@ -244,7 +245,7 @@ function confirmSelection() {
             if (flyClone.parentNode) {
                 flyClone.parentNode.removeChild(flyClone);
             }
-            _gestureFlyClones.delete(flyClone);
+            AppState._gestureFlyClones.delete(flyClone);
 
             // 重新設定 clone 的樣式，讓它填滿 slot
             flyClone.classList.remove('flying', 'flipped');

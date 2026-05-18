@@ -298,6 +298,10 @@
   - **決策 6：優化占卜日誌追問錯誤處理與重試 UI**：延伸提問發生 API 故障時，在對話框中加入「✦ 重新送出」按鈕，點擊時會自動清理殘留氣泡並重新出發，大幅提升日誌交互端的容錯體驗。
   - **決策 7：嚴格落實 IndexedDB 顯式錯誤拋出（禁止靜默失敗）**：依據規範第 11 點「顯式錯誤處理: 禁止靜默失敗」，徹底改造 `js/db.js` 所有隱性吞掉錯誤的 catch 區塊，全面加回 `throw err`，讓呼叫端能精確掌握資料庫讀寫實質失敗，提防不可預期的靜默錯誤。
   - **決策 8：修復螢幕恆亮 Wake Lock 自動鎖定狀態**：當 sentinel 物理鎖已被系統強制釋放，但 JS 端的 `release` 事件尚未觸發時，透過檢查 `released` 旗標來自動重置舊 sentinel，確保鎖重新取得。
+  - **決策 9：全域 AppState 資源治理與定時器/動畫銷毀集中化**：為防範垃圾回收（GC）洩漏威脅及跨模式時的生命週期殘留，決定將原本散落於 `ring.js`、`gesture.js`、`daily.js`、`celtic-cross.js`、`history.js` 各自的局部的 timers 陣列、rAF 訊框 ID 集合、以及多選 Set 欄位，全數集中到全域單一狀態樹 `AppState` 中管理。
+  - **決策 10：引進 `Object.seal(AppState)` 屬性防護鎖**：為防範協作開發中因為拼寫錯誤意外在狀態樹上開拓「新變量」的幽靈 Bug，於 `js/state.js` 底部正式加入 `Object.seal(AppState)`。此舉保留屬性值可寫，但嚴格鎖定鍵名結構，極大提升專案防錯安全性。
+  - **決策 11：以 getTarotCards() 動態讀取字典**：在 `ring.js` 與 `daily.js` 中把直接引用的 `TAROT_CARDS` 常數重構為呼叫 `getTarotCards()`，防止加載順序引起的 TDZ 錯誤。
+
 
 
 

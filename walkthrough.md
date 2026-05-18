@@ -238,3 +238,8 @@
     - 修改 [js/app.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/app.js) 的 `requestWakeLock`，新增檢查 `sentinel.released`。當鎖已被系統隱性釋放但 `release` 事件尚未觸發時，能自動清除舊有 sentinel 並重新建立螢幕恆亮鎖，防範恆亮失效。
 - **全面強化 IndexedDB 資料層錯誤暴露（禁止靜默失敗）**:
     - 重構 [js/db.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/db.js) 中所有的 catch 區塊。將原本僅使用 `console.error` 列印後便靜默結束的行為，修正為在印出錯誤日誌後「顯式拋出錯誤（`throw err`）」，讓調用端能精確感知資料存取之實質失敗，徹底落實專案健壯性。
+- **全域 `AppState` 狀態治理與定時器/動畫資源集中化重構**:
+    - **消滅局部自由變數與 GC 洩漏**：將原本散落於 `ring.js`, `gesture.js`, `daily.js`, `history.js`, `celtic-cross.js` 等模組級局部定時器陣列（`_dailyTimers`、`_gestureTimers`、`_ccTimers` 等）、動畫訊框 ID 集（`_ringAnimationFrameIds`）及 `selectedHistoryIds` 等狀態，全面移植並集中管理於 [js/state.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/state.js) 的 `AppState` 中。
+    - **引進 `Object.seal(AppState)` 封鎖機制**：為防範日常開發中因拼寫錯誤（例如將 `AppState.gameState` 誤寫為其他命名）而意外在全域狀態樹上追加未定義屬性的幽靈臭蟲（Silent Bugs），於 `js/state.js` 底部正式加入 `Object.seal(AppState)` 硬防禦，強制封裝屬性結構，僅允許對現有狀態進行讀寫。
+    - **替換字典常數直接依賴**：在 [js/ring.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/ring.js) 及 [js/daily.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/daily.js) 中，將原本直接引用 `TAROT_CARDS` 字典檔的寫法重構為呼叫 `getTarotCards()`，防範潛在的資源加載暫時性死區（TDZ）。
+

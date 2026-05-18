@@ -1,13 +1,12 @@
 /* ============================
    抽牌環渲染與動畫
    ============================ */
-let _smoothTransitionTimer = null;
-const _ringAnimationFrameIds = new Set();
+
 
 function clearSmoothTransitionTimer() {
-    if (_smoothTransitionTimer) {
-        clearTimeout(_smoothTransitionTimer);
-        _smoothTransitionTimer = null;
+    if (AppState._smoothTransitionTimer) {
+        clearTimeout(AppState._smoothTransitionTimer);
+        AppState._smoothTransitionTimer = null;
     }
     AppState.cardElements.forEach(el => {
         if (el) el.classList.remove('smooth-transition');
@@ -15,10 +14,11 @@ function clearSmoothTransitionTimer() {
 }
 
 function drawRandomCard() {
-    const available = TAROT_CARDS.filter(c => !AppState.usedCardIds.has(c.id));
+    const cards = getTarotCards();
+    const available = cards.filter(c => !AppState.usedCardIds.has(c.id));
     if (available.length === 0) {
         AppState.usedCardIds.clear();
-        const baseCard = TAROT_CARDS[Math.floor(Math.random() * TAROT_CARDS.length)];
+        const baseCard = cards[Math.floor(Math.random() * cards.length)];
         return { ...baseCard, isReversed: Math.random() >= 0.5 };
     }
     const baseCard = available[Math.floor(Math.random() * available.length)];
@@ -27,8 +27,9 @@ function drawRandomCard() {
 }
 
 function drawTrueRandomCard() {
+    const cards = getTarotCards();
     const selectedIds = new Set(AppState.selectedCards.map(c => c.id));
-    const available = TAROT_CARDS.filter(c => !selectedIds.has(c.id));
+    const available = cards.filter(c => !selectedIds.has(c.id));
     if (available.length === 0) return null;
     const baseCard = available[Math.floor(Math.random() * available.length)];
     return { ...baseCard, isReversed: Math.random() >= 0.5 };
@@ -195,10 +196,10 @@ function updateCardPositions() {
 
 function scheduleRingAnimationFrame() {
     const frameId = requestAnimationFrame((timestamp) => {
-        _ringAnimationFrameIds.delete(frameId);
+        AppState._ringAnimationFrameIds.delete(frameId);
         animateCardRing(timestamp);
     });
-    _ringAnimationFrameIds.add(frameId);
+    AppState._ringAnimationFrameIds.add(frameId);
     AppState.animationFrameId = frameId;
 }
 
@@ -236,8 +237,8 @@ function startCardRingAnimation() {
 }
 
 function stopCardRingAnimation() {
-    _ringAnimationFrameIds.forEach(frameId => cancelAnimationFrame(frameId));
-    _ringAnimationFrameIds.clear();
+    AppState._ringAnimationFrameIds.forEach(frameId => cancelAnimationFrame(frameId));
+    AppState._ringAnimationFrameIds.clear();
     AppState.animationFrameId = null;
     AppState.ringAnimationRunning = false;
     AppState.lastFrameTime = 0;
@@ -265,11 +266,11 @@ function stopCardRing() {
     updateCardPositions();
 
     clearSmoothTransitionTimer();
-    _smoothTransitionTimer = setTimeout(() => {
+    AppState._smoothTransitionTimer = setTimeout(() => {
         AppState.cardElements.forEach(el => {
             if (el) el.classList.remove('smooth-transition');
         });
-        _smoothTransitionTimer = null;
+        AppState._smoothTransitionTimer = null;
     }, 400);
 }
 

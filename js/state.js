@@ -53,12 +53,25 @@ const AppState = {
     lastFrameTime: 0,          // delta-time 用，紀錄上一幀時間戳
 
     // 螢幕恆亮 (Wake Lock)
-    wakeLockSentinel: null
+    wakeLockSentinel: null,
+
+    // 模組級資源追蹤（集中管理，提升可維護性）
+    _gestureTimers: [],
+    _gestureFlyClones: new Set(),
+    _smoothTransitionTimer: null,
+    _ringAnimationFrameIds: new Set(),
+    _mediaPipeSessionId: 0,
+    _dailyTimers: [],
+    _dailyParticleAnimId: null,
+    _dailyScanAnimId: null,
+    _ccTimers: [],
+    _ccParticleAnimId: null,
+    selectedHistoryIds: new Set()
 };
 
-/* ============================
-   聖十字牌陣（Celtic Cross）10 牌位定義
-   ============================ */
+// 防止意外新增未定義的屬性，但允許修改既有屬性值
+Object.seal(AppState);
+
 /* ============================
    localStorage 鍵值常數
    ============================ */
