@@ -1266,14 +1266,6 @@ footer {
     color: var(--gold-light);
 }
 
-/* 解牌 Modal 底部操作列 */
-.reading-modal-actions {
-    text-align: center;
-    margin-top: 2rem;
-    border-top: 1px solid rgba(212, 175, 55, 0.2);
-    padding-top: 1.5rem;
-}
-
 /* 清空按鈕樣式 */
 .question-clear-style {
     background: rgba(255, 100, 100, 0.1);
@@ -1780,6 +1772,7 @@ footer {
     }
 
     /* 手機效能優化：移除極其耗費 GPU 的毛玻璃濾鏡 */
+    .modal,
     .modal-content,
     .spread-option,
     .cc-anim-status {

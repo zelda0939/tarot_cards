@@ -289,3 +289,10 @@
     - 重構 `js/history.js`：將所有直接調用 `indexedDB` 的代碼替換為對 `js/db.js` 模組函式的調用。
   - **版本更新**：同步更新 `js/version.js`、`sw.js` 與 `index.html` 至 **v1.9.19**。
 
+- **2026-05-18 - 程式碼重構與效能微調**：
+  - **決策 1：統一 localStorage 鍵值管理**：多處模組硬編碼（Hardcode）相同的 localStorage 鍵值容易出錯，因此在 `js/state.js` 中新增了全域 `STORAGE_KEYS` 常數對象（含 `API_KEY`、`MODEL`、`DAILY_CARD_DATE`），集中管理防錯。
+  - **決策 2：通用打字機動畫函式（DRY）**：解牌與歷史追問皆有高度重複的打字機效果邏輯，重構為在 `js/ui.js` 中實作通用函式 `typewriteText()`，藉此降低代碼冗餘與維護成本。
+  - **決策 3：行動端 Modal 效能微調**：在手機端將 `.modal` 併入原本的移除毛玻璃濾鏡的 CSS 規則中（`backdrop-filter: none`），以確保 Modal 在手機上的滑動與互動更為流暢。
+  - **決策 4：PWA 圖片型態聲明修復**：修正 `manifest.json` 中螢幕截圖的 `type` 為 `image/png` 以對應正確的 `.png` 圖檔，避免 PWA 安裝校驗警告。
+
+

@@ -12,6 +12,33 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+/**
+ * 打字機效果：逐字將文字插入容器，支援 <br> 標籤
+ * @param {HTMLElement} container - 目標容器
+ * @param {string} text - 要顯示的文字（含 <br>）
+ * @param {object} options - { interval, onChar(i), onComplete }
+ * @returns {number} setInterval ID
+ */
+function typewriteText(container, text, options = {}) {
+    const { interval = 15, onChar, onComplete } = options;
+    let i = 0;
+    const timer = setInterval(() => {
+        if (text.substring(i, i + 4) === '<br>') {
+            container.insertAdjacentHTML('beforeend', '<br>');
+            i += 4;
+        } else {
+            container.insertAdjacentHTML('beforeend', text.charAt(i));
+            i++;
+        }
+        if (onChar) onChar(i);
+        if (i >= text.length) {
+            clearInterval(timer);
+            if (onComplete) onComplete();
+        }
+    }, interval);
+    return timer;
+}
+
 function updateInstruction(text) {
     const el = document.querySelector('#gesture-instruction p');
     if (el) {

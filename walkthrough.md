@@ -215,3 +215,18 @@
         - 修改 `js/history.js`，將其內部重複的資料庫代碼移除，改為引用 `js/db.js`。
         - 更新 `index.html` 引入新腳本並同步所有資源版本號。
     - **成果**: 實現了 UI 邏輯與資料持久化邏輯的關注點分離 (SOC)，大幅提升代碼的可測試性與後續擴充性。
+
+## 2026-05-18
+- **引入 `STORAGE_KEYS` 常數管理**:
+    - 在 [js/state.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/state.js) 中新增 `STORAGE_KEYS` 常數對象，統一管理 `localStorage` 的鍵值（包括 `gemini_api_key`、`gemini_model` 以及 `dailyCardDate`）。
+    - 於 [js/analysis.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/analysis.js), [js/daily.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/daily.js), [js/history.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/history.js), [js/init.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/init.js) 全面替換寫死的字串，提升程式碼品質與防錯。
+- **通用打字機動畫 (Typewriter) 重構 (DRY)**:
+    - 於 [js/ui.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/ui.js) 中新增通用打字機效果函式 `typewriteText()`，支援 `<br>` 標籤並包含動態回呼（`onChar`, `onComplete`）。
+    - 修改 [js/analysis.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/analysis.js) 與 [js/history.js](file:///c:/Users/steve/Documents/code_local/tarot_cards/js/history.js)，移除各自重複實作的打字機定時器邏輯，改為調用 `typewriteText` 通用函式。
+- **手機端效能優化微調**:
+    - 在 [css/style.css](file:///c:/Users/steve/Documents/code_local/tarot_cards/css/style.css) 的手機版媒體查詢中，為 `.modal` 新增移除毛玻璃濾鏡的設定（`backdrop-filter: none`），以降低行動裝置的 GPU 渲染負擔。
+- **CSS 樣式清理**:
+    - 自 [css/style.css](file:///c:/Users/steve/Documents/code_local/tarot_cards/css/style.css) 移除已廢棄且無實際用途的 `.reading-modal-actions` CSS 樣式。
+- **PWA 規格校驗修復**:
+    - 修正 [manifest.json](file:///c:/Users/steve/Documents/code_local/tarot_cards/manifest.json) 中桌面端與行動端螢幕截圖（screenshots）定義的 `type` 為 `image/png`，以精確匹配實際的圖檔副檔名（`.png`），防止 PWA 安裝校驗警告。
+

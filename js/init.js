@@ -132,9 +132,9 @@ function initApp() {
     if (settingsBtn && settingsModal) {
         settingsBtn.addEventListener('click', () => {
             // 回填已存的設定
-            const savedKey = localStorage.getItem('gemini_api_key');
+            const savedKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
             if (savedKey) apiKeyInput.value = savedKey;
-            const savedModel = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+            const savedModel = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemma-4-31b-it';
             if (modelSelect) modelSelect.value = savedModel;
             settingsModal.classList.remove('hidden');
         });
@@ -142,13 +142,13 @@ function initApp() {
         saveSettingsBtn.addEventListener('click', () => {
             const key = apiKeyInput.value.trim();
             if (key) {
-                localStorage.setItem('gemini_api_key', key);
+                localStorage.setItem(STORAGE_KEYS.API_KEY, key);
             } else {
-                localStorage.removeItem('gemini_api_key');
+                localStorage.removeItem(STORAGE_KEYS.API_KEY);
             }
             // 儲存模型選擇
             if (modelSelect) {
-                localStorage.setItem('gemini_model', modelSelect.value);
+                localStorage.setItem(STORAGE_KEYS.MODEL, modelSelect.value);
             }
             settingsModal.classList.add('hidden');
         });

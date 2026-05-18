@@ -97,7 +97,7 @@ function showAnalysis() {
 
     container.innerHTML = html;
 
-    const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+    const modelId = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemma-4-31b-it';
     const modelInfo = AI_MODELS[modelId] || AI_MODELS['gemma-4-31b-it'];
     const geminiHeader = document.querySelector('.gemini-header');
     if (geminiHeader) {
@@ -157,27 +157,15 @@ function showAnalysis() {
                     // 跳脫 HTML 特殊字元後再插入 DOM，防止 XSS
                     const formattedReply = escapeHtml(result.text).replace(/\n/g, '<br>');
                     geminiText.innerHTML = '';
-                    let i = 0;
                     if (!formattedReply.length) {
                         setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
                     }
-                    // 使用 insertAdjacentHTML 取代 innerHTML +=
-                    // 避免每 15ms 觸發完整 DOM 重新解析
-                    const typeWriter = setInterval(() => {
-                        if (formattedReply.substring(i, i + 4) === '<br>') {
-                            geminiText.insertAdjacentHTML('beforeend', '<br>');
-                            i += 4;
-                        } else {
-                            geminiText.insertAdjacentHTML('beforeend', formattedReply.charAt(i));
-                            i++;
-                        }
-                        if (i >= formattedReply.length) {
-                            clearInterval(typeWriter);
+                    typewriteText(geminiText, formattedReply, {
+                        onComplete: () => {
                             setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
-                            // 打字完成後顯示延伸提問區
                             _showFollowupSection();
                         }
-                    }, 15);
+                    });
                 } else {
                     geminiText.innerHTML = result.text + '<div style="text-align: center; margin-top: 20px;"><button onclick="showAnalysis()" class="premium-btn" style="padding: 8px 16px; font-size: 0.9em;">✦ 重新送出</button></div>';
                     setSaveImageButtonState(false, '儲存提問＋星辰指引圖');
@@ -238,7 +226,7 @@ async function sendFollowupQuestion() {
     const questionText = input.value.trim();
     if (!questionText) return;
 
-    const apiKey = localStorage.getItem('gemini_api_key');
+    const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
     if (!apiKey) {
         _appendFollowupBubble(historyContainer, 'ai',
             '<em>您尚未設定 API Key，請點擊右上角 ⚙️ 設定金鑰。</em>');
@@ -265,7 +253,7 @@ async function sendFollowupQuestion() {
     });
 
     try {
-        const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+        const modelId = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemma-4-31b-it';
         const modelInfo = AI_MODELS[modelId] || AI_MODELS['gemma-4-31b-it'];
 
         // 建構延伸提問的 system prompt（追加延伸規則）
@@ -315,25 +303,15 @@ async function sendFollowupQuestion() {
             const textContainer = document.createElement('span');
             loadingBubble.appendChild(textContainer);
 
-            let i = 0;
-            const typeWriter = setInterval(() => {
-                if (formattedReply.substring(i, i + 4) === '<br>') {
-                    textContainer.insertAdjacentHTML('beforeend', '<br>');
-                    i += 4;
-                } else {
-                    textContainer.insertAdjacentHTML('beforeend', formattedReply.charAt(i));
-                    i++;
-                }
-                // 每隔數個字元自動捲動一次，確保最新文字在視野內
-                if (i % 30 === 0) {
-                    _scrollFollowupToBottom(historyContainer);
-                }
-                if (i >= formattedReply.length) {
-                    clearInterval(typeWriter);
+            typewriteText(textContainer, formattedReply, {
+                onChar: (i) => {
+                    if (i % 30 === 0) _scrollFollowupToBottom(historyContainer);
+                },
+                onComplete: () => {
                     if (sendBtn) sendBtn.disabled = false;
                     _scrollFollowupToBottom(historyContainer);
                 }
-            }, 15);
+            });
         } else {
             if (sendBtn) sendBtn.disabled = false;
         }
@@ -438,7 +416,7 @@ async function _updateFollowupInHistory(userQuestion, aiReply) {
 }
 
 async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
-    const apiKey = localStorage.getItem('gemini_api_key');
+    const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
     if (!apiKey) {
         return {
             success: false,
@@ -446,7 +424,7 @@ async function fetchGeminiAnalysis(cardsLog, userQuestionText) {
         };
     }
 
-    const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+    const modelId = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemma-4-31b-it';
     const modelInfo = AI_MODELS[modelId] || AI_MODELS['gemma-4-31b-it'];
     console.log(`[聖境塔羅] 使用模型: ${modelInfo.name} (${modelInfo.id})`);
     const normalizedQuestion = (userQuestionText || '').trim() || '未提供明確提問';

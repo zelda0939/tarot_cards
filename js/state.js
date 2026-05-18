@@ -59,6 +59,15 @@ const AppState = {
 /* ============================
    聖十字牌陣（Celtic Cross）10 牌位定義
    ============================ */
+/* ============================
+   localStorage 鍵值常數
+   ============================ */
+const STORAGE_KEYS = {
+    API_KEY: 'gemini_api_key',
+    MODEL: 'gemini_model',
+    DAILY_CARD_DATE: 'dailyCardDate'
+};
+
 const CELTIC_CROSS_POSITIONS = [
     { id: 1, name: '現況', en: 'The Present', desc: '問題的核心，當前處境' },
     { id: 2, name: '挑戰', en: 'The Challenge', desc: '橫跨的阻礙或衝突', rotated: true },

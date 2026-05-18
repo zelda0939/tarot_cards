@@ -126,7 +126,7 @@ function restoreDailyHomeLayout() {
    ============================ */
 async function triggerDailyCard() {
     const todayStr = new Date().toISOString().slice(0, 10);
-    const lastDailyDate = localStorage.getItem('dailyCardDate');
+    const lastDailyDate = localStorage.getItem(STORAGE_KEYS.DAILY_CARD_DATE);
 
     if (lastDailyDate === todayStr) {
         // 今日已抽過
@@ -161,7 +161,7 @@ function startDailyFlow(todayStr) {
     AppState.isDailyMode = true;
     AppState.gameState = 'finished'; // 跳過鏡頭互動
     AppState.userQuestion = '今日運勢與星辰指引';
-    localStorage.setItem('dailyCardDate', todayStr);
+    localStorage.setItem(STORAGE_KEYS.DAILY_CARD_DATE, todayStr);
 
     // 真隨機抽牌 (1張)
     AppState.selectedCards = [];

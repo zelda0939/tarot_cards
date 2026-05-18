@@ -320,7 +320,7 @@ async function sendHistoryFollowupQuestion(record) {
     const questionText = input.value.trim();
     if (!questionText) return;
 
-    const apiKey = localStorage.getItem('gemini_api_key');
+    const apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY);
     if (!apiKey) {
         _appendHistoryFollowupBubble(historyContainer, 'ai',
             '<em style="color: #ff6b6b;">您尚未設定 API Key，請先點擊主畫面右上角 ⚙️ 設定。</em>');
@@ -362,7 +362,7 @@ async function sendHistoryFollowupQuestion(record) {
     conversationHistory.push({ role: 'user', parts: [{ text: questionText }] });
 
     try {
-        const modelId = localStorage.getItem('gemini_model') || 'gemma-4-31b-it';
+        const modelId = localStorage.getItem(STORAGE_KEYS.MODEL) || 'gemma-4-31b-it';
         const modelInfo = (typeof AI_MODELS !== 'undefined' ? AI_MODELS[modelId] : null) || { id: modelId };
 
         const followupSystemPrompt = `你是一位充滿智慧、語氣溫柔且帶有神祕感的高階塔羅占卜師。
@@ -400,18 +400,11 @@ async function sendHistoryFollowupQuestion(record) {
             const textContainer = document.createElement('span');
             loadingBubble.appendChild(textContainer);
 
-            let i = 0;
-            const typeWriter = setInterval(() => {
-                if (formattedReply.substring(i, i + 4) === '<br>') {
-                    textContainer.insertAdjacentHTML('beforeend', '<br>');
-                    i += 4;
-                } else {
-                    textContainer.insertAdjacentHTML('beforeend', formattedReply.charAt(i));
-                    i++;
-                }
-                if (i % 20 === 0) _scrollHistoryFollowupToBottom(historyContainer);
-                if (i >= formattedReply.length) {
-                    clearInterval(typeWriter);
+            typewriteText(textContainer, formattedReply, {
+                onChar: (i) => {
+                    if (i % 20 === 0) _scrollHistoryFollowupToBottom(historyContainer);
+                },
+                onComplete: () => {
                     input.disabled = false;
                     if (sendBtn) {
                         sendBtn.disabled = false;
@@ -419,7 +412,7 @@ async function sendHistoryFollowupQuestion(record) {
                     }
                     _scrollHistoryFollowupToBottom(historyContainer);
                 }
-            }, 15);
+            });
         }
 
         // 將延伸對話更新至 IndexedDB
