@@ -336,10 +336,7 @@ async function sendHistoryFollowupQuestion(record) {
     // 禁用輸入與按鈕
     input.value = '';
     input.disabled = true;
-    if (sendBtn) {
-        sendBtn.disabled = true;
-        sendBtn.textContent = '...';
-    }
+    if (sendBtn) sendBtn.disabled = true;
 
     // 追加使用者提問氣泡
     _appendHistoryFollowupBubble(historyContainer, 'user', escapeHtml(questionText));

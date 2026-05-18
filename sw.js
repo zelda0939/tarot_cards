@@ -67,32 +67,45 @@ self.addEventListener('activate', (event) => {
     );
 });
 
-// 攔截請求：Network-First (網路優先) + Cache Fallback
+// 攔截請求：卡牌圖片走 Cache-First，其餘走 Network-First
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
-    // 只處理 GET 請求；API 呼叫不走快取
     if (request.method !== 'GET') return;
     if (request.url.includes('generativelanguage.googleapis.com')) return;
     if (request.url.includes('tarotapi.dev')) return;
 
+    const url = new URL(request.url);
+    const isCardImage = url.pathname.startsWith('/assets/images/') && url.pathname.endsWith('.jpg');
+
+    if (isCardImage) {
+        // Cache-First for card images
+        event.respondWith(
+            caches.match(request).then((cached) => {
+                if (cached) return cached;
+                return fetch(request).then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200) {
+                        const clone = networkResponse.clone();
+                        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+                    }
+                    return networkResponse;
+                });
+            })
+        );
+        return;
+    }
+
+    // Network-First for everything else
     event.respondWith(
         fetch(request).then((networkResponse) => {
-            // 從網路成功取得資源，將新版存入快取供日後離線使用
             if (networkResponse && networkResponse.status === 200) {
-                const responseClone = networkResponse.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                    cache.put(request, responseClone);
-                });
+                const clone = networkResponse.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
             }
             return networkResponse;
         }).catch(() => {
-            // 網路失敗 (例如離線或伺服器異常) -> Fallback 到快取
-            return caches.match(request).then((cachedResponse) => {
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
-                // 離線且快取無此資源 — 返回 fallback 首頁
+            return caches.match(request).then((cached) => {
+                if (cached) return cached;
                 if (request.destination === 'document') {
                     return caches.match('./index.html');
                 }

@@ -1,17 +1,15 @@
 :root {
     --bg-dark: #07080a;
-    /* 極致深黑 */
     --navy-blue: #111424;
-    /* 暗夜藍 */
     --gold: #d4af37;
-    /* 經典塔羅金 */
-    --gold-glow: rgba(212, 175, 55, 0.25);
+    --gold-rgb: 212, 175, 55;
+    --gold-glow: rgba(var(--gold-rgb), 0.25);
     --gold-light: #f9e596;
-    /* 亮金 / 香檳金 */
+    --navy-blue-rgb: 17, 20, 36;
     --text-white: #f5f5f5;
     --text-muted: #8b8e98;
-    --glass-bg: rgba(17, 20, 36, 0.7);
-    --glass-border: rgba(212, 175, 55, 0.2);
+    --glass-bg: rgba(var(--navy-blue-rgb), 0.7);
+    --glass-border: rgba(var(--gold-rgb), 0.2);
 }
 
 * {
@@ -26,15 +24,15 @@
 
 /* 1. 專屬金色文字反白 */
 ::selection {
-    background: rgba(212, 175, 55, 0.35);
+    background: rgba(var(--gold-rgb), 0.35);
     color: var(--text-white);
-    text-shadow: 0 0 5px rgba(212, 175, 55, 0.8);
+    text-shadow: 0 0 5px rgba(var(--gold-rgb), 0.8);
 }
 
 ::-moz-selection {
-    background: rgba(212, 175, 55, 0.35);
+    background: rgba(var(--gold-rgb), 0.35);
     color: var(--text-white);
-    text-shadow: 0 0 5px rgba(212, 175, 55, 0.8);
+    text-shadow: 0 0 5px rgba(var(--gold-rgb), 0.8);
 }
 
 /* 2. 沉浸式細緻金色捲軸 */
@@ -49,13 +47,13 @@
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(212, 175, 55, 0.3);
+    background: rgba(var(--gold-rgb), 0.3);
     border-radius: 4px;
     transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(212, 175, 55, 0.6);
+    background: rgba(var(--gold-rgb), 0.6);
 }
 
 body {
@@ -107,7 +105,7 @@ body::after {
     bottom: -20%;
     background:
         radial-gradient(circle at 25% 25%, rgba(138, 43, 226, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 75% 75%, rgba(212, 175, 55, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 75% 75%, rgba(var(--gold-rgb), 0.12) 0%, transparent 50%),
         radial-gradient(circle at 50% 60%, rgba(30, 144, 255, 0.08) 0%, transparent 60%);
     animation: nebula-drift 30s infinite ease-in-out alternate, magic-pulse 15s infinite ease-in-out;
     pointer-events: none;
@@ -132,7 +130,7 @@ body::after {
     animation: twinkle var(--duration, 3s) infinite ease-in-out;
     z-index: 2;
     /* 加入微弱的金色魔法光暈 */
-    box-shadow: 0 0 3px 0px rgba(212, 175, 55, 0.5);
+    box-shadow: 0 0 3px 0px rgba(var(--gold-rgb), 0.5);
 }
 
 /* Header 標題 與 系統按鈕 */
@@ -207,8 +205,8 @@ main {
     max-width: 900px;
     padding: 0.55rem 0.8rem;
     margin-bottom: 0.45rem;
-    background: rgba(212, 175, 55, 0.08);
-    border: 1px solid rgba(212, 175, 55, 0.25);
+    background: rgba(var(--gold-rgb), 0.08);
+    border: 1px solid rgba(var(--gold-rgb), 0.25);
     border-radius: 10px;
     flex-shrink: 0;
 }
@@ -288,7 +286,7 @@ body.centered-start #tarot-board {
 }
 
 .question-toggle-btn {
-    border: 1px solid rgba(212, 175, 55, 0.45);
+    border: 1px solid rgba(var(--gold-rgb), 0.45);
     background: rgba(0, 0, 0, 0.35);
     color: var(--gold-light);
     border-radius: 999px;
@@ -299,7 +297,7 @@ body.centered-start #tarot-board {
 }
 
 .question-toggle-btn:hover {
-    background: rgba(212, 175, 55, 0.15);
+    background: rgba(var(--gold-rgb), 0.15);
 }
 
 #user-question-input {
@@ -307,7 +305,7 @@ body.centered-start #tarot-board {
     min-height: 50px;
     max-height: 120px;
     padding: 0.55rem 0.7rem;
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    border: 1px solid rgba(var(--gold-rgb), 0.3);
     border-radius: 8px;
     background: rgba(0, 0, 0, 0.45);
     color: var(--text-white);
@@ -321,7 +319,7 @@ body.centered-start #tarot-board {
     margin-top: 0.25rem;
     padding: 0.35rem 0.55rem;
     border-radius: 8px;
-    border: 1px solid rgba(212, 175, 55, 0.2);
+    border: 1px solid rgba(var(--gold-rgb), 0.2);
     background: rgba(0, 0, 0, 0.3);
     color: var(--gold-light);
     font-size: 0.72rem;
@@ -339,7 +337,7 @@ body.centered-start #tarot-board {
     outline: none;
     border-color: var(--gold);
     /* 5. 強化輸入框的聚焦光暈 (內外發光) */
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.25), inset 0 0 10px rgba(212, 175, 55, 0.1);
+    box-shadow: 0 0 15px rgba(var(--gold-rgb), 0.25), inset 0 0 10px rgba(var(--gold-rgb), 0.1);
     background: rgba(0, 0, 0, 0.6);
 }
 
@@ -398,7 +396,7 @@ body.centered-start #tarot-board {
 .premium-btn:disabled {
     opacity: 0.55;
     cursor: not-allowed;
-    border-color: rgba(212, 175, 55, 0.45);
+    border-color: rgba(var(--gold-rgb), 0.45);
     color: rgba(249, 229, 150, 0.75);
     box-shadow: none;
 }
@@ -428,7 +426,7 @@ body.centered-start #tarot-board {
     width: 100%;
     max-width: 900px;
     text-align: center;
-    background: rgba(212, 175, 55, 0.1);
+    background: rgba(var(--gold-rgb), 0.1);
     border: 1px solid var(--gold-glow);
     padding: 0.5rem 1rem;
     border-radius: 8px;
@@ -602,7 +600,7 @@ body.centered-start #tarot-board {
     border-radius: 10px;
     letter-spacing: 0.15rem;
     z-index: 10;
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    border: 1px solid rgba(var(--gold-rgb), 0.3);
     white-space: nowrap;
 }
 
@@ -615,12 +613,12 @@ body.centered-start #tarot-board {
     transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border-radius: 12px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
-    border: 1.5px solid rgba(212, 175, 55, 0.35);
+    border: 1.5px solid rgba(var(--gold-rgb), 0.35);
 }
 
 .tarot-card.flipped .card-inner {
     transform: rotateY(180deg);
-    box-shadow: 0 0 50px var(--gold), 0 0 80px rgba(212, 175, 55, 0.3);
+    box-shadow: 0 0 50px var(--gold), 0 0 80px rgba(var(--gold-rgb), 0.3);
     z-index: 10;
 }
 
@@ -646,7 +644,7 @@ body.centered-start #tarot-board {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    border: 1.5px solid rgba(212, 175, 55, 0.5);
+    border: 1.5px solid rgba(var(--gold-rgb), 0.5);
 }
 
 /* ═══════════════════════════════
@@ -655,7 +653,7 @@ body.centered-start #tarot-board {
 .card-front {
     background-color: #0a0a0f;
     transform: rotateY(180deg);
-    border: 1.5px solid rgba(212, 175, 55, 0.5);
+    border: 1.5px solid rgba(var(--gold-rgb), 0.5);
     padding: 14px 6px;
 }
 
@@ -694,7 +692,7 @@ body.centered-start #tarot-board {
     font-family: 'Cinzel', serif;
     font-size: 0.75rem;
     font-weight: 700;
-    color: #111424;
+    color: var(--navy-blue);
     letter-spacing: 0.05rem;
     text-align: center;
     line-height: 1.2;
@@ -728,7 +726,7 @@ body.centered-start #tarot-board {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     position: relative;
-    box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 40px rgba(var(--gold-rgb), 0.2);
 }
 
 /* ═══════════════════════════════
@@ -741,7 +739,7 @@ body.centered-start #tarot-board {
     gap: 0.8rem;
     flex-wrap: wrap;
     margin-top: 2rem;
-    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    border-top: 1px solid rgba(var(--gold-rgb), 0.2);
     padding-top: 1.5rem;
 }
 
@@ -780,8 +778,8 @@ body.centered-start #tarot-board {
 #gemini-analysis-section {
     margin-bottom: 2rem;
     padding: 1.5rem;
-    background: rgba(212, 175, 55, 0.03);
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    background: rgba(var(--gold-rgb), 0.03);
+    border: 1px solid rgba(var(--gold-rgb), 0.3);
     border-radius: 12px;
     box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
     position: relative;
@@ -879,8 +877,8 @@ body.centered-start #tarot-board {
 
 .followup-bubble-user {
     align-self: flex-end;
-    background: rgba(212, 175, 55, 0.15);
-    border: 1px solid rgba(212, 175, 55, 0.35);
+    background: rgba(var(--gold-rgb), 0.15);
+    border: 1px solid rgba(var(--gold-rgb), 0.35);
     color: var(--gold-light);
 }
 
@@ -934,7 +932,7 @@ body.centered-start #tarot-board {
     min-height: 44px;
     max-height: 100px;
     padding: 0.5rem 0.7rem;
-    border: 1px solid rgba(212, 175, 55, 0.3);
+    border: 1px solid rgba(var(--gold-rgb), 0.3);
     border-radius: 10px;
     background: rgba(0, 0, 0, 0.45);
     color: var(--text-white);
@@ -947,7 +945,7 @@ body.centered-start #tarot-board {
 .followup-input-row textarea:focus {
     outline: none;
     border-color: var(--gold);
-    box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+    box-shadow: 0 0 12px rgba(var(--gold-rgb), 0.2);
     background: rgba(0, 0, 0, 0.6);
 }
 
@@ -1008,7 +1006,7 @@ body.centered-start #tarot-board {
     margin-bottom: 0.5rem;
     text-transform: uppercase;
     text-align: center;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    border-bottom: 1px solid rgba(var(--gold-rgb), 0.2);
     padding-bottom: 0.3rem;
 }
 
@@ -1042,7 +1040,7 @@ body.centered-start #tarot-board {
     color: var(--text-muted);
     line-height: 1.5;
     margin-bottom: 1rem;
-    border-left: 2px solid rgba(212, 175, 55, 0.2);
+    border-left: 2px solid rgba(var(--gold-rgb), 0.2);
     padding-left: 0.6rem;
     font-style: italic;
     flex-grow: 1;
@@ -1173,8 +1171,8 @@ footer {
 .settings-api-guide {
     margin-bottom: 1rem;
     padding: 0.7rem;
-    background: rgba(212, 175, 55, 0.06);
-    border: 1px solid rgba(212, 175, 55, 0.15);
+    background: rgba(var(--gold-rgb), 0.06);
+    border: 1px solid rgba(var(--gold-rgb), 0.15);
     border-radius: 8px;
 }
 
@@ -1316,7 +1314,7 @@ footer {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 0.5rem 1rem;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    border-bottom: 1px solid rgba(var(--gold-rgb), 0.2);
     margin-bottom: 1rem;
 }
 
@@ -1367,7 +1365,7 @@ footer {
     width: 18px;
     height: 18px;
     margin-right: 8px;
-    border: 1.5px solid rgba(212, 175, 55, 0.5);
+    border: 1.5px solid rgba(var(--gold-rgb), 0.5);
     border-radius: 3px;
     background-color: rgba(10, 15, 30, 0.6);
     transition: all 0.2s;
@@ -1376,12 +1374,12 @@ footer {
 .history-select-all-label:hover input~.custom-checkbox,
 .history-checkbox-label:hover input~.custom-checkbox {
     border-color: var(--gold);
-    background-color: rgba(212, 175, 55, 0.1);
+    background-color: rgba(var(--gold-rgb), 0.1);
 }
 
 .history-select-all-label input:checked~.custom-checkbox,
 .history-checkbox-label input:checked~.custom-checkbox {
-    background-color: rgba(212, 175, 55, 0.8);
+    background-color: rgba(var(--gold-rgb), 0.8);
     border-color: var(--gold);
 }
 
@@ -1404,13 +1402,13 @@ footer {
 }
 
 .history-item.selected {
-    background: rgba(212, 175, 55, 0.12);
-    border-color: rgba(212, 175, 55, 0.6);
+    background: rgba(var(--gold-rgb), 0.12);
+    border-color: rgba(var(--gold-rgb), 0.6);
 }
 
 .history-item {
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(212, 175, 55, 0.15);
+    border: 1px solid rgba(var(--gold-rgb), 0.15);
     border-radius: 8px;
     margin-bottom: 1rem;
     padding: 0.8rem 1rem;
@@ -1418,8 +1416,8 @@ footer {
 }
 
 .history-item:hover {
-    background: rgba(212, 175, 55, 0.08);
-    border-color: rgba(212, 175, 55, 0.4);
+    background: rgba(var(--gold-rgb), 0.08);
+    border-color: rgba(var(--gold-rgb), 0.4);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
@@ -1427,7 +1425,7 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px dashed rgba(212, 175, 55, 0.2);
+    border-bottom: 1px dashed rgba(var(--gold-rgb), 0.2);
     padding-bottom: 0.4rem;
     margin-bottom: 0.6rem;
 }
@@ -1484,7 +1482,7 @@ footer {
     text-align: center;
     margin-top: 1.5rem;
     padding-top: 1rem;
-    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    border-top: 1px solid rgba(var(--gold-rgb), 0.2);
 }
 
 .history-clear-btn {
@@ -1583,7 +1581,7 @@ footer {
 }
 
 .confirm-ok-btn {
-    background: rgba(212, 175, 55, 0.2);
+    background: rgba(var(--gold-rgb), 0.2);
 }
 
 /* 響應式 — 平板 */
@@ -1768,7 +1766,7 @@ footer {
 
     /* 手機效能優化：降低翻牌高光，拯救 Paint 效能 */
     .tarot-card.flipped .card-inner {
-        box-shadow: 0 0 15px var(--gold), 0 0 25px rgba(212, 175, 55, 0.3);
+        box-shadow: 0 0 15px var(--gold), 0 0 25px rgba(var(--gold-rgb), 0.3);
     }
 
     /* 手機效能優化：移除極其耗費 GPU 的毛玻璃濾鏡 */
@@ -1778,7 +1776,7 @@ footer {
     .cc-anim-status {
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
-        background: rgba(17, 20, 36, 0.92) !important;
+        background: rgba(var(--navy-blue-rgb), 0.92) !important;
         /* 補償不透明度 */
     }
 
@@ -1802,7 +1800,7 @@ footer {
         font-size: clamp(3.2rem, 8vw, 4.2rem);
         letter-spacing: 1.2rem;
         margin-bottom: 1.5vh;
-        text-shadow: 0 0 20px var(--gold-shadow), 0 0 40px rgba(212, 175, 55, 0.4);
+        text-shadow: 0 0 20px var(--gold-shadow), 0 0 40px rgba(var(--gold-rgb), 0.4);
     }
 
     .subtitle {
@@ -1822,9 +1820,9 @@ footer {
         width: 88vw;
         max-width: 860px;
         padding: 3rem 4rem;
-        background: radial-gradient(circle at center, rgba(212, 175, 55, 0.12) 0%, rgba(17, 20, 36, 0.85) 100%);
+        background: radial-gradient(circle at center, rgba(var(--gold-rgb), 0.12) 0%, rgba(var(--navy-blue-rgb), 0.85) 100%);
         border: 1.5px solid var(--gold-border);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(212, 175, 55, 0.05);
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6), inset 0 0 30px rgba(var(--gold-rgb), 0.05);
         animation: reveal-up 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.2s backwards;
     }
 
@@ -1848,8 +1846,8 @@ footer {
     }
 
     #user-question-input:focus {
-        background: rgba(212, 175, 55, 0.08);
-        box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+        background: rgba(var(--gold-rgb), 0.08);
+        box-shadow: 0 0 20px rgba(var(--gold-rgb), 0.15);
     }
 
     /* 牌陣選擇器：更開闊的佈局 */
@@ -1899,7 +1897,7 @@ footer {
 
     .premium-btn:hover {
         transform: translateY(-5px) scale(1.02);
-        box-shadow: 0 10px 25px rgba(212, 175, 55, 0.25);
+        box-shadow: 0 10px 25px rgba(var(--gold-rgb), 0.25);
     }
 
     /* 3D 牌環場景：調整為適中高度 */
@@ -2177,7 +2175,7 @@ footer {
 .loading-overlay-bg {
     width: 100%;
     height: 100%;
-    background: radial-gradient(ellipse at center, #11142480 0%, #07080af0 60%, #07080a 100%);
+    background: radial-gradient(ellipse at center, rgba(var(--navy-blue-rgb), 0.5) 0%, rgba(7, 8, 10, 0.94) 60%, var(--bg-dark) 100%);
     backdrop-filter: blur(12px);
     display: flex;
     flex-direction: column;
@@ -2207,9 +2205,9 @@ footer {
     width: 220px;
     height: 220px;
     border-width: 1.5px;
-    border-color: rgba(212, 175, 55, 0.25) transparent rgba(212, 175, 55, 0.15) transparent;
+    border-color: rgba(var(--gold-rgb), 0.25) transparent rgba(var(--gold-rgb), 0.15) transparent;
     animation: rotateRing 8s linear infinite;
-    box-shadow: 0 0 30px rgba(212, 175, 55, 0.08);
+    box-shadow: 0 0 30px rgba(var(--gold-rgb), 0.08);
 }
 
 .ring-middle {
@@ -2225,9 +2223,9 @@ footer {
     width: 100px;
     height: 100px;
     border-width: 1.5px;
-    border-color: rgba(212, 175, 55, 0.4) transparent rgba(212, 175, 55, 0.2) transparent;
+    border-color: rgba(var(--gold-rgb), 0.4) transparent rgba(var(--gold-rgb), 0.2) transparent;
     animation: rotateRing 3s linear infinite;
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+    box-shadow: 0 0 15px rgba(var(--gold-rgb), 0.15);
 }
 
 /* 星環上的裝飾節點 — 使用 pseudo elements */
@@ -2284,7 +2282,7 @@ footer {
     width: 70px;
     height: 70px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(212, 175, 55, 0.3) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(var(--gold-rgb), 0.3) 0%, transparent 70%);
     animation: glowPulse 2s ease-in-out infinite;
 }
 
@@ -2292,7 +2290,7 @@ footer {
     position: relative;
     font-size: 1.8rem;
     color: var(--gold);
-    text-shadow: 0 0 20px var(--gold), 0 0 40px rgba(212, 175, 55, 0.4);
+    text-shadow: 0 0 20px var(--gold), 0 0 40px rgba(var(--gold-rgb), 0.4);
     animation: glowPulse 2s ease-in-out infinite;
 }
 
@@ -2316,9 +2314,9 @@ footer {
     width: 65px;
     height: 100px;
     border-radius: 6px;
-    border: 1px solid rgba(212, 175, 55, 0.5);
+    border: 1px solid rgba(var(--gold-rgb), 0.5);
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(212, 175, 55, 0.15);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(var(--gold-rgb), 0.15);
     animation: cardFloat 3s ease-in-out infinite;
     background: #0a0a0f;
 }
@@ -2352,7 +2350,7 @@ footer {
     color: var(--gold-light);
     letter-spacing: 0.2rem;
     animation: breathe 3s ease-in-out infinite;
-    text-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    text-shadow: 0 0 10px rgba(var(--gold-rgb), 0.3);
 }
 
 /* 省略號動畫 */
@@ -2543,7 +2541,7 @@ footer {
 .daily-magic-circle svg {
     width: 420px;
     height: 420px;
-    filter: drop-shadow(0 0 18px rgba(212, 175, 55, 0.5)) drop-shadow(0 0 40px rgba(180, 140, 255, 0.3));
+    filter: drop-shadow(0 0 18px rgba(var(--gold-rgb), 0.5)) drop-shadow(0 0 40px rgba(180, 140, 255, 0.3));
 }
 
 .daily-magic-circle-outer {
@@ -2577,8 +2575,8 @@ footer {
 .daily-rune {
     position: absolute;
     font-size: 1.8rem;
-    color: rgba(212, 175, 55, 0.6);
-    text-shadow: 0 0 14px rgba(212, 175, 55, 0.8), 0 0 30px rgba(180, 140, 255, 0.4);
+    color: rgba(var(--gold-rgb), 0.6);
+    text-shadow: 0 0 14px rgba(var(--gold-rgb), 0.8), 0 0 30px rgba(180, 140, 255, 0.4);
     pointer-events: none;
     opacity: 0;
     z-index: 1;
@@ -2612,9 +2610,9 @@ footer {
     height: 130px;
     border-radius: 6px;
     overflow: hidden;
-    border: 1.5px solid rgba(212, 175, 55, 0.3);
+    border: 1.5px solid rgba(var(--gold-rgb), 0.3);
     background: #0a0a14;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 4px rgba(212, 175, 55, 0.08);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 4px rgba(var(--gold-rgb), 0.08);
     /* 初始：全部疊在一起 */
     transform: rotate(0deg) translateY(0);
     opacity: 0;
@@ -2712,7 +2710,7 @@ footer {
     border-color: rgba(255, 215, 100, 0.9);
     box-shadow:
         0 0 50px rgba(255, 215, 100, 0.6),
-        0 0 100px rgba(212, 175, 55, 0.35),
+        0 0 100px rgba(var(--gold-rgb), 0.35),
         0 12px 40px rgba(0, 0, 0, 0.5);
     transition:
         transform 0.9s cubic-bezier(0.23, 1, 0.32, 1),
@@ -2842,10 +2840,10 @@ footer {
     opacity: 1;
     animation: auraPulse 2s ease-in-out infinite;
     box-shadow:
-        0 0 30px rgba(212, 175, 55, 0.4),
-        0 0 60px rgba(212, 175, 55, 0.2),
+        0 0 30px rgba(var(--gold-rgb), 0.4),
+        0 0 60px rgba(var(--gold-rgb), 0.2),
         0 0 100px rgba(180, 140, 255, 0.15),
-        inset 0 0 30px rgba(212, 175, 55, 0.1);
+        inset 0 0 30px rgba(var(--gold-rgb), 0.1);
 }
 
 #daily-animation-overlay.stage-charge .daily-card-aura {
@@ -2973,7 +2971,7 @@ footer {
     background: rgba(5, 5, 15, 0.65);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(212, 175, 55, 0.25);
+    border: 1px solid rgba(var(--gold-rgb), 0.25);
     border-radius: 16px;
     padding: 0.8rem 2rem 0.7rem;
     min-width: 240px;
@@ -2986,8 +2984,8 @@ footer {
     color: #fff;
     text-shadow:
         0 0 12px var(--gold),
-        0 0 30px rgba(212, 175, 55, 0.6),
-        0 0 60px rgba(212, 175, 55, 0.3),
+        0 0 30px rgba(var(--gold-rgb), 0.6),
+        0 0 60px rgba(var(--gold-rgb), 0.3),
         0 2px 4px rgba(0, 0, 0, 1);
     letter-spacing: 0.12rem;
     white-space: nowrap;
@@ -3037,7 +3035,7 @@ footer {
 
 #daily-animation-overlay.daily-perf-mobile .daily-magic-circle svg,
 #daily-animation-overlay.daily-perf-mobile .daily-magic-circle-inner svg {
-    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.28));
+    filter: drop-shadow(0 0 8px rgba(var(--gold-rgb), 0.28));
 }
 
 #daily-animation-overlay.daily-perf-mobile .daily-rune:nth-of-type(even) {
@@ -3045,7 +3043,7 @@ footer {
 }
 
 #daily-animation-overlay.daily-perf-mobile .daily-rune {
-    text-shadow: 0 0 8px rgba(212, 175, 55, 0.5);
+    text-shadow: 0 0 8px rgba(var(--gold-rgb), 0.5);
 }
 
 #daily-animation-overlay.daily-perf-mobile .daily-scan-beam {
@@ -3066,7 +3064,7 @@ footer {
 #daily-animation-overlay.daily-perf-mobile.stage-charge .daily-card-aura,
 #daily-animation-overlay.daily-perf-mobile.stage-flip .daily-card-aura {
     animation: none;
-    box-shadow: 0 0 24px rgba(212, 175, 55, 0.24);
+    box-shadow: 0 0 24px rgba(var(--gold-rgb), 0.24);
 }
 
 #daily-animation-overlay.daily-perf-mobile.stage-draw .daily-deck-card,
